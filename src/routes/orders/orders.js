@@ -2,11 +2,10 @@ const express = require("express");
 var session = require("express-session");
 const orderRoute = express.Router();
 
+
 const {
-  profile,
-  updateUser,
-  getusers,
-  deleteUser,
+
+  
 } = require("../../controller/orders/orders");
 
 orderRoute.route("/orders").post();
