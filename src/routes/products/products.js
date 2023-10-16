@@ -1,19 +1,31 @@
 const express = require("express");
 var session = require("express-session");
 const productRoute = express.Router();
+const UpdatebyMiddleWare = require("../../middleware/updatedBy");
+const createMiddleWare = require("../../middleware/createMiddleWare");
+const userMiddleWare = require("../../middleware/userAccess");
+const adminMiddleware = require("../../middleware/adminAccess");
 
 const {
-  profile,
-  updateUser,
-  getusers,
-  add,
-  deleteUser,
+  createProduct,
+  getProducts,
+  getSingleProducts,
+  updateProduct,
+  deleteProducts,getproductReviews
 } = require("../../controller/products/products");
 
-productRoute.route("/products").post(add);
-productRoute.route("/products").get(getusers);
-productRoute.route("/products/:id").get(getusers);
-productRoute.route("/products/:id/reviews").get(profile);
-productRoute.route("/products/:id").patch(updateUser);
-productRoute.route("/products/:id").put(updateUser);
-productRoute.route("/products/:id").delete(deleteUser);
+productRoute
+  .route("/products")
+  .post(adminMiddleware, createMiddleWare, createProduct);
+productRoute.route("/products").get(getProducts);
+productRoute.route("/products/:id").get(getSingleProducts);
+productRoute.route("/products/:id/reviews").get(getproductReviews);
+productRoute
+  .route("/products/:id")
+  .patch(adminMiddleware, userMiddleWare, updateProduct);
+productRoute
+  .route("/products/:id")
+  .put(adminMiddleware, userMiddleWare, updateProduct);
+productRoute
+  .route("/products/:id")
+  .delete(adminMiddleware, userMiddleWare, deleteProducts);
