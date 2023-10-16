@@ -8,6 +8,10 @@ async function logMiddleware(req, res, next) {
       body: req.body,
       query: req.query,
       params: req.params,
+      response: {
+        statusCode: res.statusCode,
+        body: res.locals.responseData || {}, // Add response data to 'responseData' in route handlers
+      },
     });
     await logEntry.save();
   } catch (err) {

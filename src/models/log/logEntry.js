@@ -7,6 +7,7 @@ const logEntrySchema = new mongoose.Schema({
   body: Object,
   query: Object,
   params: Object,
+  response:Object
 }, { timestamps: true });
 
 module.exports = mongoose.model("LogEntry", logEntrySchema);

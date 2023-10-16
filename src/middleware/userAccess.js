@@ -1,4 +1,11 @@
 // customerMiddleware.js
+const {
+  ReasonPhrases,
+  StatusCodes,
+  getReasonPhrase,
+  getStatusCode,
+} = require("http-status-codes");
+
 const jwt = require('jsonwebtoken');
 const User = require('../models/user/user'); // Import your Mongoose user model
 const {  jwtSecret } = require("../config/setting");
@@ -21,7 +28,7 @@ async function userMiddleWare(req, res, next) {
     const decoded = jwt.verify(tokenValue, jwtSecret); // Replace with your secret key
 
     // Query the user document in MongoDB
-    const user = await User.findById(decoded.id);
+    const user = await User.findById(decoded.user_id);
 
     if (!user) {
       return res.status(StatusCodes.UNAUTHORIZED).json({

@@ -34,7 +34,6 @@ app.get("/api", (req, res) => {
 
 app.use(logMiddleware);
 
-
 app.use("/api", userRouter);
 app.use("/api", authRoute);
 
