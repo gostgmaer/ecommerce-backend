@@ -6,7 +6,8 @@ const app = express();
 var cors = require("cors");
 const session = require("express-session");
 const sessionStore = require("./src/db/sessionConnact");
-
+const userRouter = require('./src/routes/user/user')
+const authRoute = require('./src/routes/auth/auth')
 app.use(
   session({
     store: sessionStore,
@@ -29,9 +30,10 @@ app.get("/api", (req, res) => {
   res.send("API is working!");
 });
 
-//app route
-// app.use("", authRouter);
-//Port and Connect to DB
+
+app.use("/api", userRouter);
+app.use("/api", authRoute);
+
 
 const port = serverPort || 5000;
 const start = async () => {

@@ -34,6 +34,10 @@ const userSchema = new mongoose.Schema(
     profilePicture: String,
     resetToken: String,
     resetTokenExpiration: Date,
+    created_by: String,
+    updated_by: String,
+    created_user_id: String,
+    updated_user_id: String,
     confirmToken: String,
     // URL to a profile picture
     role: {
