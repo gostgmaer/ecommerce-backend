@@ -4,7 +4,8 @@ const {
   getReasonPhrase,
   getStatusCode,
 } = require("http-status-codes");
-const User = require("../../models/authentication/auth");
+const { dbUrl, jwtSecret } = require("../../config/setting");
+const User = require("../../models/user/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
@@ -152,31 +153,36 @@ const signIn = async (req, res) => {
       if (isPasswordValid) {
         const LoggedinUser = await User.findOne(
           { email: req.body.email },
-          "-__v -hash_password -createdAt -updatedAt"
+          "_id role firstName lastName username email profilePicture contactNumber "
         );
+
+        const {
+          _id,
+          firstName,
+          lastName,
+          username,
+          email,
+          role,
+          profilePicture,
+        } = LoggedinUser;
 
         const token = jwt.sign(
           {
             user_id: LoggedinUser.id,
             role: LoggedinUser.role,
             email: LoggedinUser.email,
+            username: username,
           },
-          process.env.JWT_SECRET,
+          jwtSecret,
           {
             expiresIn: "7d",
           }
         );
         req.session.token = token;
-        req.session.sessionId = req.session.id;
-        res.cookie("sessionId", req.session.id);
 
-        // req.session.token = token;
-
-        const sessionID = req.session.id;
         res.status(StatusCodes.OK).json({
           token,
-          user: LoggedinUser,
-          session_id: sessionID,
+          data: { firstName, lastName, username, email, profilePicture },
           message: "Login Success!",
           statusCode: StatusCodes.OK,
           status: ReasonPhrases.OK,
@@ -327,63 +333,68 @@ const singout = async (req, res) => {
 
 const varifySession = async (req, res) => {
   try {
-    const token = req?.headers?.authorization;
-    const sessionId = req?.headers?.session_id;
-    if (!token) {
+    const token = req.headers.authorization;
+
+    if (!token || !token.startsWith("Bearer ")) {
       res.status(StatusCodes.UNAUTHORIZED).json({
         message: "Token Not Provided",
         statusCode: StatusCodes.UNAUTHORIZED,
         status: ReasonPhrases.UNAUTHORIZED,
       });
     }
-    if (!sessionId) {
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: "Session Not Found",
-        statusCode: StatusCodes.UNAUTHORIZED,
-        status: ReasonPhrases.UNAUTHORIZED,
-      });
-    }
-
-    const decodeduser = jwt.verify(token, process.env.JWT_SECRET);
+    const tokenValue = token.split(" ")[1];
+    const decodeduser = jwt.verify(tokenValue, jwtSecret);
     if (!decodeduser) {
       res.status(StatusCodes.FORBIDDEN).json({
         message: "Authorization Token is Not Valid",
         statusCode: StatusCodes.FORBIDDEN,
         status: ReasonPhrases.FORBIDDEN,
       });
+    } else {
+      await User.findOne(
+        { _id: decodeduser.user_id },
+        "_id role firstName lastName username email profilePicture contactNumber "
+      ).then((data, err) => {
+        if (err) {
+          res.status(StatusCodes.UNAUTHORIZED).json({
+            message: "Not Authorised",
+            statusCode: StatusCodes.UNAUTHORIZED,
+            status: ReasonPhrases.UNAUTHORIZED,
+          });
+        } else {
+          const {
+            _id,
+            firstName,
+            lastName,
+            username,
+            email,
+            role,
+            profilePicture,
+          } = data;
+
+          const token = jwt.sign(
+            {
+              user_id: data.id,
+              role: data.role,
+              email: data.email,
+              username: username,
+            },
+            jwtSecret,
+            {
+              expiresIn: "7d",
+            }
+          );
+
+          res.status(StatusCodes.OK).json({
+            token,
+            data: { firstName, lastName, username, email, profilePicture },
+            message: "Authorized",
+            statusCode: StatusCodes.OK,
+            status: ReasonPhrases.OK,
+          });
+        }
+      });
     }
-
-    sessionStore.get(sessionId, async (error, session) => {
-      if (error) {
-        res.status(StatusCodes.BAD_REQUEST).json({
-          message: error.message,
-          statusCode: StatusCodes.BAD_REQUEST,
-          status: ReasonPhrases.BAD_REQUEST,
-          cause: error,
-        });
-      } else if (!session) {
-        res.status(StatusCodes.UNAUTHORIZED).json({
-          message: "Session Expired",
-          statusCode: StatusCodes.UNAUTHORIZED,
-          status: ReasonPhrases.UNAUTHORIZED,
-        });
-      } else {
-        // Session data is available in the 'session' variable
-        sessionData = session;
-
-        const user = await User.findOne(
-          { _id: decodeduser.user_id },
-          "-__v -hash_password -createdAt -updatedAt"
-        );
-        res.status(StatusCodes.OK).json({
-          message: "Authorized",
-          statusCode: StatusCodes.OK,
-          status: ReasonPhrases.OK,
-          user: user,
-          token: session.token,
-        });
-      }
-    });
 
     // Proceed with the protected route logic
   } catch (error) {
@@ -529,11 +540,10 @@ const accountConfirm = async (req, res) => {
 
 const changedPassword = async (req, res) => {
   try {
-  
     const { password, updated_user_id } = req.body;
 
     const user = await User.findOne({
-      "_id": updated_user_id
+      _id: updated_user_id,
     });
 
     if (!user) {

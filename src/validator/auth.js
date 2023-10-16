@@ -18,8 +18,9 @@ const validateSignIpRequest = [
   check("password")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long")
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
-    .withMessage("Password must include at least one uppercase letter, one lowercase letter, one digit, and one special character"),
+
+    // .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
+    // .withMessage("Password must include at least one uppercase letter, one lowercase letter, one digit, and one special character"),
   // check("password")
   //   .isLength({ min: 6 })
   //   .withMessage("Password must be at least 6 character long"),

@@ -1,4 +1,8 @@
 const jwt = require("jsonwebtoken");
+const axios = require("axios"); // You may need to install axios
+
+
+
 const {  jwtSecret } = require("../config/setting");
 function decodeToken(token) {
   return new Promise((resolve, reject) => {
@@ -46,4 +50,21 @@ const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
   };
 };
 
-module.exports = { decodeToken,FilterOptions };
+
+async function getLocationInfo(ip) {
+  try {
+    const response = await axios.get(`http://ip-api.com/json/${ip}`);
+    return {
+      ip: response.data.query,
+      city: response.data.city,
+      region: response.data.regionName,
+      country: response.data.country,
+      zip: response.data.zip,
+    };
+  } catch (error) {
+    console.error("Error getting location info:", error);
+    return {};
+  }
+}
+
+module.exports = { decodeToken,FilterOptions,getLocationInfo };
