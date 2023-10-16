@@ -4,10 +4,12 @@ const connectDB = require("./src/db/dbConnact");
 const { dbUrl, serverPort } = require("./src/config/setting");
 const app = express();
 var cors = require("cors");
+const logMiddleware = require("./src/middleware/logger");
 const session = require("express-session");
 const sessionStore = require("./src/db/sessionConnact");
 const userRouter = require('./src/routes/user/user')
 const authRoute = require('./src/routes/auth/auth')
+
 app.use(
   session({
     store: sessionStore,
@@ -30,6 +32,7 @@ app.get("/api", (req, res) => {
   res.send("API is working!");
 });
 
+app.use(logMiddleware);
 
 app.use("/api", userRouter);
 app.use("/api", authRoute);
