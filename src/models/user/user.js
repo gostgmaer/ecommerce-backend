@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    password: {
+    hash_password: {
       type: String,
       required: true,
     },
@@ -58,28 +58,14 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.methods.generateAuthToken = async function () {
-  const user = this;
-  const token = jwt.sign({ _id: user._id.toString() }, "your-secret-key");
-  user.tokens = user.tokens.concat({ token });
-  await user.save();
-  return token;
-};
-
-// Find a user by credentials (username and password)
-userSchema.statics.findByCredentials = async (username, password) => {
-  const user = await User.findOne({ username });
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  const isPasswordMatch = await bcrypt.compare(password, user.password);
-  if (!isPasswordMatch) {
-    throw new Error("Invalid password");
-  }
-
-  return user;
-};
+userSchema.virtual("fullName").get(function () {
+  return `${this.firstName} ${this.lastName}`;
+});
+userSchema.method({
+  async authenticate(password) {
+    return bcrypt.compare(password, this.hash_password);
+  },
+});
 
 const User = mongoose.model("User", userSchema);
 
