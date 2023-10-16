@@ -1,6 +1,7 @@
 const express = require("express");
 require("dotenv").config();
 const connectDB = require("./src/db/dbConnact");
+const { dbUrl, serverPort } = require("./src/config/setting");
 const app = express();
 var cors = require("cors");
 const session = require("express-session");
@@ -29,13 +30,13 @@ app.get("/api", (req, res) => {
 });
 
 //app route
-// app.use("/api", authRouter);
+// app.use("", authRouter);
 //Port and Connect to DB
 
-const port = process.env.PORT || 5000;
+const port = serverPort || 5000;
 const start = async () => {
   try {
-    await connectDB(process.env.MONGO_URL);
+    connectDB(dbUrl);
     app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });
