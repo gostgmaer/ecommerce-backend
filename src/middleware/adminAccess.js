@@ -1,4 +1,10 @@
 // adminMiddleware.js
+const {
+  ReasonPhrases,
+  StatusCodes,
+  getReasonPhrase,
+  getStatusCode,
+} = require("http-status-codes");
 const jwt = require('jsonwebtoken');
 const User = require('../models/user/user'); // Import your Mongoose user model
 const {  jwtSecret } = require("../config/setting");
@@ -6,7 +12,11 @@ async function adminMiddleware(req, res, next) {
   // Check if the user has a Bearer token in the Authorization header
   const token = req.headers.authorization;
   if (!token || !token.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      message: `No authorization token was found`,
+      statusCode: StatusCodes.UNAUTHORIZED,
+      status: ReasonPhrases.UNAUTHORIZED,
+    });
   }
 
   const tokenValue = token.split(' ')[1];
@@ -19,7 +29,11 @@ async function adminMiddleware(req, res, next) {
     const user = await User.findById(decoded.id);
 
     if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        message: `You Don't have access for this Page`,
+        statusCode: StatusCodes.UNAUTHORIZED,
+        status: ReasonPhrases.UNAUTHORIZED,
+      });
     }
 
     // Check the user's role
@@ -28,11 +42,20 @@ async function adminMiddleware(req, res, next) {
       next();
     } else {
       // User is not an admin, so send a forbidden response
-      res.status(403).json({ message: 'Permission denied' });
+      return res.status(StatusCodes.FORBIDDEN).json({
+        message: `Permission denied`,
+        statusCode: StatusCodes.FORBIDDEN,
+        status: ReasonPhrases.FORBIDDEN,
+      });
+     
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
   }
 }
 
