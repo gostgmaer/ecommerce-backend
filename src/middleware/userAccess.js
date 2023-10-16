@@ -2,7 +2,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('./models/user'); // Import your Mongoose user model
 const {  jwtSecret } = require("../config/setting");
-async function customerMiddleware(req, res, next) {
+async function userMiddleWare(req, res, next) {
   // Check if the user has a Bearer token in the Authorization header
   const token = req.headers.authorization;
   if (!token || !token.startsWith('Bearer ')) {
@@ -30,4 +30,4 @@ async function customerMiddleware(req, res, next) {
   }
 }
 
-module.exports = customerMiddleware;
+module.exports = userMiddleWare;

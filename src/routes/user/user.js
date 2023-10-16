@@ -1,16 +1,23 @@
 const express = require("express");
 var session = require("express-session");
 const userRouter = express.Router();
+const UpdatebyMiddleWare = require("../../middleware/updatedBy");
+const createMiddleWare = require("../../middleware/createMiddleWare");
+const userMiddleWare = require("../../middleware/updatedBy");
+const adminMiddleware = require("../../middleware/createMiddleWare");
+
 
 const {
-  profile,
   updateUser,
   getusers,
-  deleteUser,
+  deleteUser,getSingleUser
 } = require("../../controller/user/user");
 
-userRouter.route("/users/:id").get(profile);
-userRouter.route("/users").get(getusers);
-userRouter.route("/users/:id").patch(updateUser);
-userRouter.route("/users/:id").put(updateUser);
-userRouter.route("/users/:id").delete(deleteUser);
+userRouter.route("/users").get(adminMiddleware, getusers);
+userRouter.route("/users/:id").get(userMiddleWare,getSingleUser);
+userRouter.route("/users/:id").patch(userMiddleWare,UpdatebyMiddleWare,updateUser);
+userRouter.route("/users/:id").put(userMiddleWare,UpdatebyMiddleWare,updateUser);
+userRouter.route("/users/:id").delete(adminMiddleware,deleteUser);
+
+
+module.exports = userRouter;
