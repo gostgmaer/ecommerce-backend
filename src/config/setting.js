@@ -1,5 +1,6 @@
 const dbUrl = process.env.MONGO_URL;
 const jwtSecret = process.env.JWT_SECRET;
+const refressSecret = process.env.JWT_REFRESH_SECRET;
 const serverPort = process.env.PORT;
 const collectionName = process.env.COLLECTION;
 
@@ -39,5 +40,5 @@ module.exports = {
   host,
   loginPath,
   resetPath,
-  confirmPath,
+  confirmPath,refressSecret
 };

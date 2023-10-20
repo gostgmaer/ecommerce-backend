@@ -4,7 +4,7 @@ const {
   getReasonPhrase,
   getStatusCode,
 } = require("http-status-codes");
-const { dbUrl, jwtSecret } = require("../../config/setting");
+const { dbUrl, jwtSecret, refressSecret } = require("../../config/setting");
 const User = require("../../models/user/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -156,34 +156,34 @@ const signIn = async (req, res) => {
           "_id role firstName lastName username email profilePicture contactNumber "
         );
 
-        const {
-          _id,
-          firstName,
-          lastName,
-          username,
-          email,
-          role,
-          profilePicture,
-        } = LoggedinUser;
-
-        const token = jwt.sign(
+        const accessToken = jwt.sign(
           {
             user_id: LoggedinUser.id,
             role: LoggedinUser.role,
             email: LoggedinUser.email,
-            username: username,
+            username: LoggedinUser.username,
           },
           jwtSecret,
+          {
+            expiresIn: "15m",
+          }
+        );
+
+        // Generate a refresh token (for extended sessions)
+        const refreshToken = jwt.sign(
+          { username: LoggedinUser.username, userId: LoggedinUser.id },
+          refressSecret,
+
           {
             expiresIn: "7d",
           }
         );
-        req.session.token = token;
 
         res.status(StatusCodes.OK).json({
-          token,
-          data: { firstName, lastName, username, email, profilePicture },
-          message: "Login Success!",
+          access_token: accessToken,
+          token_type: "Bearer",
+          refresh_token: refreshToken,
+          expires_in: 900000, // 15 minutes in seconds
           statusCode: StatusCodes.OK,
           status: ReasonPhrases.OK,
         });
@@ -208,6 +208,35 @@ const signIn = async (req, res) => {
       status: ReasonPhrases.INTERNAL_SERVER_ERROR,
     });
   }
+};
+
+const refreshToken = async (req, res) => {
+  try {
+    const { refresh_token, session_id } = req.body;
+
+    if (
+      !tokens[session_id] ||
+      tokens[session_id].refreshToken !== refresh_token
+    ) {
+      return res.status(401).send("Invalid refresh token");
+    }
+
+    const accessToken = jwt.sign(
+      { username: tokens[session_id].accessToken.username, userId: session_id },
+      secretKey,
+      {
+        expiresIn: "15m",
+      }
+    );
+
+    tokens[session_id].accessToken = accessToken;
+
+    res.json({
+      access_token: accessToken,
+      expires_in: "15m",
+      token_type: "Bearer",
+    });
+  } catch (error) {}
 };
 
 const resetPassword = async (req, res) => {
@@ -341,59 +370,49 @@ const varifySession = async (req, res) => {
         statusCode: StatusCodes.UNAUTHORIZED,
         status: ReasonPhrases.UNAUTHORIZED,
       });
-    }
-    const tokenValue = token.split(" ")[1];
-    const decodeduser = jwt.verify(tokenValue, jwtSecret);
-    if (!decodeduser) {
-      res.status(StatusCodes.FORBIDDEN).json({
-        message: "Authorization Token is Not Valid",
-        statusCode: StatusCodes.FORBIDDEN,
-        status: ReasonPhrases.FORBIDDEN,
-      });
     } else {
-      await User.findOne(
-        { _id: decodeduser.user_id },
-        "_id role firstName lastName username email profilePicture contactNumber "
-      ).then((data, err) => {
-        if (err) {
-          res.status(StatusCodes.UNAUTHORIZED).json({
-            message: "Not Authorised",
-            statusCode: StatusCodes.UNAUTHORIZED,
-            status: ReasonPhrases.UNAUTHORIZED,
-          });
-        } else {
-          const {
-            _id,
-            firstName,
-            lastName,
-            username,
-            email,
-            role,
-            profilePicture,
-          } = data;
+      const tokenValue = token.split(" ")[1];
+      const decodeduser = jwt.verify(tokenValue, jwtSecret);
+      if (!decodeduser) {
+        res.status(StatusCodes.FORBIDDEN).json({
+          message: "Authorization Token is Not Valid",
+          statusCode: StatusCodes.FORBIDDEN,
+          status: ReasonPhrases.FORBIDDEN,
+        });
+      } else {
+        await User.findOne(
+          { _id: decodeduser.user_id },
+          "_id role firstName lastName username email profilePicture contactNumber "
+        ).then((data, err) => {
+          if (err) {
+            res.status(StatusCodes.UNAUTHORIZED).json({
+              message: "Not Authorised",
+              statusCode: StatusCodes.UNAUTHORIZED,
+              status: ReasonPhrases.UNAUTHORIZED,
+            });
+          } else {
+            const access_token = jwt.sign(
+              {
+                user_id: data.id,
+                role: data.role,
+                email: data.email,
+                username: data.username,
+              },
+              jwtSecret,
+              {
+                expiresIn: "15m",
+              }
+            );
 
-          const token = jwt.sign(
-            {
-              user_id: data.id,
-              role: data.role,
-              email: data.email,
-              username: username,
-            },
-            jwtSecret,
-            {
-              expiresIn: "7d",
-            }
-          );
-
-          res.status(StatusCodes.OK).json({
-            token,
-            data: { firstName, lastName, username, email, profilePicture },
-            message: "Authorized",
-            statusCode: StatusCodes.OK,
-            status: ReasonPhrases.OK,
-          });
-        }
-      });
+            res.status(StatusCodes.OK).json({
+              access_token,
+              message: "Authorized",
+              statusCode: StatusCodes.OK,
+              status: ReasonPhrases.OK,
+            });
+          }
+        });
+      }
     }
 
     // Proceed with the protected route logic
@@ -615,6 +634,82 @@ const getProfile = async (req, res) => {
   }
 };
 
+const getRefreshToken = async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+
+    if (!token || !token.startsWith("Bearer ")) {
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        message: "Token Not Provided",
+        statusCode: StatusCodes.UNAUTHORIZED,
+        status: ReasonPhrases.UNAUTHORIZED,
+      });
+    } else {
+      const tokenValue = token.split(" ")[1];
+      const decodeduser = jwt.verify(tokenValue, jwtSecret);
+      if (!decodeduser) {
+        res.status(StatusCodes.FORBIDDEN).json({
+          message: "Authorization Token is Not Valid",
+          statusCode: StatusCodes.FORBIDDEN,
+          status: ReasonPhrases.FORBIDDEN,
+        });
+      } else {
+        await User.findOne(
+          { _id: decodeduser.user_id },
+          "_id role firstName lastName username email profilePicture contactNumber "
+        ).then((data, err) => {
+          if (err) {
+            res.status(StatusCodes.UNAUTHORIZED).json({
+              message: "Not Authorised",
+              statusCode: StatusCodes.UNAUTHORIZED,
+              status: ReasonPhrases.UNAUTHORIZED,
+            });
+          } else {
+            const {
+              _id,
+              firstName,
+              lastName,
+              username,
+              email,
+              role,
+              profilePicture,
+            } = data;
+
+            const token = jwt.sign(
+              {
+                user_id: data.id,
+                role: data.role,
+                email: data.email,
+                username: username,
+              },
+              jwtSecret,
+              {
+                expiresIn: "7d",
+              }
+            );
+
+            res.status(StatusCodes.OK).json({
+              token,
+              data: { firstName, lastName, username, email, profilePicture },
+              message: "Authorized",
+              statusCode: StatusCodes.OK,
+              status: ReasonPhrases.OK,
+            });
+          }
+        });
+      }
+    }
+
+    // Proceed with the protected route logic
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
 module.exports = {
   signUp,
   signIn,
@@ -625,4 +720,5 @@ module.exports = {
   forgetPassword,
   accountConfirm,
   getProfile,
+  getRefreshToken,
 };
