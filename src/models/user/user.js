@@ -34,6 +34,9 @@ const userSchema = new mongoose.Schema(
     profilePicture: String,
     resetToken: String,
     resetTokenExpiration: Date,
+    session: [{
+      
+    }],
     created_by: String,
     updated_by: String,
     created_user_id: String,

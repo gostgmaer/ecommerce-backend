@@ -31,7 +31,7 @@ authRoute.route("/user/auth/register").post(validateSignUpRequest, isRequestVali
 authRoute.route("/user/auth/confirm-account/:token").post(accountConfirm);
 authRoute.route("/user/auth/login").post(validateSignIpRequest, isRequestValidated,signIn);
 authRoute.route("/user/auth/verify/session").post(varifySession);
-authRoute.route("/user/auth/session/refresh").post(getRefreshToken);
+authRoute.route("/user/auth/session/refresh/token").post(getRefreshToken);
 authRoute.route("/user/auth/reset-password/:token").post(validateResetpassword,isRequestValidated,resetPassword);
 authRoute.route("/user/auth/forget-password").post(validateForgetPassword,isRequestValidated,forgetPassword);
 authRoute.route("/user/auth/change-password").post(userMiddleWare,UpdatebyMiddleWare,validateChangePassword,isRequestValidated,changedPassword);
