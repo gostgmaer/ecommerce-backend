@@ -27,14 +27,14 @@ const {
 } = require("../../validator/auth");
 
 
-authRoute.route("/auth/register").post(validateSignUpRequest, isRequestValidated,signUp);
-authRoute.route("/auth/confirm-account/:token").post(accountConfirm);
-authRoute.route("/auth/login").post(validateSignIpRequest, isRequestValidated,signIn);
-authRoute.route("/auth/verify/session").post(varifySession);
-authRoute.route("/auth/reset-password/:token").post(validateResetpassword,isRequestValidated,resetPassword);
-authRoute.route("/auth/forget-password").post(validateForgetPassword,isRequestValidated,forgetPassword);
-authRoute.route("/auth/change-password").post(userMiddleWare,UpdatebyMiddleWare,validateChangePassword,isRequestValidated,changedPassword);
-authRoute.route("/auth/profile").get(userMiddleWare,getProfile);
-authRoute.route("/auth/logout").post(userMiddleWare,singout);
+authRoute.route("/user/auth/register").post(validateSignUpRequest, isRequestValidated,signUp);
+authRoute.route("/user/auth/confirm-account/:token").post(accountConfirm);
+authRoute.route("/user/auth/login").post(validateSignIpRequest, isRequestValidated,signIn);
+authRoute.route("/user/auth/verify/session").post(varifySession);
+authRoute.route("/user/auth/reset-password/:token").post(validateResetpassword,isRequestValidated,resetPassword);
+authRoute.route("/user/auth/forget-password").post(validateForgetPassword,isRequestValidated,forgetPassword);
+authRoute.route("/user/auth/change-password").post(userMiddleWare,UpdatebyMiddleWare,validateChangePassword,isRequestValidated,changedPassword);
+authRoute.route("/user/auth/profile").get(userMiddleWare,getProfile);
+authRoute.route("/user/auth/logout").post(userMiddleWare,singout);
 
 module.exports = authRoute;
