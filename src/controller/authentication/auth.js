@@ -11,16 +11,10 @@ const bcrypt = require("bcrypt");
 
 const redis = require("redis");
 const sessionStore = require("../../db/sessionConnact");
-const redisClient = redis.createClient();
 const createMailOptions = require("../../email/mailOptions");
 const transporter = require("../../email/mailTransporter");
 // const Mailgenerator = require('../mail/mailgenerator');
 
-// Save the token on the server
-function saveTokenToServer(userId, token) {
-  // Store the token in Redis with an expiration time
-  redisClient.setex(userId, 3600, token); // Expires in 1 hour (in seconds)
-}
 
 const signUp = async (req, res) => {
   const { firstName, lastName, email, password, username } = req.body;
@@ -155,7 +149,14 @@ const signIn = async (req, res) => {
           { email: req.body.email },
           "_id role firstName lastName username email profilePicture contactNumber "
         );
-
+        const {
+          firstName,
+          lastName,
+          username,
+          email,
+          profilePicture,
+          contactNumber,
+        } = LoggedinUser;
         const accessToken = jwt.sign(
           {
             user_id: LoggedinUser.id,
@@ -170,6 +171,7 @@ const signIn = async (req, res) => {
         );
 
         // Generate a refresh token (for extended sessions)
+
         const refreshToken = jwt.sign(
           { username: LoggedinUser.username, userId: LoggedinUser.id },
           refressSecret,
@@ -179,9 +181,26 @@ const signIn = async (req, res) => {
           }
         );
 
+        const id_token = jwt.sign(
+          {
+            firstName,
+            lastName,
+            username,
+            email,
+            profilePicture,
+            contactNumber,
+          },
+          refressSecret,
+
+          {
+            expiresIn: "30d",
+          }
+        );
+
         res.status(StatusCodes.OK).json({
           access_token: accessToken,
           token_type: "Bearer",
+          id_token,
           refresh_token: refreshToken,
           expires_in: 900000, // 15 minutes in seconds
           statusCode: StatusCodes.OK,
@@ -391,6 +410,14 @@ const varifySession = async (req, res) => {
               status: ReasonPhrases.UNAUTHORIZED,
             });
           } else {
+            const {
+              firstName,
+              lastName,
+              username,
+              email,
+              profilePicture,
+              contactNumber,
+            } = data;
             const access_token = jwt.sign(
               {
                 user_id: data.id,
@@ -403,9 +430,25 @@ const varifySession = async (req, res) => {
                 expiresIn: "15m",
               }
             );
+            const id_token = jwt.sign(
+              {
+                firstName,
+                lastName,
+                username,
+                email,
+                profilePicture,
+                contactNumber,
+              },
+              refressSecret,
+    
+              {
+                expiresIn: "30d",
+              }
+            );
 
             res.status(StatusCodes.OK).json({
               access_token,
+              id_token,
               message: "Authorized",
               statusCode: StatusCodes.OK,
               status: ReasonPhrases.OK,
@@ -647,6 +690,7 @@ const getRefreshToken = async (req, res) => {
     } else {
       const tokenValue = token.split(" ")[1];
       const decodeduser = jwt.verify(tokenValue, jwtSecret);
+
       if (!decodeduser) {
         res.status(StatusCodes.FORBIDDEN).json({
           message: "Authorization Token is Not Valid",
@@ -657,50 +701,50 @@ const getRefreshToken = async (req, res) => {
         await User.findOne(
           { _id: decodeduser.user_id },
           "_id role firstName lastName username email profilePicture contactNumber "
-        ).then((data, err) => {
+        ).then(async (data, err) => {
           if (err) {
             res.status(StatusCodes.UNAUTHORIZED).json({
-              message: "Not Authorised",
+              message: "Not Authorized",
               statusCode: StatusCodes.UNAUTHORIZED,
               status: ReasonPhrases.UNAUTHORIZED,
             });
           } else {
-            const {
-              _id,
-              firstName,
-              lastName,
-              username,
-              email,
-              role,
-              profilePicture,
-            } = data;
-
-            const token = jwt.sign(
-              {
-                user_id: data.id,
-                role: data.role,
-                email: data.email,
-                username: username,
-              },
-              jwtSecret,
-              {
-                expiresIn: "7d",
+            const decoderefresh = jwt.verify(req.body.token, refressSecret);
+            await User.findOne(
+              { _id: decoderefresh.userId },
+              "_id role firstName lastName username email profilePicture contactNumber "
+            ).then((newData,err) => {
+              if (err) {
+                res.status(StatusCodes.UNAUTHORIZED).json({
+                  message: "Not Authorized",
+                  statusCode: StatusCodes.UNAUTHORIZED,
+                  status: ReasonPhrases.UNAUTHORIZED,
+                });
+              } else {
+                const token = jwt.sign(
+                  {
+                    user_id: newData.id,
+                    role: newData.role,
+                    email: newData.email,
+                    username: newData.username,
+                  },
+                  jwtSecret,
+                  {
+                    expiresIn: "15m",
+                  }
+                );
+                res.status(StatusCodes.OK).json({
+                  token,
+                  message: "Authorized",
+                  statusCode: StatusCodes.OK,
+                  status: ReasonPhrases.OK,
+                });
               }
-            );
-
-            res.status(StatusCodes.OK).json({
-              token,
-              data: { firstName, lastName, username, email, profilePicture },
-              message: "Authorized",
-              statusCode: StatusCodes.OK,
-              status: ReasonPhrases.OK,
             });
           }
         });
       }
     }
-
-    // Proceed with the protected route logic
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: error.message,
