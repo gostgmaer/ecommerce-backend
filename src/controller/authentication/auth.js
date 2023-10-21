@@ -137,54 +137,69 @@ const signIn = async (req, res) => {
           const token = jwt.sign(
             {
               email: user.email,
+              id: user.id,
             },
             process.env.JWT_SECRET,
             {
               expiresIn: "1h",
             }
           );
-          let mailBody = {
-            body: {
-              name: user.fullName,
-              intro: `Welcome to ${process.env.APPLICATION_NAME}! We are excited to have you on board.`,
-              additionalInfo: `Thank you for choosing ${process.env.APPLICATION_NAME}. You now have access to our premium features, including unlimited storage and priority customer support.`,
-              action: {
-                instructions: `To get started with ${process.env.APPLICATION_NAME}, please click here:`,
-                button: {
-                  color: "#22BC66", // Optional action button color
-                  text: "Confirm Your Account",
-                  link: `${process.env.LOGINHOST}/${process.env.CLIENTCONFIRMURL}?token=${token}`,
-                },
-              },
-              outro:
-                "Need help, or have questions? Just reply to this email, we'd love to help.",
-            },
-          };
 
-          transporter
-            .sendMail(
-              createMailOptions(
-                "salted",
-                user.email,
-                `Welcome to ${process.env.APPLICATION_NAME} - Confirm Your Email`,
-                mailBody
-              )
-            )
-            .then(() => {
-              res.status(StatusCodes.FORBIDDEN).json({
-                message:
-                  "User is Not Activate! Please check email to activate your account",
-                statusCode: StatusCodes.FORBIDDEN,
-                status: ReasonPhrases.FORBIDDEN,
-              });
-            })
-            .catch((error) => {
+          User.updateOne(
+            { _id: user.id },
+            { $set: { confirmToken: token } },
+            { upsert: true }
+          ).then((data, err) => {
+            if (err)
               res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                message: error.message,
-                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+                message: err.message,
                 status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
               });
-            });
+            else {
+              let mailBody = {
+                body: {
+                  name: user.fullName,
+                  intro: `Welcome to ${process.env.APPLICATION_NAME}! We are excited to have you on board.`,
+                  additionalInfo: `Thank you for choosing ${process.env.APPLICATION_NAME}. You now have access to our premium features, including unlimited storage and priority customer support.`,
+                  action: {
+                    instructions: `To get started with ${process.env.APPLICATION_NAME}, please click here:`,
+                    button: {
+                      color: "#22BC66", // Optional action button color
+                      text: "Confirm Your Account",
+                      link: `${process.env.LOGINHOST}/${process.env.CLIENTCONFIRMURL}?token=${token}`,
+                    },
+                  },
+                  outro:
+                    "Need help, or have questions? Just reply to this email, we'd love to help.",
+                },
+              };
+              transporter
+                .sendMail(
+                  createMailOptions(
+                    "salted",
+                    user.email,
+                    `Welcome to ${process.env.APPLICATION_NAME} - Confirm Your Email`,
+                    mailBody
+                  )
+                )
+                .then(() => {
+                  res.status(StatusCodes.FORBIDDEN).json({
+                    message:
+                      "User is Not Activate! Please check email to activate your account",
+                    statusCode: StatusCodes.FORBIDDEN,
+                    status: ReasonPhrases.FORBIDDEN,
+                  });
+                })
+                .catch((error) => {
+                  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: error.message,
+                    statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+                    status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+                  });
+                });
+            }
+          });
         } else {
           const isPasswordValid = await bcrypt.compare(
             req.body.password,
@@ -461,7 +476,7 @@ const varifySession = async (req, res) => {
             );
 
             res.status(StatusCodes.OK).json({
-              access_token,
+              accessToken,
               id_token,
               message: "Authorized",
               statusCode: StatusCodes.OK,
@@ -582,28 +597,40 @@ const accountConfirm = async (req, res) => {
   try {
     const { token } = req.params;
 
-    const user = await User.findOne(
-      {
-        confirmToken: token,
-      },
-      "email username _id firstName lastName"
-    );
-
-    if (!user) {
+    const decodeduser = jwt.verify(token, jwtSecret);
+    if (!decodeduser) {
       res.status(StatusCodes.BAD_REQUEST).json({
         message: "Invalid or expired token",
         statusCode: StatusCodes.BAD_REQUEST,
         status: ReasonPhrases.BAD_REQUEST,
       });
     } else {
-      user.isEmailconfirm = true;
-      await user.save();
-      res.status(StatusCodes.OK).json({
-        message: "Accoount Confirm successfully",
-        statusCode: StatusCodes.OK,
-        status: ReasonPhrases.OK,
-        result: user,
+      const user = await User.findOne({
+        _id: decodeduser.id,
       });
+      if (!user) {
+        res.status(StatusCodes.BAD_REQUEST).json({
+          message: "Invalid user Token",
+          statusCode: StatusCodes.BAD_REQUEST,
+          status: ReasonPhrases.BAD_REQUEST,
+        });
+      } else if (user.isVerified) {
+        res.status(StatusCodes.OK).json({
+          message: "Accoount is Already Verify",
+          statusCode: StatusCodes.OK,
+          status: ReasonPhrases.OK,
+        });
+      } else {
+        user.isEmailconfirm = true;
+        user.isVerified = true;
+        user.confirmToken = "";
+        await user.save();
+        res.status(StatusCodes.OK).json({
+          message: "Accoount Confirm successfully",
+          statusCode: StatusCodes.OK,
+          status: ReasonPhrases.OK,
+        });
+      }
     }
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
