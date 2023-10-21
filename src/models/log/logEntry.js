@@ -8,6 +8,7 @@ const logEntrySchema = new mongoose.Schema(
     body: Object,
     query: Object,
     params: Object,
+    useragent:String,
     response: Object,
     ip: String, // Add IP field
     location: {
