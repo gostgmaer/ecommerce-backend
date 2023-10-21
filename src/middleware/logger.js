@@ -11,6 +11,7 @@ async function logMiddleware(req, res, next) {
       path: req.originalUrl,
       body: req.body,
       query: req.query,
+      useragent:req.get('User-Agent'),
       params: req.params,
       ip: locationInfo.ip,
       location: {

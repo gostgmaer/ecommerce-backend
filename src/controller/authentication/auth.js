@@ -8,13 +8,10 @@ const { dbUrl, jwtSecret, refressSecret } = require("../../config/setting");
 const User = require("../../models/user/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-
-const redis = require("redis");
 const sessionStore = require("../../db/sessionConnact");
 const createMailOptions = require("../../email/mailOptions");
 const transporter = require("../../email/mailTransporter");
 // const Mailgenerator = require('../mail/mailgenerator');
-
 
 const signUp = async (req, res) => {
   const { firstName, lastName, email, password, username } = req.body;
@@ -38,14 +35,6 @@ const signUp = async (req, res) => {
 
   const user = await User.findOne({ email });
   const userId = await User.findOne({ username });
-
-  // let MailGenerator = new Mailgen({
-  //   theme: "default",
-  //   product: {
-  //     name: "kishor",
-  //     link: "https://google.com",
-  //   },
-  // });
 
   if (user) {
     return res.status(StatusCodes.BAD_REQUEST).json({
@@ -134,91 +123,144 @@ const signIn = async (req, res) => {
         statusCode: StatusCodes.BAD_REQUEST,
         status: ReasonPhrases.BAD_REQUEST,
       });
-    }
+    } else {
+      const user = await User.findOne({ email: req.body.email });
 
-    const user = await User.findOne({ email: req.body.email });
-
-    if (user) {
-      const isPasswordValid = await bcrypt.compare(
-        req.body.password,
-        user.hash_password
-      );
-
-      if (isPasswordValid) {
-        const LoggedinUser = await User.findOne(
-          { email: req.body.email },
-          "_id role firstName lastName username email profilePicture contactNumber "
-        );
-        const {
-          firstName,
-          lastName,
-          username,
-          email,
-          profilePicture,
-          contactNumber,
-        } = LoggedinUser;
-        const accessToken = jwt.sign(
-          {
-            user_id: LoggedinUser.id,
-            role: LoggedinUser.role,
-            email: LoggedinUser.email,
-            username: LoggedinUser.username,
-          },
-          jwtSecret,
-          {
-            expiresIn: "15m",
-          }
-        );
-
-        // Generate a refresh token (for extended sessions)
-
-        const refreshToken = jwt.sign(
-          { username: LoggedinUser.username, userId: LoggedinUser.id },
-          refressSecret,
-
-          {
-            expiresIn: "7d",
-          }
-        );
-
-        const id_token = jwt.sign(
-          {
-            firstName,
-            lastName,
-            username,
-            email,
-            profilePicture,
-            contactNumber,
-          },
-          refressSecret,
-
-          {
-            expiresIn: "30d",
-          }
-        );
-
-        res.status(StatusCodes.OK).json({
-          access_token: accessToken,
-          token_type: "Bearer",
-          id_token,
-          refresh_token: refreshToken,
-          expires_in: 900000, // 15 minutes in seconds
-          statusCode: StatusCodes.OK,
-          status: ReasonPhrases.OK,
+      if (!user) {
+        res.status(StatusCodes.NOT_FOUND).json({
+          message: "Inavalid User Name!",
+          statusCode: StatusCodes.NOT_FOUND,
+          status: ReasonPhrases.NOT_FOUND,
         });
       } else {
-        res.status(StatusCodes.UNAUTHORIZED).json({
-          message: "Password is invalid!",
-          statusCode: StatusCodes.UNAUTHORIZED,
-          status: ReasonPhrases.UNAUTHORIZED,
-        });
+        if (!user.isVerified) {
+          const token = jwt.sign(
+            {
+              email: user.email,
+            },
+            process.env.JWT_SECRET,
+            {
+              expiresIn: "1h",
+            }
+          );
+          let mailBody = {
+            body: {
+              name: user.fullName,
+              intro: `Welcome to ${process.env.APPLICATION_NAME}! We are excited to have you on board.`,
+              additionalInfo: `Thank you for choosing ${process.env.APPLICATION_NAME}. You now have access to our premium features, including unlimited storage and priority customer support.`,
+              action: {
+                instructions: `To get started with ${process.env.APPLICATION_NAME}, please click here:`,
+                button: {
+                  color: "#22BC66", // Optional action button color
+                  text: "Confirm Your Account",
+                  link: `${process.env.LOGINHOST}/${process.env.CLIENTCONFIRMURL}?token=${token}`,
+                },
+              },
+              outro:
+                "Need help, or have questions? Just reply to this email, we'd love to help.",
+            },
+          };
+
+          transporter
+            .sendMail(
+              createMailOptions(
+                "salted",
+                user.email,
+                `Welcome to ${process.env.APPLICATION_NAME} - Confirm Your Email`,
+                mailBody
+              )
+            )
+            .then(() => {
+              res.status(StatusCodes.FORBIDDEN).json({
+                message:
+                  "User is Not Activate! Please check email to activate your account",
+                statusCode: StatusCodes.FORBIDDEN,
+                status: ReasonPhrases.FORBIDDEN,
+              });
+            })
+            .catch((error) => {
+              res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: error.message,
+                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+                status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+              });
+            });
+        } else {
+          const isPasswordValid = await bcrypt.compare(
+            req.body.password,
+            user.hash_password
+          );
+          if (!isPasswordValid) {
+            res.status(StatusCodes.UNAUTHORIZED).json({
+              message: "Password is invalid!",
+              statusCode: StatusCodes.UNAUTHORIZED,
+              status: ReasonPhrases.UNAUTHORIZED,
+            });
+          } else {
+            const {
+              firstName,
+              lastName,
+              username,
+              email,
+              address,
+              isVerified,
+              profilePicture,
+              contactNumber,
+            } = user;
+
+            const accessToken = jwt.sign(
+              {
+                user_id: user.id,
+                role: user.role,
+                email: user.email,
+                username: user.username,
+              },
+              jwtSecret,
+              {
+                expiresIn: "1d",
+              }
+            );
+
+            // Generate a refresh token (for extended sessions)
+
+            const refreshToken = jwt.sign(
+              { username: user.username, userId: user.id },
+              refressSecret,
+              {
+                expiresIn: "7d",
+              }
+            );
+
+            const id_token = jwt.sign(
+              {
+                firstName,
+                lastName,
+                username,
+                email,
+                address,
+                isVerified,
+                profilePicture,
+                contactNumber,
+              },
+              refressSecret,
+
+              {
+                expiresIn: "30d",
+              }
+            );
+
+            res.status(StatusCodes.OK).json({
+              access_token: accessToken,
+              token_type: "Bearer",
+              id_token,
+              refresh_token: refreshToken,
+              expires_in: 900000, // 15 minutes in seconds
+              statusCode: StatusCodes.OK,
+              status: ReasonPhrases.OK,
+            });
+          }
+        }
       }
-    } else {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: "Inavalid User Name!",
-        statusCode: StatusCodes.BAD_REQUEST,
-        status: ReasonPhrases.BAD_REQUEST,
-      });
     }
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -227,35 +269,6 @@ const signIn = async (req, res) => {
       status: ReasonPhrases.INTERNAL_SERVER_ERROR,
     });
   }
-};
-
-const refreshToken = async (req, res) => {
-  try {
-    const { refresh_token, session_id } = req.body;
-
-    if (
-      !tokens[session_id] ||
-      tokens[session_id].refreshToken !== refresh_token
-    ) {
-      return res.status(401).send("Invalid refresh token");
-    }
-
-    const accessToken = jwt.sign(
-      { username: tokens[session_id].accessToken.username, userId: session_id },
-      secretKey,
-      {
-        expiresIn: "15m",
-      }
-    );
-
-    tokens[session_id].accessToken = accessToken;
-
-    res.json({
-      access_token: accessToken,
-      expires_in: "15m",
-      token_type: "Bearer",
-    });
-  } catch (error) {}
 };
 
 const resetPassword = async (req, res) => {
@@ -399,10 +412,7 @@ const varifySession = async (req, res) => {
           status: ReasonPhrases.FORBIDDEN,
         });
       } else {
-        await User.findOne(
-          { _id: decodeduser.user_id },
-          "_id role firstName lastName username email profilePicture contactNumber "
-        ).then((data, err) => {
+        await User.findOne({ _id: decodeduser.user_id }).then((data, err) => {
           if (err) {
             res.status(StatusCodes.UNAUTHORIZED).json({
               message: "Not Authorised",
@@ -415,10 +425,12 @@ const varifySession = async (req, res) => {
               lastName,
               username,
               email,
+              address,
+              isVerified,
               profilePicture,
               contactNumber,
             } = data;
-            const access_token = jwt.sign(
+            const accessToken = jwt.sign(
               {
                 user_id: data.id,
                 role: data.role,
@@ -427,7 +439,7 @@ const varifySession = async (req, res) => {
               },
               jwtSecret,
               {
-                expiresIn: "15m",
+                expiresIn: "1d",
               }
             );
             const id_token = jwt.sign(
@@ -436,11 +448,13 @@ const varifySession = async (req, res) => {
                 lastName,
                 username,
                 email,
+                address,
+                isVerified,
                 profilePicture,
                 contactNumber,
               },
               refressSecret,
-    
+
               {
                 expiresIn: "30d",
               }
@@ -710,37 +724,45 @@ const getRefreshToken = async (req, res) => {
             });
           } else {
             const decoderefresh = jwt.verify(req.body.token, refressSecret);
-            await User.findOne(
-              { _id: decoderefresh.userId },
-              "_id role firstName lastName username email profilePicture contactNumber "
-            ).then((newData,err) => {
-              if (err) {
-                res.status(StatusCodes.UNAUTHORIZED).json({
-                  message: "Not Authorized",
-                  statusCode: StatusCodes.UNAUTHORIZED,
-                  status: ReasonPhrases.UNAUTHORIZED,
-                });
-              } else {
-                const token = jwt.sign(
-                  {
-                    user_id: newData.id,
-                    role: newData.role,
-                    email: newData.email,
-                    username: newData.username,
-                  },
-                  jwtSecret,
-                  {
-                    expiresIn: "15m",
-                  }
-                );
-                res.status(StatusCodes.OK).json({
-                  token,
-                  message: "Authorized",
-                  statusCode: StatusCodes.OK,
-                  status: ReasonPhrases.OK,
-                });
-              }
-            });
+            if (!decoderefresh) {
+              res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Refresh Token is not valid",
+                statusCode: StatusCodes.UNAUTHORIZED,
+                status: ReasonPhrases.UNAUTHORIZED,
+              });
+            } else {
+              await User.findOne(
+                { _id: decoderefresh.userId },
+                "_id role firstName lastName username email profilePicture contactNumber "
+              ).then((newData, err) => {
+                if (err) {
+                  res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: "Not Authorized",
+                    statusCode: StatusCodes.UNAUTHORIZED,
+                    status: ReasonPhrases.UNAUTHORIZED,
+                  });
+                } else {
+                  const accessToken = jwt.sign(
+                    {
+                      user_id: newData.id,
+                      role: newData.role,
+                      email: newData.email,
+                      username: newData.username,
+                    },
+                    jwtSecret,
+                    {
+                      expiresIn: "1d",
+                    }
+                  );
+                  res.status(StatusCodes.OK).json({
+                    accessToken,
+                    message: "Authorized",
+                    statusCode: StatusCodes.OK,
+                    status: ReasonPhrases.OK,
+                  });
+                }
+              });
+            }
           }
         });
       }
