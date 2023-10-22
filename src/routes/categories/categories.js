@@ -3,15 +3,19 @@ var session = require("express-session");
 const categoryRoute = express.Router();
 
 const {
-  profile,
-  updateUser,
-  getusers,
-  deleteUser,
+  createCategory,
+  getCategories,
+  getSingleCategorys,
+  updateCategory,
+  deleteCategorys,
+  getCategoryReviews,
 } = require("../../controller/categories/categories");
 
-categoryRoute.route("/categories").post();
-categoryRoute.route("/categories").get();
-categoryRoute.route("/categories/:id").get();
-categoryRoute.route("/categories/:id").put();
-categoryRoute.route("/categories/:id").patch();
-categoryRoute.route("/categories/:id").delete();
+categoryRoute.route("/categories").post(createCategory);
+categoryRoute.route("/categories").get(getCategories);
+categoryRoute.route("/categories/:id").get(getSingleCategorys);
+categoryRoute.route("/categories/:id").put(updateCategory);
+categoryRoute.route("/categories/:id").patch(updateCategory);
+categoryRoute.route("/categories/:id").delete(deleteCategorys);
+
+module.exports = categoryRoute;
