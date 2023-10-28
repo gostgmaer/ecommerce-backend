@@ -1,6 +1,6 @@
 // logMiddleware.js
 const LogEntry = require("../models/log/logEntry");
-const {getLocationInfo} = require("../utils/helper");
+const { getLocationInfo } = require("../utils/helper");
 async function logMiddleware(req, res, next) {
   try {
     const ip = req.ip; // Get the request's IP address
@@ -11,7 +11,7 @@ async function logMiddleware(req, res, next) {
       path: req.originalUrl,
       body: req.body,
       query: req.query,
-      useragent:req.get('User-Agent'),
+      useragent: req.get("User-Agent"),
       params: req.params,
       ip: locationInfo.ip,
       location: {

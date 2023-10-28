@@ -7,10 +7,9 @@ var cors = require("cors");
 const logMiddleware = require("./src/middleware/logger");
 const session = require("express-session");
 const sessionStore = require("./src/db/sessionConnact");
-const userRouter = require('./src/routes/user/user')
-const authRoute = require('./src/routes/auth/auth')
-const categoryRoute = require('./src/routes/categories/categories')
-
+const userRouter = require("./src/routes/user/user");
+const authRoute = require("./src/routes/auth/auth");
+const categoryRoute = require("./src/routes/categories/categories");
 
 app.use(
   session({
@@ -35,10 +34,10 @@ app.get("/api", (req, res) => {
 });
 
 app.use(logMiddleware);
-
 app.use("/api", userRouter);
 app.use("/api", authRoute);
 app.use("/api", categoryRoute);
+
 
 const port = serverPort || 5000;
 const start = async () => {

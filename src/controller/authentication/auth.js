@@ -115,7 +115,7 @@ const signUp = async (req, res) => {
   }
 };
 
-const signIn = async (req, res) => {
+const signIn = async (req, res,next) => {
   try {
     if (!req.body.email || !req.body.password) {
       res.status(StatusCodes.BAD_REQUEST).json({
