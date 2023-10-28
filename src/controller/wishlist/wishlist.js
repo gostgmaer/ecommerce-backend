@@ -5,17 +5,17 @@ const {
     getStatusCode,
   } = require("http-status-codes");
   const { FilterOptions } = require("../../utils/helper");
-  const Cart = require("../../models/cart/cart");
+  const Wishlist = require("../../models/wishlist/wishlist");
   
-  const createCart = async (req, res) => {
+  const createWishlist = async (req, res) => {
     try {
-      const Cart = new Cart(req.body);
-      const savedCart = await Cart.save();
+      const Wishlist = new Wishlist(req.body);
+      const savedWishlist = await Wishlist.save();
       res.status(201).json({
         statusCode: 201,
         status: "Created",
-        results: {id:savedCart.id},
-        message: "Cart created",
+        results: {id:savedWishlist.id},
+        message: "Wishlist created",
       });
     } catch (error) {
       res.status(400).json({
@@ -27,14 +27,14 @@ const {
     }
   };
   
-  const getCarts = async (req, res) => {
+  const getWishlists = async (req, res) => {
     try {
-      const Carts = await Cart.find();
+      const Wishlists = await Wishlist.find();
       res.status(200).json({
         statusCode: 200,
         status: "OK",
-        results: Carts,
-        message: "Carts retrieved successfully",
+        results: Wishlists,
+        message: "Wishlists retrieved successfully",
       });
     } catch (error) {
       res.status(500).json({
@@ -46,22 +46,22 @@ const {
     }
   };
   
-  const getSingleCarts = async (req, res) => {
+  const getSingleWishlists = async (req, res) => {
     try {
-      const Cart = await Cart.findById(req.params.id);
-      if (!Cart) {
+      const Wishlist = await Wishlist.findById(req.params.id);
+      if (!Wishlist) {
         return res.status(404).json({
           statusCode: 404,
           status: "Not Found",
           results: null,
-          message: "Cart not found",
+          message: "Wishlist not found",
         });
       }
       res.status(200).json({
         statusCode: 200,
         status: "OK",
-        results: Cart,
-        message: "Cart retrieved successfully",
+        results: Wishlist,
+        message: "Wishlist retrieved successfully",
       });
     } catch (error) {
       res.status(500).json({
@@ -72,24 +72,24 @@ const {
       });
     }
   };
-  const updateCart = async (req, res) => {
+  const updateWishlist = async (req, res) => {
     try {
-      const Cart = await Cart.findByIdAndUpdate(req.params.id, req.body, {
+      const Wishlist = await Wishlist.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
       });
-      if (!Cart) {
+      if (!Wishlist) {
         return res.status(404).json({
           statusCode: 404,
           status: "Not Found",
           results: null,
-          message: "Cart not found",
+          message: "Wishlist not found",
         });
       }
       res.status(200).json({
         statusCode: 200,
         status: "OK",
-        results: Cart,
-        message: "Cart updated successfully",
+        results: Wishlist,
+        message: "Wishlist updated successfully",
       });
     } catch (error) {
       res.status(400).json({
@@ -100,22 +100,22 @@ const {
       });
     }
   };
-  const deleteCarts = async (req, res) => {
+  const deleteWishlists = async (req, res) => {
     try {
-      const Cart = await Cart.findByIdAndDelete(req.params.id);
-      if (!Cart) {
+      const Wishlist = await Wishlist.findByIdAndDelete(req.params.id);
+      if (!Wishlist) {
         return res.status(404).json({
           statusCode: 404,
           status: "Not Found",
           results: null,
-          message: "Cart not found",
+          message: "Wishlist not found",
         });
       }
       res.status(200).json({
         statusCode: 200,
         status: "OK",
         results: null,
-        message: "Cart deleted successfully",
+        message: "Wishlist deleted successfully",
       });
     } catch (error) {
       res.status(500).json({
@@ -126,40 +126,13 @@ const {
       });
     }
   };
-  const updateSingleCart = async (req, res) => {
-    try {
-      const Cart = await Cart.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-      });
-      if (!Cart) {
-        return res.status(404).json({
-          statusCode: 404,
-          status: "Not Found",
-          results: null,
-          message: "Cart not found",
-        });
-      }
-      res.status(200).json({
-        statusCode: 200,
-        status: "OK",
-        results: Cart,
-        message: "Cart updated successfully",
-      });
-    } catch (error) {
-      res.status(400).json({
-        statusCode: 400,
-        status: "Bad Request",
-        results: null,
-        message: error.message,
-      });
-    }
-  };
+  
   
   module.exports = {
-    createCart,
-    getCarts,
-    getSingleCarts,
-    updateCart,
-    deleteCarts,updateSingleCart
+    createWishlist,
+    getWishlists,
+    getSingleWishlists,
+    updateWishlist,
+    deleteWishlists,
   };
   
