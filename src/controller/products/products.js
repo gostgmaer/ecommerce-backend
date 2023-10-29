@@ -28,11 +28,16 @@ const createProduct = async (req, res) => {
 };
 
 const getProducts = async (req, res) => {
-  const { limit, page, filter, sort } = req.params;
+  const { limit, page, filter, sort } = req.query;
 
   try {
-    const products = await Product.find();
-    const length = await Product.countDocuments();
+    const filterquery = FilterOptions(sort, page, limit, filter);
+    const products = await Product.find(
+      filterquery.query,
+      "-__v",
+      filterquery.options
+    );
+    const length = await Product.countDocuments(filterquery.query);
 
     if (products) {
       const currentProd = products.map((product) => {
