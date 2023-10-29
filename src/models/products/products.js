@@ -1,58 +1,139 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const productSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  description: String,
-  price: {
-    type: Number,
-    required: true,
-  },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category', // Reference to the Category model
-  },
-  stock: {
-    type: Number,
-    default: 0,
-  },
-  imageUrls: [String],
-  brand: String, // Brand of the product
-  ratings: [
-    {
-      user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Reference to the User model
-        required: true,
-      },
-      rating: {
-        type: Number,
-        min: 1,
-        max: 5,
-        required: true,
-      },
+const productSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
     },
-  ],
-  totalRating: {
-    type: Number,
-    default: 0,
+    sku: {
+      type: String,
+      required: true,
+    },
+    productType: {
+      type: String,
+      required: true,
+    },
+    categories: {
+      type: [String],
+      required: true,
+    },
+    descriptions: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+    },
+    images: {
+      type: [String],
+    },
+    price: {
+      type: Number,
+      required: true,
+    },
+    costPrice: {
+      type: Number,
+    },
+    retailPrice: {
+      type: Number,
+    },
+    salePrice: {
+      type: Number,
+    },
+    trackInventory: {
+      type: String,
+      enum: ["yes", "no"],
+      default: "yes",
+    },
+    currentStockLevel: {
+      type: Number,
+      required: true,
+    },
+    lowStockLevel: {
+      type: Number,
+      required: true,
+    },
+    gtin: {
+      type: String,
+    },
+    manufacturerPartNumber: {
+      type: String,
+    },
+    brandName: {
+      type: String,
+    },
+    productUPCEAN: {
+      type: String,
+    },
+    tags: {
+      type: [String],
+    },
+    ratings: {
+      type: [
+        {
+          rating: Number,
+          user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+          },
+        },
+      ],
+    },
+    reviews: {
+      type: [
+        {
+          text: String,
+          user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+          },
+        },
+      ],
+    },
+    features: {
+      type: [String],
+    },
+    specifications: {
+      type: Map,
+      of: String,
+    },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  // Other product-related fields if needed, e.g., dimensions, weight, etc.
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-productSchema.pre('save', async function (next) {
-  try {
-    // Calculate the totalRating based on the average of all ratings
-    const totalRatings = this.ratings.reduce((acc, rating) => acc + rating.rating, 0);
-    this.totalRating = this.ratings.length > 0 ? totalRatings / this.ratings.length : 0;
-    next();
-  } catch (error) {
-    next(error);
+productSchema.virtual("ratingStatistics").get(function () {
+  if (this.ratings && this.ratings.length > 0) {
+    const totalRating = this.ratings.reduce(
+      (total, rating) => total + rating.rating,
+      0
+    );
+    const averageRating = totalRating / this.ratings.length;
+    return {
+      totalRating,
+      averageRating,
+    };
+  } else {
+    return {
+      totalRating: 0,
+      averageRating: 0,
+    };
   }
 });
 
-const Product = mongoose.model('Product', productSchema);
+const Product = mongoose.model("Product", productSchema);
 
 module.exports = Product;

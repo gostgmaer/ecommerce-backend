@@ -11,7 +11,8 @@ const {
   getProducts,
   getSingleProducts,
   updateProduct,
-  deleteProducts,getproductReviews
+  deleteProducts,
+  getproductReviews,
 } = require("../../controller/products/products");
 
 productRoute
@@ -29,3 +30,6 @@ productRoute
 productRoute
   .route("/products/:id")
   .delete(adminMiddleware, userMiddleWare, deleteProducts);
+
+
+  module.exports = productRoute;

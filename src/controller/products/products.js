@@ -28,14 +28,34 @@ const createProduct = async (req, res) => {
 };
 
 const getProducts = async (req, res) => {
+  const { limit, page, filter, sort } = req.query;
+
   try {
-    const products = await Product.find();
-    res.status(200).json({
-      statusCode: 200,
-      status: "OK",
-      results: products,
-      message: "Products retrieved successfully",
-    });
+    const filterquery = FilterOptions(sort, page, limit, filter);
+    const products = await Product.find(
+      filterquery.query,
+      "-__v",
+      filterquery.options
+    );
+    const length = await Product.countDocuments(filterquery.query);
+
+    if (products) {
+      const currentProd = products.map((product) => {
+        const ratingStatistics = product.ratingStatistics;
+        return {
+          ...product["_doc"],
+          ...ratingStatistics,
+        };
+      });
+
+      res.status(200).json({
+        statusCode: 200,
+        status: "OK",
+        results: currentProd,
+        total: length,
+        message: "Products retrieved successfully",
+      });
+    }
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
@@ -60,7 +80,7 @@ const getSingleProducts = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: product,
+      results: { ...product, ...product.ratingStatistics },
       message: "Product retrieved successfully",
     });
   } catch (error) {
@@ -107,21 +127,18 @@ const deleteProducts = async (req, res) => {
       return res.status(404).json({
         statusCode: 404,
         status: "Not Found",
-        results: null,
         message: "Product not found",
       });
     }
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: null,
       message: "Product deleted successfully",
     });
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
       status: "Internal Server Error",
-      results: null,
       message: error.message,
     });
   }
