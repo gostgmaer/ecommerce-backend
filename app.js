@@ -10,6 +10,7 @@ const sessionStore = require("./src/db/sessionConnact");
 const userRouter = require("./src/routes/user/user");
 const authRoute = require("./src/routes/auth/auth");
 const categoryRoute = require("./src/routes/categories/categories");
+const productRoute = require("./src/routes/products/products");
 
 app.use(
   session({
@@ -37,7 +38,7 @@ app.use(logMiddleware);
 app.use("/api", userRouter);
 app.use("/api", authRoute);
 app.use("/api", categoryRoute);
-
+app.use("/api", productRoute);
 
 const port = serverPort || 5000;
 const start = async () => {

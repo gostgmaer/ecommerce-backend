@@ -60,7 +60,7 @@ const getSingleProducts = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: product,
+      results: {...product,...product.ratingStatistics},
       message: "Product retrieved successfully",
     });
   } catch (error) {

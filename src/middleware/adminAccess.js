@@ -26,7 +26,7 @@ async function adminMiddleware(req, res, next) {
     const decoded = jwt.verify(tokenValue, jwtSecret); // Replace with your secret key
 
     // Query the user document in MongoDB
-    const user = await User.findById(decoded.id);
+    const user = await User.findById(decoded["user_id"]);
 
     if (!user) {
       return res.status(StatusCodes.UNAUTHORIZED).json({
