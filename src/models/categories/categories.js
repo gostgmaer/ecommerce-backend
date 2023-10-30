@@ -14,6 +14,7 @@ const categorySchema = new mongoose.Schema(
     status: {
       type: String,
       required: true,
+      default:"pending"
     },
     parent_category: {
       type: String,
