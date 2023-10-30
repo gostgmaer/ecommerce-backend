@@ -17,6 +17,7 @@ const getusers = async (req, res) => {
       "-__v -hash_password -resetToken -resetTokenExpiration -confirmToken -update_by",
       filterquery.options
     );
+    const length = await User.countDocuments(filterquery.query);
 
     if (users) {
       return res.status(StatusCodes.OK).json({
@@ -24,6 +25,7 @@ const getusers = async (req, res) => {
         statusCode: StatusCodes.OK,
         status: ReasonPhrases.OK,
         result: users,
+        total: length,
       });
     } else {
       return res.status(StatusCodes.NOT_FOUND).json({

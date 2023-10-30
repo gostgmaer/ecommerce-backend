@@ -30,11 +30,15 @@ const {
   const getCategories = async (req, res) => {
     try {
       const Categorys = await Category.find();
+      const length = await Category.countDocuments();
+
       res.status(200).json({
         statusCode: 200,
         status: "OK",
-        results: Categorys,
         message: "Categorys retrieved successfully",
+        results: Categorys,
+        total: length,
+       
       });
     } catch (error) {
       res.status(500).json({

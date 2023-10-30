@@ -30,11 +30,15 @@ const {
   const getCarts = async (req, res) => {
     try {
       const Carts = await Cart.find();
+      const length = await Cart.countDocuments();
+
       res.status(200).json({
         statusCode: 200,
         status: "OK",
-        results: Carts,
         message: "Carts retrieved successfully",
+        results: Carts,
+        total: length,
+    
       });
     } catch (error) {
       res.status(500).json({
