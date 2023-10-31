@@ -7,7 +7,7 @@ const {
   updateUser,
   getusers,
   deleteUser,
-} = require("../../controller/orders/orders");
+} = require("../controller/orders/orders");
 
 searchRoute.route("/search").get();
 

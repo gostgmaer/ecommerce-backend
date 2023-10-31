@@ -8,7 +8,7 @@ const {
   getSingleCarts,
   updateCart,updateSingleCart,
   deleteCarts,
-} = require("../../controller/cart/cart");
+} = require("../controller/cart/cart");
 
 cartRoute.route("/cart").post(createCart);
 cartRoute.route("/cart/:id/add").post(updateSingleCart);

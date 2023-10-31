@@ -1,10 +1,10 @@
 const express = require("express");
 var session = require("express-session");
 const orderRoute = express.Router();
-const UpdatebyMiddleWare = require("../../middleware/updatedBy");
-const createMiddleWare = require("../../middleware/createMiddleWare");
-const userMiddleWare = require("../../middleware/userAccess");
-const adminMiddleware = require("../../middleware/adminAccess");
+const UpdatebyMiddleWare = require("../middleware/updatedBy");
+const createMiddleWare = require("../middleware/createMiddleWare");
+const userMiddleWare = require("../middleware/userAccess");
+const adminMiddleware = require("../middleware/adminAccess");
 
 
 const {
@@ -13,7 +13,7 @@ const {
   getSingleOrder,
   deleteOrder,
   createOrder,
-} = require("../../controller/orders/orders");
+} = require("../controller/orders/orders");
 
 orderRoute.route("/orders").post(userMiddleWare,createMiddleWare,createOrder);
 orderRoute.route("/orders").get(adminMiddleware,getOrders);

@@ -5,7 +5,7 @@ const {
   getStatusCode,
 } = require("http-status-codes");
 const { dbUrl, jwtSecret, refressSecret } = require("../../config/setting");
-const User = require("../../models/user/user");
+const User = require("../../models/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const sessionStore = require("../../db/sessionConnact");

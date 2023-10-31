@@ -6,7 +6,7 @@ const {
   getStatusCode,
 } = require("http-status-codes");
 const jwt = require('jsonwebtoken');
-const User = require('../models/user/user'); // Import your Mongoose user model
+const User = require('../models/user'); // Import your Mongoose user model
 const {  jwtSecret } = require("../config/setting");
 async function adminMiddleware(req, res, next) {
   // Check if the user has a Bearer token in the Authorization header
