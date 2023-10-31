@@ -5,7 +5,7 @@ const {
   getStatusCode,
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
-const Order = require("../../models/orders/orders");
+const Order = require("../../models/orders");
 
 const createOrder = async (req, res) => {
   const { user } = req.body;

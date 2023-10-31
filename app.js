@@ -7,10 +7,10 @@ var cors = require("cors");
 const logMiddleware = require("./src/middleware/logger");
 const session = require("express-session");
 const sessionStore = require("./src/db/sessionConnact");
-const userRouter = require("./src/routes/user/user");
-const authRoute = require("./src/routes/auth/auth");
-const categoryRoute = require("./src/routes/categories/categories");
-const productRoute = require("./src/routes/products/products");
+const userRouter = require("./src/routes/user");
+const authRoute = require("./src/routes/auth");
+const categoryRoute = require("./src/routes/categories");
+const productRoute = require("./src/routes/products");
 
 app.use(
   session({

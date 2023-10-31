@@ -5,7 +5,7 @@ const {
   getStatusCode,
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
-const Product = require("../../models/products/products");
+const Product = require("../../models/products");
 
 const createProduct = async (req, res) => {
   try {

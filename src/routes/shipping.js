@@ -7,7 +7,7 @@ const {
   updateUser,
   getusers,
   deleteUser,
-} = require("../../controller/orders/orders");
+} = require("../controller/orders/orders");
 
 shippingRoute.route("/shipping-methods").get();
 shippingRoute.route("/payment-methods").get();

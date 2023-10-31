@@ -5,7 +5,7 @@ const {
   getStatusCode,
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
-const User = require("../../models/user/user");
+const User = require("../../models/user");
 
 const getusers = async (req, res) => {
   try {

@@ -7,7 +7,7 @@ const {
   updateUser,
   getusers,
   deleteUser,
-} = require("../../controller/reviews/reviews");
+} = require("../controller/reviews/reviews");
 
 reviewRoute.route("/products/:product_id/reviews").post();
 reviewRoute.route("/products/:product_id/reviews").get();

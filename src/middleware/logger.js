@@ -1,5 +1,5 @@
 // logMiddleware.js
-const LogEntry = require("../models/log/logEntry");
+const LogEntry = require("../models/logEntry");
 const { getLocationInfo } = require("../utils/helper");
 async function logMiddleware(req, res, next) {
   try {
@@ -33,3 +33,5 @@ async function logMiddleware(req, res, next) {
 }
 
 module.exports = logMiddleware;
+
+

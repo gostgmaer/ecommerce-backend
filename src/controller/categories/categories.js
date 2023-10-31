@@ -5,7 +5,7 @@ const {
   getStatusCode,
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
-const Category = require("../../models/categories/categories");
+const Category = require("../../models/categories");
 
 const createCategory = async (req, res) => {
   try {

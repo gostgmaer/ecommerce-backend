@@ -9,7 +9,7 @@ const {
   updateCategory,
   deleteCategorys,
   getCategoryReviews,
-} = require("../../controller/categories/categories");
+} = require("../controller/categories/categories");
 
 categoryRoute.route("/categories").post(createCategory);
 categoryRoute.route("/categories").get(getCategories);
