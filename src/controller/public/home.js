@@ -1,0 +1,87 @@
+const {
+  ReasonPhrases,
+  StatusCodes,
+  getReasonPhrase,
+  getStatusCode,
+} = require("http-status-codes");
+const { FilterOptions } = require("../../utils/helper");
+const Product = require("../../models/products");
+const Category = require("../../models/categories");
+
+const gethomeDetails = async (req, res) => {
+  const { limit, page, filter, sort } = req.query;
+  const today = new Date();
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 7);
+
+  try {
+    const filterquery = FilterOptions(sort, page, limit, filter);
+    const featureProduct = await Product.find(
+      { isFeatured: true },
+      "-__v",
+      filterquery.options
+    );
+    const flashDeal = await Product.find(
+      {
+        $expr: {
+          $gte: [
+            {
+              $multiply: [
+                {
+                  $subtract: ["$price", "$salePrice"],
+                },
+                100,
+              ],
+            },
+            30, // 30% threshold
+          ],
+        },
+      },
+      "-__v",
+      filterquery.options
+    );
+    const newArive = await Product.find(
+      { createdAt: { $gte: sevenDaysAgo } },
+      "-__v",
+      filterquery.options
+    );
+
+  
+    const products = await Product.find(
+      filterquery.query,
+      "-__v",
+      filterquery.options
+    );
+
+
+    res.status(200).json({
+        statusCode: 200,
+        status: "OK",
+        results: {featureProduct,flashDeal,newArive},
+        message: "Products retrieved successfully",
+      });
+
+    if (products) {
+      const currentProd = products.map((product) => {
+        const ratingStatistics = product.ratingStatistics;
+        return {
+          ...product["_doc"],
+          ...ratingStatistics,
+        };
+      });
+
+  
+    }
+  } catch (error) {
+    res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      results: null,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = {
+  gethomeDetails,
+};
