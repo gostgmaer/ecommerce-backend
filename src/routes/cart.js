@@ -19,3 +19,6 @@ cartRoute.route("/cart/:id").get(getSingleCarts);
 cartRoute.route("/cart/:id").put(updateCart);
 cartRoute.route("/cart/:id").patch(updateCart);
 cartRoute.route("/cart/:id").delete(deleteCarts);
+
+
+module.exports = cartRoute;
