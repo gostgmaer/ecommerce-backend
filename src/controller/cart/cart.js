@@ -5,7 +5,7 @@ const {
     getStatusCode,
   } = require("http-status-codes");
   const { FilterOptions } = require("../../utils/helper");
-  const Cart = require("../../models/cart/cart");
+  const Cart = require("../../models/cart");
   
   const createCart = async (req, res) => {
     try {

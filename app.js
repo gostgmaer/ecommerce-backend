@@ -12,6 +12,7 @@ const authRoute = require("./src/routes/auth");
 const categoryRoute = require("./src/routes/categories");
 const productRoute = require("./src/routes/products");
 const publicRoute = require("./src/routes/public");
+const cartRoute = require("./src/routes/cart");
 
 app.use(
   session({
@@ -41,6 +42,7 @@ app.use("/api", authRoute);
 app.use("/api", categoryRoute);
 app.use("/api", productRoute);
 app.use("/api", publicRoute);
+app.use("/api", cartRoute);
 
 const port = serverPort || 5000;
 const start = async () => {
