@@ -1,6 +1,10 @@
 const express = require("express");
 var session = require("express-session");
 const cartRoute = express.Router();
+const UpdatebyMiddleWare = require("../middleware/updatedBy");
+const createMiddleWare = require("../middleware/createMiddleWare");
+const userMiddleWare = require("../middleware/userAccess");
+const adminMiddleware = require("../middleware/adminAccess");
 
 const {
   createCart,
@@ -10,7 +14,7 @@ const {
   deleteCarts,
 } = require("../controller/cart/cart");
 
-cartRoute.route("/cart").post(createCart);
+cartRoute.route("/cart").post(createMiddleWare,createCart);
 cartRoute.route("/cart/:id/add").post(updateSingleCart);
 cartRoute.route("/cart/:id/remove").post(updateSingleCart);
 cartRoute.route("/cart/:id/checkout").post();

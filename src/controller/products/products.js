@@ -80,7 +80,7 @@ const getSingleProducts = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: { ...product, ...product.ratingStatistics },
+      results: { ...product["_doc"], ...product.ratingStatistics },
       message: "Product retrieved successfully",
     });
   } catch (error) {
@@ -122,7 +122,9 @@ const updateProduct = async (req, res) => {
 };
 const deleteProducts = async (req, res) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findByIdAndUpdate(req.params.id, {status:"INACTIVE"}, {
+      new: true,
+    });
     if (!product) {
       return res.status(404).json({
         statusCode: 404,
