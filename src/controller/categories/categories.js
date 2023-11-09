@@ -78,10 +78,10 @@ const getSingleCategorys = async (req, res) => {
 };
 const updateCategory = async (req, res) => {
   try {
-    const Category = await Category.findByIdAndUpdate(req.params.id, req.body, {
+    const update = await Category.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
-    if (!Category) {
+    if (!update) {
       return res.status(404).json({
         statusCode: 404,
         status: "Not Found",
@@ -92,13 +92,13 @@ const updateCategory = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: Category,
+      results: update,
       message: "Category updated successfully",
     });
   } catch (error) {
     res.status(400).json({
-      statusCode: 400,
-      status: "Bad Request",
+      statusCode: 500,
+      status: "Internal Server Error",
       results: null,
       message: error.message,
     });
@@ -106,7 +106,9 @@ const updateCategory = async (req, res) => {
 };
 const deleteCategorys = async (req, res) => {
   try {
-    const response = await Category.findByIdAndDelete(req.params.id);
+    const response = await Category.findByIdAndUpdate(req.params.id, {status:"INACTIVE"}, {
+      new: true,
+    });
     if (!response) {
       return res.status(404).json({
         statusCode: 404,

@@ -44,7 +44,7 @@ const productSchema = new mongoose.Schema(
     },
     trackInventory: {
       type: String,
-      enum: ["yes", "no"],
+      enum: ["yes", "no", ""],
       default: "yes",
     },
     currentStockLevel: {
@@ -64,9 +64,13 @@ const productSchema = new mongoose.Schema(
     brandName: {
       type: String,
     },
+    slug: {
+      type: String,
+    },
     productUPCEAN: {
       type: String,
     },
+    seo_info: { type: Object },
     tags: {
       type: [String],
     },

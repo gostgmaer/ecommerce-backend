@@ -1,9 +1,7 @@
 const jwt = require("jsonwebtoken");
 const axios = require("axios"); // You may need to install axios
 
-
-
-const {  jwtSecret } = require("../config/setting");
+const { jwtSecret } = require("../config/setting");
 
 function decodeToken(token) {
   return new Promise((resolve, reject) => {
@@ -27,6 +25,8 @@ const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
     }
   }
 
+  query = { ...query, status: { $ne: "INACTIVE" } };
+
   var sortOptions = {};
 
   if (sort) {
@@ -43,14 +43,13 @@ const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
   const options = {
     skip: (page - 1) * limit,
     limit: parseInt(limit),
-    sort,
+    sort: sortOptions,
   };
   return {
-    options:options,
-    query:query,
+    options: options,
+    query: query,
   };
 };
-
 
 async function getLocationInfo(ip) {
   try {
@@ -68,4 +67,4 @@ async function getLocationInfo(ip) {
   }
 }
 
-module.exports = { decodeToken,FilterOptions,getLocationInfo };
+module.exports = { decodeToken, FilterOptions, getLocationInfo };
