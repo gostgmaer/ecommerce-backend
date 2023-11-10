@@ -28,9 +28,14 @@ const createCategory = async (req, res) => {
 };
 
 const getCategories = async (req, res) => {
+  const { limit, page, filter, sort } = req.query;
+
   try {
-    const responseData = await Category.find();
-    const length = await Category.countDocuments();
+    const filterquery = FilterOptions(sort, page, limit, filter);
+    const responseData = await Category.find( filterquery.query,
+      "-__v",
+      filterquery.options);
+    const length = await Category.countDocuments(filterquery.query);
 
     res.status(200).json({
       statusCode: 200,

@@ -24,8 +24,13 @@ const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
       query[key] = filterObj[key];
     }
   }
+  let statusFilter = { status: { $ne: "INACTIVE" } };
+  
+  if (query.status != "" && query.status) {
+    statusFilter = { ...statusFilter, status: query.status };
+  }
 
-  query = { ...query, status: { $ne: "INACTIVE" } };
+  query = { ...query, ...statusFilter };
 
   var sortOptions = {};
 
