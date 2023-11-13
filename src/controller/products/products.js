@@ -67,7 +67,13 @@ const getProducts = async (req, res) => {
 };
 
 const getSingleProducts = async (req, res) => {
+
+  const params = req.params
+
   try {
+    // if (params.includes(':')) {
+      
+    // }
     const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({
