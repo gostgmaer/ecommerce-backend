@@ -16,8 +16,8 @@ const gethomeDetails = async (req, res) => {
 
   try {
     const filterquery = FilterOptions(sort, page, limit, filter);
-    const featureProduct = await Product.find(
-      { isFeatured: true },
+    const featured = await Product.find(
+      { isFeatured: true, status: "publish" },
       "-__v",
       filterquery.options
     );
@@ -36,30 +36,32 @@ const gethomeDetails = async (req, res) => {
             30, // 30% threshold
           ],
         },
+        status: "publish",
       },
       "-__v",
       filterquery.options
     );
     const newArive = await Product.find(
-      { createdAt: { $gte: sevenDaysAgo } },
+      { createdAt: { $gte: sevenDaysAgo }, status: "publish" },
       "-__v",
       filterquery.options
     );
 
-  
     const products = await Product.find(
       filterquery.query,
       "-__v",
       filterquery.options
     );
-
+    const categories = await Category.find({status: "publish"},
+      "-__v",
+    );
 
     res.status(200).json({
-        statusCode: 200,
-        status: "OK",
-        results: {featureProduct,flashDeal,newArive},
-        message: "Products retrieved successfully",
-      });
+      statusCode: 200,
+      status: "OK",
+      results: { featured, flashDeal, newArive,categories },
+      message: "Products retrieved successfully",
+    });
 
     if (products) {
       const currentProd = products.map((product) => {
@@ -69,8 +71,6 @@ const gethomeDetails = async (req, res) => {
           ...ratingStatistics,
         };
       });
-
-  
     }
   } catch (error) {
     res.status(500).json({
