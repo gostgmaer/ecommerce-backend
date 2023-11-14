@@ -5,7 +5,7 @@ const {
   getSingleLogs,
   updateLogs,
   deleteLogs,
-} = require("../controller/logs/log");
+} = require("../controller/logsentry/log");
 const logRoute = express.Router();
 
 
