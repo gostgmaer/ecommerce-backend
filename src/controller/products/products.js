@@ -1,3 +1,4 @@
+
 const {
   ReasonPhrases,
   StatusCodes,
@@ -69,12 +70,17 @@ const getProducts = async (req, res) => {
 const getSingleProducts = async (req, res) => {
 
   const params = req.params
+  const q = req.query
+  // const query = JSON.parse(q)
 
   try {
-    // if (params.includes(':')) {
-      
-    // }
-    const product = await Product.findById(req.params.id);
+    var product
+      if (Object.keys(q).length!=0) {
+     product = await Product.findOne(q);
+    }else{
+     product = await Product.findById(req.params.id);
+    }
+   
     if (!product) {
       return res.status(404).json({
         statusCode: 404,
