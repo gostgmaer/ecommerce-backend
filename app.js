@@ -15,7 +15,6 @@ const publicRoute = require("./src/routes/public");
 const cartRoute = require("./src/routes/cart");
 const logRoute = require("./src/routes/logs");
 
-
 app.use(
   session({
     store: sessionStore,
@@ -46,7 +45,6 @@ app.use("/api", productRoute);
 app.use("/api", publicRoute);
 app.use("/api", cartRoute);
 app.use("/api", logRoute);
-
 
 const port = serverPort || 5000;
 const start = async () => {

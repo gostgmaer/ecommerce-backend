@@ -1,13 +1,14 @@
 const express = require("express");
 var session = require("express-session");
-const logRoute = express.Router();
-
 const {
   getAllLogs,
   getSingleLogs,
   updateLogs,
   deleteLogs,
 } = require("../controller/logs/log");
+const logRoute = express.Router();
+
+
 
 logRoute.route("/logs").get(getAllLogs);
 logRoute.route("/logs/:id").get(getSingleLogs);
