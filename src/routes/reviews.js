@@ -3,15 +3,18 @@ var session = require("express-session");
 const reviewRoute = express.Router();
 
 const {
-  profile,
-  updateUser,
-  getusers,
-  deleteUser,
+  create,
+  getAll,
+  getSingle,
+  updateData,
+  deleteData,
 } = require("../controller/reviews/reviews");
 
-reviewRoute.route("/products/:product_id/reviews").post();
-reviewRoute.route("/products/:product_id/reviews").get();
-reviewRoute.route("/products/:product_id/reviews/:review_id").get();
-reviewRoute.route("/products/:product_id/reviews/:review_id").patch();
-reviewRoute.route("/products/:product_id/reviews/:review_id").put();
-reviewRoute.route("/products/:product_id/reviews/:review_id").delete();
+reviewRoute.route("/products/:product_id/reviews").post(create);
+reviewRoute.route("/products/:product_id/reviews").get(getAll);
+reviewRoute.route("/products/:product_id/reviews/:review_id").get(getSingle);
+reviewRoute.route("/products/:product_id/reviews/:review_id").patch(updateData);
+reviewRoute.route("/products/:product_id/reviews/:review_id").put(updateData);
+reviewRoute.route("/products/:product_id/reviews/:review_id").delete(deleteData);
+
+module.exports = reviewRoute;
