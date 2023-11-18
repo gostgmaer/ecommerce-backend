@@ -20,7 +20,7 @@ const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
 
   if (filter) {
     const filterObj = JSON.parse(filter);
-    const startwith = generateMatchQuery(filterObj["match"])
+    // const startwith = generateMatchQuery(filterObj["match"])
 
     // delete filterObj?.["match"];
     // delete filterObj?.["startwith"];
