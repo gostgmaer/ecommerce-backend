@@ -20,18 +20,24 @@ const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
 
   if (filter) {
     const filterObj = JSON.parse(filter);
+    const startwith = generateMatchQuery(filterObj["match"])
+
+    // delete filterObj?.["match"];
+    // delete filterObj?.["startwith"];
+
     for (const key in filterObj) {
       query[key] = filterObj[key];
     }
   }
   let statusFilter = { status: { $ne: "INACTIVE" } };
-  
+
   if (query.status != "" && query.status) {
     statusFilter = { ...statusFilter, status: query.status };
   }
 
   query = { ...query, ...statusFilter };
 
+  removeEmptyKeys(query);
   var sortOptions = {};
 
   if (sort) {
@@ -72,4 +78,45 @@ async function getLocationInfo(ip) {
   }
 }
 
-module.exports = { decodeToken, FilterOptions, getLocationInfo };
+function removeEmptyKeys(obj) {
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const value = obj[key];
+
+      if (value === null || value === undefined || value === "") {
+        delete obj[key];
+      }
+    }
+  }
+}
+
+
+const generateMatchQuery = (query) => {
+  const dynamicQuery = {};
+  Object.keys(query).forEach((key) => {
+    // Use RegExp only if the property exists in the query
+    if (query[key]) {
+      dynamicQuery[key] = new RegExp(query[key], "i");
+    }
+  });
+  return dynamicQuery;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+module.exports = {
+  decodeToken,
+  FilterOptions,
+  getLocationInfo,
+  removeEmptyKeys,
+};
