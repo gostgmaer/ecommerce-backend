@@ -8,8 +8,15 @@ const { FilterOptions } = require("../../utils/helper");
 const Wishlist = require("../../models/wishlist");
 
 const createWishlist = async (req, res) => {
+  const { product } = req.body;
+
   try {
-    const Wishlist = new Wishlist(req.body);
+    const body = {
+      user: req.body.created_user_id,
+      product,
+    };
+
+    const Wishlist = new Wishlist(body);
     const savedWishlist = await Wishlist.save();
     res.status(201).json({
       statusCode: 201,
@@ -21,7 +28,6 @@ const createWishlist = async (req, res) => {
     res.status(400).json({
       statusCode: 400,
       status: "Bad Request",
-      results: null,
       message: error.message,
     });
   }

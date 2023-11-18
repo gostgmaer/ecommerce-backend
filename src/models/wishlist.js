@@ -1,31 +1,16 @@
 const mongoose = require('mongoose');
 
-const wishlistItemSchema = new mongoose.Schema({
-  product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product', // Reference to the Product model
+const wishlistSchema = new mongoose.Schema({
+  userId: {
+    type: String,
     required: true,
   },
-  quantity: {
-    type: Number,
+  productId: {
+    type: String,
     required: true,
-    min: 1,
-  },
-  // Embedded product details
-  productName: String,
-  productImage: String,
+  }
 });
 
-const wishlistSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Reference to the User model
-    required: true,
-  },
-  items: [wishlistItemSchema], // Array of cart items
-  // Other cart-related fields if needed, e.g., total price, discounts, etc.
-}, { timestamps: true });
+const Wishlist = mongoose.model('Wishlist', wishlistSchema);
 
-const wishList = mongoose.model('wishlist', wishlistSchema);
-
-module.exports = wishList;
+module.exports = Wishlist;
