@@ -5,11 +5,18 @@ const {
   getStatusCode,
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
-const Wishlist = require("../../models/wishlist/wishlist");
+const Wishlist = require("../../models/wishlist");
 
 const createWishlist = async (req, res) => {
+  const { product } = req.body;
+
   try {
-    const Wishlist = new Wishlist(req.body);
+    const body = {
+      user: req.body.created_user_id,
+      product,
+    };
+
+    const Wishlist = new Wishlist(body);
     const savedWishlist = await Wishlist.save();
     res.status(201).json({
       statusCode: 201,
@@ -21,7 +28,6 @@ const createWishlist = async (req, res) => {
     res.status(400).json({
       statusCode: 400,
       status: "Bad Request",
-      results: null,
       message: error.message,
     });
   }
@@ -29,21 +35,20 @@ const createWishlist = async (req, res) => {
 
 const getWishlists = async (req, res) => {
   try {
-    const Wishlists = await Wishlist.find();
+    const response = await Wishlist.find();
     const length = await Wishlist.countDocuments();
 
     res.status(200).json({
       statusCode: 200,
       status: "OK",
       message: "Wishlists retrieved successfully",
-      results: Wishlists,
+      results: response,
       total: length,
     });
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
       status: "Internal Server Error",
-      results: null,
       message: error.message,
     });
   }
@@ -56,7 +61,6 @@ const getSingleWishlists = async (req, res) => {
       return res.status(404).json({
         statusCode: 404,
         status: "Not Found",
-        results: null,
         message: "Wishlist not found",
       });
     }

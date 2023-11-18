@@ -8,39 +8,82 @@ const { FilterOptions } = require("../../utils/helper");
 const Cart = require("../../models/cart");
 const Product = require("../../models/products");
 
-
 const createCart = async (req, res) => {
-  const { product, quantity } = req.body;
+  const { cartItems } = req.body;
 
   // Assuming you have an authenticated user object
-  const user = req.user;
+
+  // const user = req.user;
 
   try {
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ error: "Product not found" });
+    const iscart = await Cart.findOne({ user: req.body.created_user_id });
+
+    if (cartItems) {
+      var myArr = [];
+      cartItems.forEach((element) => {
+        const { product, quantity, subtotal } = element;
+        const obj = {
+          quantity,
+          subtotal,
+          product: product._id,
+        };
+
+        myArr.push(obj);
+      });
+      var body = { user: req.body.created_user_id, items: myArr };
+
+      if (iscart) {
+        myArr.forEach((newItem) => {
+          const existingItem = iscart.items.find((item) =>
+            item.product.equals(newItem.product)
+          );
+
+          if (existingItem) {
+            // Product is already in the cart, update the quantity
+            existingItem.quantity = newItem.quantity;
+          } else {
+            // Product is not in the cart, add it
+            iscart.items.push(newItem);
+          }
+        });
+        const updatedCart = await iscart.save();
+        res.status(200).json(updatedCart);
+      } else {
+        const newCart = new Cart(body);
+        const savedCart = await newCart.save();
+        res.status(201).json(savedCart);
+      }
     }
+    // const product = await Product.findById(productId);
+    // if (!product) {
+    //   return res.status(404).json({ error: "Product not found" });
+    // }
 
-    let cart = await Cart.findOne({ user: user._id });
+    // let cart = await Cart.findOne({ user: user._id });
 
-    if (!cart) {
-      cart = new Cart({ user: user._id, items: [] });
-    }
+    // if (!cart) {
+    //   cart = new Cart({ user: user._id, items: [] });
+    // }
 
-    const existingCartItem = cart.items.find((item) =>
-      item.product.equals(productId)
-    );
-    if (existingCartItem) {
-      existingCartItem.quantity += quantity;
-    } else {
-      cart.items.push({ product: productId, quantity });
-    }
+    // const existingCartItem = cart.items.find((item) =>
+    //   item.product.equals(productId)
+    // );
+    // if (existingCartItem) {
+    //   existingCartItem.quantity += quantity;
+    // } else {
+    //   cart.items.push({ product: productId, quantity });
+    // }
 
-    await cart.save();
+    // await cart.save();
 
-    res.json(cart);
+    // res.json(cart);
   } catch (error) {
-    res.status(500).json({ error: "Unable to add the product to the cart" });
+    res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      results: null,
+      message: error.message,
+    });
   }
 };
 
