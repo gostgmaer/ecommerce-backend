@@ -6,15 +6,21 @@ const {
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
 const Review = require("../../models/reviews");
+const Product = require("../../models/products");
 
 const create = async (req, res) => {
   try {
-    const review = new Review(req.body);
-    const saveReview = await review.save();
+    const body = {
+      ...req.body,user:req.body.created_user_id
+    }
+    const createdReview = await Review.create(body);
+    const singleProduct = await  Product.findById(req.body.product)
+    singleProduct.reviews.push(createdReview);
+   const data= await singleProduct.save();
     res.status(201).json({
       statusCode: 201,
       status: "Created",
-      results: saveReview,
+      results: {createdReview},
       message: "created successfully",
     });
   } catch (error) {
@@ -29,14 +35,16 @@ const create = async (req, res) => {
 const getAll = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
 
+  const {product_id}= req.params
+
   try {
     const filterquery = FilterOptions(sort, page, limit, filter);
     const data = await Review.find(
-      filterquery.query,
+      {...filterquery.query,product:product_id},
       "-__v",
       filterquery.options
     );
-    const length = await Review.countDocuments(filterquery.query);
+    const length = await Review.countDocuments({...filterquery.query,product:product_id});
 
     if (data) {
       res.status(200).json({
@@ -44,7 +52,7 @@ const getAll = async (req, res) => {
         status: "OK",
         results: data,
         total: length,
-        message: "Products retrieved successfully",
+        message: "retrieved successfully",
       });
     }
   } catch (error) {

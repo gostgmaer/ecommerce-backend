@@ -76,9 +76,9 @@ const getSingleProducts = async (req, res) => {
   try {
     var product
       if (Object.keys(q).length!=0) {
-     product = await Product.findOne(q);
+     product = await Product.findOne(q).populate("reviews");
     }else{
-     product = await Product.findById(req.params.id);
+     product = await Product.findById(req.params.id).populate("reviews");
     }
    
     if (!product) {
@@ -92,7 +92,7 @@ const getSingleProducts = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: { ...product["_doc"], ...product.ratingStatistics },
+      results: product,
       message: "Product retrieved successfully",
     });
   } catch (error) {
