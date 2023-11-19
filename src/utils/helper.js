@@ -22,8 +22,8 @@ const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
     const filterObj = JSON.parse(filter);
     // const startwith = generateMatchQuery(filterObj["match"])
 
-    // delete filterObj?.["match"];
-    // delete filterObj?.["startwith"];
+    delete filterObj?.["match"];
+    delete filterObj?.["startwith"];
 
     for (const key in filterObj) {
       query[key] = filterObj[key];

@@ -17,6 +17,7 @@ const reviewSchema = new mongoose.Schema({
     max: 5,
     required: true,
   },
+  images:[],
   title: String,
   review: String,
   date: {
@@ -27,6 +28,7 @@ const reviewSchema = new mongoose.Schema({
   username: String,
   firstName: String,
   lastName: String,
+  profilePicture:String,  
   // You can add more fields as needed
 }, { timestamps: true });
 
