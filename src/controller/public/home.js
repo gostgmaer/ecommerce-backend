@@ -91,7 +91,7 @@ const getSingleProductDetails = async (req, res) => {
     const related = await Product.find(
       { categories: singleProduct["categories"] },
       "-__v"
-    );
+    ).populate("reviews");
 
     if (singleProduct) {
       res.status(200).json({
