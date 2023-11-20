@@ -25,18 +25,13 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: String,
     address: {
-      street: String,
-      city: String,
-      state: String,
-      postalCode: String,
-      country: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Address",
     },
     profilePicture: String,
     resetToken: String,
     resetTokenExpiration: Date,
-    session: [{
-      
-    }],
+    session: [{}],
     created_by: String,
     updated_by: String,
     created_user_id: String,

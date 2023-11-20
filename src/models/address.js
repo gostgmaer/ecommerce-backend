@@ -40,6 +40,6 @@ const userAddressSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const UserAddress = mongoose.model("UserAddress", userAddressSchema);
+const UserAddress = mongoose.model("Address", userAddressSchema);
 
 module.exports = UserAddress;
