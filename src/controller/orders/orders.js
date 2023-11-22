@@ -4,35 +4,103 @@ const {
   getReasonPhrase,
   getStatusCode,
 } = require("http-status-codes");
+const paypal = require("paypal-rest-sdk");
 const { FilterOptions } = require("../../utils/helper");
 const Order = require("../../models/orders");
+const User = require("../../models/user");
+const Product = require("../../models/products");
 
 const createOrder = async (req, res) => {
   const { user } = req.body;
   try {
-    if (user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: "Please Provide Required Information",
-        statusCode: StatusCodes.BAD_REQUEST,
-        status: ReasonPhrases.BAD_REQUEST,
-      });
-    } else {
-      Order.create(req.body).then((data, err) => {
-        if (err)
-          return res.status(StatusCodes.BAD_REQUEST).json({
-            message: err.message,
-            statusCode: StatusCodes.BAD_REQUEST,
-            status: ReasonPhrases.BAD_REQUEST,
-          });
-        else {
-          res.status(StatusCodes.CREATED).json({
-            message: "User created Successfully",
-            status: ReasonPhrases.CREATED,
-            statusCode: StatusCodes.CREATED,
-          });
-        }
-      });
+    const userData = req.body.user;
+    let user = await User.findOne({ email: userData.email });
+
+    // If the user doesn't exist, create a new user account
+    if (!user) {
+      const newUser = new User(userData);
+      user = await newUser.save();
     }
+    // Process each product in the request body
+    const items = req.body.products.map(async (productData) => {
+      const productId = productData.productId;
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res
+          .status(404)
+          .json({ error: `Product with ID ${productId} not found` });
+      }
+
+      return {
+        product: productId,
+        quantity: productData.quantity,
+        productName: product.productName,
+        productImage: product.productImage,
+        productPrice: product.productPrice,
+        // Add other product details as needed
+      };
+    });
+
+    const orders = await Promise.all(items);
+
+    // Calculate the total order amount
+    const total = orders.reduce(
+      (acc, item) => acc + item.quantity * item.productPrice,
+      0
+    );
+
+    // Create a new order
+    const newOrder = new Order({
+      user: user._id,
+      items: items,
+      total: total,
+      // Add other order details as needed
+    });
+
+    // Save the order to the database
+    const savedOrder = await newOrder.save();
+
+    // Create a PayPal payment
+    const create_payment_json = {
+      intent: "sale",
+      payer: {
+        payment_method: "paypal",
+      },
+      redirect_urls: {
+        return_url: "YOUR_RETURN_URL",
+        cancel_url: "YOUR_CANCEL_URL",
+      },
+      transactions: [
+        {
+          item_list: {
+            items: orders.map((item) => {
+              return {
+                name: item.productName,
+                sku: item.product.toString(),
+                price: item.productPrice,
+                currency: "USD",
+                quantity: item.quantity,
+              };
+            }),
+          },
+          amount: {
+            currency: "USD",
+            total: total,
+          },
+          description: "Your order description",
+        },
+      ],
+    };
+
+    paypal.payment.create(create_payment_json, function (error, payment) {
+      if (error) {
+        throw error;
+      } else {
+        // Redirect the user to PayPal for approval
+        res.redirect(payment.links[1].href);
+      }
+    });
   } catch (error) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: error.message,
