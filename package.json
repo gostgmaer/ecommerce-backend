@@ -31,6 +31,7 @@
     "mongoose-dynamic-schemas": "^1.2.6",
     "nodemailer": "^6.9.7",
     "nodemailer-mandrill-transport": "^1.2.0",
+    "paypal-rest-sdk": "^1.8.1",
     "redis": "^4.6.10",
     "shortid": "^2.2.16",
     "util": "^0.12.5",
