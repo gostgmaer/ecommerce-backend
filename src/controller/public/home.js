@@ -53,7 +53,15 @@ const gethomeDetails = async (req, res) => {
       "-__v",
       filterquery.options
     );
-    const categories = await Category.find({ status: "publish" }, "-__v");
+   
+    const cate = await Category.find();
+    // Iterate over each category and get the product count
+    const categories = await Promise.all(
+      cate.map(async (category) => {
+        const productCount = await category.getProductCount('publish');
+        return { ...category._doc, productCount };
+      })
+    );
 
     res.status(200).json({
       statusCode: 200,

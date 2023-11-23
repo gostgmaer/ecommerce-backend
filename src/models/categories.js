@@ -14,7 +14,7 @@ const categorySchema = new mongoose.Schema(
     status: {
       type: String,
       required: true,
-      default:"pending"
+      default: "pending",
     },
     parent_category: {
       type: String,
@@ -28,6 +28,21 @@ const categorySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+categorySchema.methods.getProductCount = async function (status = "publish") {
+  // 'this' refers to the current category document
+  const Product = mongoose.model("Product"); // Assuming your product model is named 'Product'
+
+  try {
+    const count = await Product.countDocuments({
+      categories: this._id,
+      status: status,
+    });
+    return count;
+  } catch (error) {
+    throw error;
+  }
+};
 
 const Category = mongoose.model("Category", categorySchema);
 

@@ -1,5 +1,4 @@
 const express = require("express");
-var session = require("express-session");
 const categoryRoute = express.Router();
 
 const {
@@ -8,7 +7,7 @@ const {
   getSingleCategorys,
   updateCategory,
   deleteCategorys,
-  getCategoryReviews,
+  itemsPerCategory,
 } = require("../controller/categories/categories");
 
 categoryRoute.route("/categories").post(createCategory);
@@ -17,5 +16,6 @@ categoryRoute.route("/categories/:id").get(getSingleCategorys);
 categoryRoute.route("/categories/:id").put(updateCategory);
 categoryRoute.route("/categories/:id").patch(updateCategory);
 categoryRoute.route("/categories/:id").delete(deleteCategorys);
+categoryRoute.route("/categories/data/product-count").get(itemsPerCategory);
 
 module.exports = categoryRoute;

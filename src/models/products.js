@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Review = require("./reviews");
 const productSchema = new mongoose.Schema(
   {
     title: {
@@ -14,10 +13,13 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    categories: {
-      type: [String],
-      required: true,
-    },
+    categories: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        required: true,
+      },
+    ],
     descriptions: {
       type: String,
       required: true,
@@ -100,24 +102,25 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// productSchema.virtual("ratingStatistics").get(function () {
-//   if (this.ratings && this.ratings.length > 0) {
-//     const totalRating = this.ratings.reduce(
-//       (total, rating) => total + rating.rating,
-//       0
-//     );
-//     const averageRating = totalRating / this.ratings.length;
-//     return {
-//       totalRating,
-//       averageRating,
-//     };
-//   } else {
-//     return {
-//       totalRating: 0,
-//       averageRating: 0,
-//     };
-//   }
-// });
+productSchema.virtual("ratingStatistics").get(function () {
+  if (this.reviews && this.reviews.length > 0) {
+    const totalReviews = this.reviews.length;
+    const totalRating = this.reviews.reduce(
+      (total, review) => total + review.rating,
+      0
+    );
+    const averageRating = totalRating / totalReviews;
+    return {
+      totalReviews,
+      averageRating,
+    };
+  } else {
+    return {
+      totalReviews: 0,
+      averageRating: 0,
+    };
+  }
+});
 
 const Product = mongoose.model("Product", productSchema);
 

@@ -35,13 +35,21 @@ const getCategories = async (req, res) => {
     const responseData = await Category.find( filterquery.query,
       "-__v",
       filterquery.options);
+
+      const categoryCounts = await Promise.all(
+        responseData.map(async (category) => {
+          const total = await category.getProductCount('publish');
+          return { ...category._doc, total };
+        })
+      );
+
     const length = await Category.countDocuments(filterquery.query);
 
     res.status(200).json({
       statusCode: 200,
       status: "OK",
       message: "Categorys retrieved successfully",
-      results: responseData ? responseData : [],
+      results: responseData ? categoryCounts : [],
       total: length,
     });
   } catch (error) {
@@ -138,34 +146,34 @@ const deleteCategorys = async (req, res) => {
   }
 };
 
-const getCategoryReviews = async (req, res) => {
-  try {
-    const Category = await Category.findById(req.params.id);
-    if (!Category) {
-      return res.status(404).json({
-        statusCode: 404,
-        status: "Not Found",
-        results: null,
-        message: "Category not found",
-      });
-    }
+const itemsPerCategory = async (req, res) => {
 
-    const reviews = Category.ratings;
+  try {
+    const categories = await Category.find();
+    // Iterate over each category and get the product count
+    const categoryCounts = await Promise.all(
+      categories.map(async (category) => {
+        const productCount = await category.getProductCount('publish');
+        return { ...category._doc, productCount };
+      })
+    );
+
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: reviews,
-      message: "Reviews for the Category retrieved successfully",
+      results: categoryCounts,
+      message: "Category retrieved successfully",
     });
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
       status: "Internal Server Error",
-      results: null,
       message: error.message,
     });
   }
 };
+
+
 
 module.exports = {
   createCategory,
@@ -173,5 +181,5 @@ module.exports = {
   getSingleCategorys,
   updateCategory,
   deleteCategorys,
-  getCategoryReviews,
+  itemsPerCategory,
 };
