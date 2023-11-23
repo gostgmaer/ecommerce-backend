@@ -37,7 +37,7 @@ const getProducts = async (req, res) => {
       filterquery.query,
       "-__v",
       filterquery.options
-    );
+    ).populate("reviews").populate("categories");
     const length = await Product.countDocuments(filterquery.query);
 
     if (products) {
@@ -76,9 +76,9 @@ const getSingleProducts = async (req, res) => {
   try {
     var product
       if (Object.keys(q).length!=0) {
-     product = await Product.findOne(q).populate("reviews");
+     product = await Product.findOne(q).populate("reviews").populate("categories");
     }else{
-     product = await Product.findById(req.params.id).populate("reviews");
+     product = await Product.findById(req.params.id).populate("reviews").populate("categories");
     }
    
     if (!product) {
