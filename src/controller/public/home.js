@@ -21,7 +21,17 @@ const gethomeDetails = async (req, res) => {
       { isFeatured: true, status: "publish" },
       "-__v",
       filterquery.options
-    );
+    ).populate("reviews").populate("categories");
+
+    const currentfeatured = featured.map((product) => {
+      const ratingStatistics = product.ratingStatistics;
+      return {
+        ...product["_doc"],
+        ...ratingStatistics,
+      };
+    });
+
+
     const flashDeal = await Product.find(
       {
         $expr: {
@@ -41,18 +51,45 @@ const gethomeDetails = async (req, res) => {
       },
       "-__v",
       filterquery.options
-    );
+    ).populate("reviews").populate("categories");
+
+
+    const currentflash = flashDeal.map((product) => {
+      const ratingStatistics = product.ratingStatistics;
+      return {
+        ...product["_doc"],
+        ...ratingStatistics,
+      };
+    });
+
     const newArive = await Product.find(
       { createdAt: { $gte: sevenDaysAgo }, status: "publish" },
       "-__v",
       filterquery.options
-    );
+    ).populate("reviews").populate("categories");
+
+
+    const currentnewArive = newArive.map((product) => {
+      const ratingStatistics = product.ratingStatistics;
+      return {
+        ...product["_doc"],
+        ...ratingStatistics,
+      };
+    });
 
     const products = await Product.find(
       filterquery.query,
       "-__v",
       filterquery.options
     );
+
+    const currentall = products.map((product) => {
+      const ratingStatistics = product.ratingStatistics;
+      return {
+        ...product["_doc"],
+        ...ratingStatistics,
+      };
+    });
    
     const cate = await Category.find();
     // Iterate over each category and get the product count
@@ -66,7 +103,7 @@ const gethomeDetails = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: { featured, flashDeal, newArive, categories },
+      results: { featured:currentfeatured, flashDeal:currentflash, newArive:currentnewArive, categories },
       message: "Products retrieved successfully",
     });
 
@@ -94,7 +131,11 @@ const getSingleProductDetails = async (req, res) => {
   const q = req.query;
 
   try {
-    const singleProduct = await Product.findOne(q).populate("reviews");
+    const singleProduct = await Product.findOne(q).populate("reviews")
+    .populate("categories");
+
+    const currentProd = { ...singleProduct["_doc"], ...singleProduct.ratingStatistics };
+
 
     const related = await Product.find(
       { categories: singleProduct["categories"] },
@@ -105,7 +146,7 @@ const getSingleProductDetails = async (req, res) => {
       res.status(200).json({
         statusCode: 200,
         status: "OK",
-        results: { singleProduct, related },
+        results: { currentProd, related },
         message: "retrieved successfully",
       });
     }

@@ -1,4 +1,3 @@
-
 const {
   ReasonPhrases,
   StatusCodes,
@@ -37,7 +36,9 @@ const getProducts = async (req, res) => {
       filterquery.query,
       "-__v",
       filterquery.options
-    ).populate("reviews").populate("categories");
+    )
+      .populate("reviews")
+      .populate("categories");
     const length = await Product.countDocuments(filterquery.query);
 
     if (products) {
@@ -68,19 +69,22 @@ const getProducts = async (req, res) => {
 };
 
 const getSingleProducts = async (req, res) => {
-
-  const params = req.params
-  const q = req.query
+  const params = req.params;
+  const q = req.query;
   // const query = JSON.parse(q)
 
   try {
-    var product
-      if (Object.keys(q).length!=0) {
-     product = await Product.findOne(q).populate("reviews").populate("categories");
-    }else{
-     product = await Product.findById(req.params.id).populate("reviews").populate("categories");
+    var product;
+    if (Object.keys(q).length != 0) {
+      product = await Product.findOne(q)
+        .populate("reviews")
+        .populate("categories");
+    } else {
+      product = await Product.findById(req.params.id)
+        .populate("reviews")
+        .populate("categories");
     }
-   
+
     if (!product) {
       return res.status(404).json({
         statusCode: 404,
@@ -89,10 +93,13 @@ const getSingleProducts = async (req, res) => {
         message: "Product not found",
       });
     }
+
+    const currentProd = { ...product["_doc"], ...product.ratingStatistics };
+
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: product,
+      results: currentProd,
       message: "Product retrieved successfully",
     });
   } catch (error) {
@@ -134,9 +141,13 @@ const updateProduct = async (req, res) => {
 };
 const deleteProducts = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, {status:"INACTIVE"}, {
-      new: true,
-    });
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { status: "INACTIVE" },
+      {
+        new: true,
+      }
+    );
     if (!product) {
       return res.status(404).json({
         statusCode: 404,
