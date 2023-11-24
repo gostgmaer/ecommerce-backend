@@ -91,7 +91,7 @@ const gethomeDetails = async (req, res) => {
       };
     });
    
-    const cate = await Category.find();
+    const cate = await Category.find({ status: { $ne: "INACTIVE" } });
     // Iterate over each category and get the product count
     const categories = await Promise.all(
       cate.map(async (category) => {
@@ -140,7 +140,7 @@ const getSingleProductDetails = async (req, res) => {
     const related = await Product.find(
       { categories: singleProduct["categories"] },
       "-__v"
-    ).populate("reviews");
+    ).populate("reviews").populate("categories");
 
     if (singleProduct) {
       res.status(200).json({
