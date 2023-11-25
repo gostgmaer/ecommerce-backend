@@ -62,6 +62,53 @@ const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
   };
 };
 
+const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
+  var query = {};
+
+  if (filter) {
+    const filterObj = JSON.parse(filter);
+    // const startwith = generateMatchQuery(filterObj["match"])
+
+    delete filterObj?.["match"];
+    delete filterObj?.["startwith"];
+
+    for (const key in filterObj) {
+      query[key] = filterObj[key];
+    }
+  }
+  let statusFilter = { status: { $ne: "INACTIVE" } };
+
+  if (query.status != "" && query.status) {
+    statusFilter = { ...statusFilter, status: query.status };
+  }
+
+  query = { ...query, ...statusFilter };
+
+  removeEmptyKeys(query);
+  var sortOptions = {};
+
+  if (sort) {
+    const [sortKey, sortOrder] = sort.split(":");
+    sortOptions[sortKey] = sortOrder === "desc" ? -1 : 1;
+  }
+
+  var skip = 0;
+
+  if (limit) {
+    skip = (parseInt(page) - 1) * parseInt(limit);
+  }
+
+  const options = {
+    skip: (page - 1) * limit,
+    limit: parseInt(limit),
+    sort: sortOptions,
+  };
+  return {
+    options: options,
+    query: query,
+  };
+};
+
 async function getLocationInfo(ip) {
   try {
     const response = await axios.get(`http://ip-api.com/json/${ip}`);
@@ -90,7 +137,6 @@ function removeEmptyKeys(obj) {
   }
 }
 
-
 const generateMatchQuery = (query) => {
   const dynamicQuery = {};
   Object.keys(query).forEach((key) => {
@@ -102,21 +148,10 @@ const generateMatchQuery = (query) => {
   return dynamicQuery;
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
 module.exports = {
   decodeToken,
   FilterOptions,
   getLocationInfo,
   removeEmptyKeys,
+  FilterOptionsSearch,
 };
