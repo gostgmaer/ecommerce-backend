@@ -20,6 +20,7 @@ const productSchema = new mongoose.Schema(
         required: true,
       },
     ],
+
     descriptions: {
       type: String,
       required: true,
@@ -64,7 +65,9 @@ const productSchema = new mongoose.Schema(
       type: String,
     },
     brandName: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Brand",
+      required: true,
     },
     slug: {
       type: String,
@@ -76,7 +79,7 @@ const productSchema = new mongoose.Schema(
     tags: {
       type: [String],
     },
-   
+
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,

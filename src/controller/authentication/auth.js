@@ -220,7 +220,7 @@ const signIn = async (req, res,next) => {
               address,
               isVerified,
               profilePicture,
-              contactNumber,
+              contactNumber,phoneNumber,dateOfBirth,
             } = user;
 
             const accessToken = jwt.sign(
@@ -255,7 +255,7 @@ const signIn = async (req, res,next) => {
                 address,
                 isVerified,
                 profilePicture,
-                contactNumber,
+                contactNumber,phoneNumber,dateOfBirth,
               },
               refressSecret,
 
@@ -443,6 +443,7 @@ const varifySession = async (req, res) => {
               address,
               isVerified,
               profilePicture,
+              phoneNumber,dateOfBirth,
               contactNumber,
             } = data;
             const accessToken = jwt.sign(
@@ -466,7 +467,7 @@ const varifySession = async (req, res) => {
                 address,
                 isVerified,
                 profilePicture,
-                contactNumber,
+                contactNumber,phoneNumber,dateOfBirth,
               },
               refressSecret,
 
