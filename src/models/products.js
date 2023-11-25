@@ -20,6 +20,7 @@ const productSchema = new mongoose.Schema(
         required: true,
       },
     ],
+    
     descriptions: {
       type: String,
       required: true,
@@ -63,8 +64,10 @@ const productSchema = new mongoose.Schema(
     manufacturerPartNumber: {
       type: String,
     },
-    brandName: {
-      type: String,
+    brandName:   {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Brand",
+      required: true,
     },
     slug: {
       type: String,
