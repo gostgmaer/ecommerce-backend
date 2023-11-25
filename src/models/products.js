@@ -20,7 +20,7 @@ const productSchema = new mongoose.Schema(
         required: true,
       },
     ],
-    
+
     descriptions: {
       type: String,
       required: true,
@@ -64,7 +64,7 @@ const productSchema = new mongoose.Schema(
     manufacturerPartNumber: {
       type: String,
     },
-    brandName:   {
+    brandName: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Brand",
       required: true,
@@ -79,7 +79,7 @@ const productSchema = new mongoose.Schema(
     tags: {
       type: [String],
     },
-   
+
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -34,10 +34,10 @@ const getProducts = async (req, res) => {
     const filterquery = FilterOptions(sort, page, limit, filter);
     const products = await Product.find(
       filterquery.query,
-      "-__v",
+      "-__v", 
       filterquery.options
     )
-      .populate("reviews")
+      .populate("reviews").populate("brandName")
       .populate("categories");
     const length = await Product.countDocuments(filterquery.query);
 

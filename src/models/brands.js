@@ -18,12 +18,11 @@ const brandSchema = new mongoose.Schema(
     },
 
     images: [],
-    display_type: {
-      type: String,
-    },
+
     contact: {
       email: String,
       phone: String,
+      website: String,
     },
     tagline: String,
     descriptions: String,
