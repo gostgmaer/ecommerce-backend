@@ -68,6 +68,10 @@ const getProducts = async (req, res) => {
   }
 };
 
+
+
+
+
 const getSingleProducts = async (req, res) => {
   const params = req.params;
   const q = req.query;
