@@ -8,6 +8,7 @@ const { FilterOptions, FilterOptionsSearch } = require("../../utils/helper");
 const Product = require("../../models/products");
 const Category = require("../../models/categories");
 const Review = require("../../models/reviews");
+const Brand = require("../../models/brands");
 
 const gethomeDetails = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
@@ -185,6 +186,7 @@ const getProductsSearch = async (req, res) => {
       .populate("reviews")
       .populate("categories");
     const length = await Product.countDocuments(filterquery.query);
+
 
     if (products) {
       const currentProd = products.map((product) => {
