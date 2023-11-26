@@ -69,6 +69,9 @@ const productSchema = new mongoose.Schema(
       ref: "Brand",
       required: true,
     },
+    overview:{
+      type: String,
+    },
     slug: {
       type: String,
     },
