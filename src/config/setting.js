@@ -25,6 +25,13 @@ const loginPath = process.env.CLIENTLOGINPAGE;
 const resetPath = process.env.CLIENTRESETPASSURL;
 const confirmPath = process.env.CLIENTCONFIRMURL;
 
+//Payment config
+
+const paypalClient = process.env.PAYPAL_CLIENT_ID;
+const paypalSecret = process.env.PAYPAL_CLIENT_SECRET;
+const stripePublic = process.env.STRIPE_PUBLIC_KEY;
+const stripeSecret = process.env.STRIPE_SECRET_KEY;
+
 module.exports = {
   dbUrl,
   jwtSecret,
@@ -40,5 +47,10 @@ module.exports = {
   host,
   loginPath,
   resetPath,
-  confirmPath,refressSecret
+  confirmPath,
+  refressSecret,
+  paypalClient,
+  paypalSecret,
+  stripePublic,
+  stripeSecret,
 };
