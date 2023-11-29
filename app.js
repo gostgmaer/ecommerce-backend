@@ -16,6 +16,8 @@ const cartRoute = require("./src/routes/cart");
 const logRoute = require("./src/routes/logs");
 const reviewRoute = require("./src/routes/reviews");
 const BrandRoute = require("./src/routes/brand");
+const PaymentRoute = require("./src/routes/payment");
+const AddressRoute = require("./src/routes/address");
 
 app.use(
   session({
@@ -49,13 +51,14 @@ app.use("/api", cartRoute);
 app.use("/api", logRoute);
 app.use("/api", reviewRoute);
 app.use("/api", BrandRoute);
+app.use("/api", PaymentRoute);
+app.use("/api", AddressRoute);
 
-const port = serverPort || 5000;
 const start = async () => {
   try {
     connectDB(dbUrl);
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
+    app.listen(serverPort, () => {
+      console.log(`Server is running on port ${serverPort}`);
     });
   } catch (error) {
     console.log("error =>", error);

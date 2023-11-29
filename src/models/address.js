@@ -21,9 +21,9 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  name: String, // User's name
-  email: String, // User's email
-  phone: String, // User's phone number
+  type: {
+    type: String,
+  },
 });
 
 const userAddressSchema = new mongoose.Schema(
@@ -33,9 +33,7 @@ const userAddressSchema = new mongoose.Schema(
       ref: "User", // Reference to the User model
       required: true,
     },
-    shippingAddress: addressSchema, // Shipping address
-    billingAddress: addressSchema, // Billing address
-    // Other address-related fields if needed, e.g., address type (home, work), etc.
+    address:addressSchema,
   },
   { timestamps: true }
 );

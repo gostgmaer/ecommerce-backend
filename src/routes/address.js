@@ -1,23 +1,26 @@
 const express = require("express");
-const addressRoute = express.Router();
+const AddressRoute = express.Router();
 
-const authenticateToken = require("../middleware/authMiddleware");
+const createMiddleWare = require("../middleware/createMiddleWare");
+
 const {
-  validateCreateContact,
-  isRequestValidated,
-} = require("../validators/contact");
+  create,
+  get,
+  getSingle,
+  update,
+  remove,
+  addAddress,
+} = require("../controller/addresses/address");
 
-resumeRoute
-  .route("/resume/create")
-  .post(
-    authenticateToken,
-    validateCreateContact,
-    isRequestValidated,
-    createResume
-  );
-resumeRoute.route("/resume/:id").get(authenticateToken, getSingleResume);
-resumeRoute.route("/resume").get(authenticateToken, getResume);
-resumeRoute.route("/resume/:id").patch(authenticateToken, updateResumeInfo);
-resumeRoute.route("/resume/:id").delete(authenticateToken, deleteResume);
+AddressRoute.route("/address").post(createMiddleWare, create);
+AddressRoute.route("/address/:id").get(createMiddleWare, getSingle);
 
-module.exports = resumeRoute;
+AddressRoute.route("/address").get(createMiddleWare, get);
+AddressRoute.route("/address/:id").patch(createMiddleWare, update);
+AddressRoute.route("/address/:id").delete(createMiddleWare, remove);
+AddressRoute.route("/address/:id/user/:user_id").post(
+  createMiddleWare,
+  addAddress
+);
+
+module.exports = AddressRoute;
