@@ -11,7 +11,7 @@ const {
 } = require("../controller/payment/payment");
 
 PaymentRoute
-  .route("/payment/checkout/pay")
+  .route("/payment/checkout/process")
   .post(processPayment);
 
 module.exports = PaymentRoute;

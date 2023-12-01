@@ -7,7 +7,7 @@ const {
 const { FilterOptions } = require("../../utils/helper");
 const Razorpay = require('razorpay');
 
-const paypal = require("paypal-rest-sdk");
+const paypal = require('@paypal/checkout-server-sdk');
 const {
   jwtSecret,
   refressSecret,
@@ -24,11 +24,11 @@ const createMailOptions = require("../../email/mailOptions");
 const transporter = require("../../email/mailTransporter");
 const Product = require("../../models/products");
 
-paypal.configure({
-  mode: "sandbox", // Change to 'live' for production
-  client_id: paypalClient,
-  client_secret: paypalSecret,
-});
+// paypal.configure({
+//   mode: "sandbox", // Change to 'live' for production
+//   client_id: paypalClient,
+//   client_secret: paypalSecret,
+// });
 
 const processPayment = async (req, res) => {
   try {
@@ -87,11 +87,18 @@ const processPayment = async (req, res) => {
       res.status(201).json(order);
     } else {
       // Handle payment failure
-      res.status(400).json({ error: 'Payment failed' });
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: paymentResult,
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      });
     }
   } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
   }
 };
 
@@ -130,7 +137,7 @@ const client = new paypal.core.PayPalHttpClient(environment);
     return { success: true, paymentId: captureResponse.result.id };
   } catch (error) {
     console.error('PayPal error:', error.message);
-    return { success: false };
+    return { success: false,message:error.message };
   }
 }
 
@@ -152,7 +159,7 @@ async function payWithRazorPay(amount) {
     return { success: true, paymentId: order.id };
   } catch (error) {
     console.error('Razor Pay error:', error.message);
-    return { success: false };
+    return { success: false,message:error.message };
   }
 }
 
