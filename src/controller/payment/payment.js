@@ -5,9 +5,9 @@ const {
   getStatusCode,
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
-const Razorpay = require('razorpay');
+const Razorpay = require("razorpay");
 
-const paypal = require('@paypal/checkout-server-sdk');
+const paypal = require("@paypal/checkout-server-sdk");
 const {
   jwtSecret,
   refressSecret,
@@ -15,6 +15,8 @@ const {
   paypalSecret,
   stripePublic,
   stripeSecret,
+  razorPayPublic,
+  razorPaySecret,
 } = require("../../config/setting");
 const User = require("../../models/user");
 const jwt = require("jsonwebtoken");
@@ -23,6 +25,7 @@ const sessionStore = require("../../db/sessionConnact");
 const createMailOptions = require("../../email/mailOptions");
 const transporter = require("../../email/mailTransporter");
 const Product = require("../../models/products");
+const Order = require("../../models/orders");
 
 // paypal.configure({
 //   mode: "sandbox", // Change to 'live' for production
@@ -35,16 +38,18 @@ const processPayment = async (req, res) => {
     // Validate the request body
 
     // Calculate subTotal and fetch product details
-    const productsWithDetails = await Promise.all(req.body.products.map(async (item) => {
-      const productDetails = await Product.findById(item.product);
-      if (!productDetails) {
-        throw new Error(`Product with ID ${item.product} not found.`);
-      }
-      return {
-        product: productDetails,
-        quantity: item.quantity,
-      };
-    }));
+    const productsWithDetails = await Promise.all(
+      req.body.products.map(async (item) => {
+        const productDetails = await Product.findById(item.product);
+        if (!productDetails) {
+          throw new Error(`Product with ID ${item.product} not found.`);
+        }
+        return {
+          product: productDetails,
+          quantity: item.quantity,
+        };
+      })
+    );
 
     const subTotal = productsWithDetails.reduce((total, item) => {
       return total + item.product.price * item.quantity;
@@ -55,20 +60,20 @@ const processPayment = async (req, res) => {
     const total = subTotal + shippingCharges;
 
     // Determine the payment method from the request body
-    const paymentMethod = req.body.payment_method;
+    const paymentMethod = "razorpay";
 
     let paymentResult;
 
-    if (paymentMethod === 'paypal') {
+    if (paymentMethod === "paypal") {
       // Implement PayPal payment logic here
       // Replace the following line with actual PayPal integration code
       paymentResult = await payWithPayPal(total);
-    } else if (paymentMethod === 'razorpay') {
+    } else if (paymentMethod === "razorpay") {
       // Implement Razor Pay payment logic here
       // Replace the following line with actual Razor Pay integration code
-      paymentResult = await payWithRazorPay(total);
+      paymentResult = await payWithRazorPay(total, req.body.user);
     } else {
-      throw new Error('Invalid payment method');
+      throw new Error("Invalid payment method");
     }
 
     // If payment is successful, create the order record
@@ -104,20 +109,22 @@ const processPayment = async (req, res) => {
 
 // Replace the following functions with actual PayPal and Razor Pay integration logic
 async function payWithPayPal(amount) {
-
-  const environment = new paypal.core.SandboxEnvironment(paypalClient, paypalSecret);
-const client = new paypal.core.PayPalHttpClient(environment);
+  const environment = new paypal.core.SandboxEnvironment(
+    paypalClient,
+    paypalSecret
+  );
+  const client = new paypal.core.PayPalHttpClient(environment);
 
   try {
     // Create an order request
     const request = new paypal.orders.OrdersCreateRequest();
     request.prefer("return=representation");
     request.requestBody({
-      intent: 'CAPTURE',
+      intent: "CAPTURE",
       purchase_units: [
         {
           amount: {
-            currency_code: 'USD',
+            currency_code: "USD",
             value: amount.toString(),
           },
         },
@@ -128,7 +135,9 @@ const client = new paypal.core.PayPalHttpClient(environment);
     const response = await client.execute(request);
 
     // Capture the order for payment
-    const captureRequest = new paypal.orders.OrdersCaptureRequest(response.result.id);
+    const captureRequest = new paypal.orders.OrdersCaptureRequest(
+      response.result.id
+    );
     captureRequest.requestBody({});
 
     const captureResponse = await client.execute(captureRequest);
@@ -136,30 +145,38 @@ const client = new paypal.core.PayPalHttpClient(environment);
     // Return success along with PayPal payment ID
     return { success: true, paymentId: captureResponse.result.id };
   } catch (error) {
-    console.error('PayPal error:', error.message);
-    return { success: false,message:error.message };
+    console.error("PayPal error:", error.message);
+    return { success: false, message: error.message };
   }
 }
 
-async function payWithRazorPay(amount) {
-
-  const razorpay = new Razorpay({
-    key_id: 'YOUR_RAZORPAY_KEY_ID',
-    key_secret: 'YOUR_RAZORPAY_KEY_SECRET',
+async function payWithRazorPay(amount, id) {
+  var instance = new Razorpay({
+    key_id: razorPayPublic,
+    key_secret: razorPaySecret,
   });
 
   try {
     // Create a Razor Pay order
-    const order = await razorpay.orders.create({
-      amount: amount * 100, // Razor Pay amount is in paisa, so multiply by 100
-      currency: 'INR', // Adjust currency as needed
+    const amountData = Number(amount.toFixed(2))
+    var options = {
+      amount: amount.toFixed(2), // amount in the smallest currency unit
+      currency: "INR",
+      receipt: id,
+    };
+
+  const orderData = await instance.orders.create(options, function (err, order) {
+    console.log(err);
+      if (err) {
+        return { success: false, message: err.message };
+      } else {
+        return { success: true, order };
+      }
     });
 
-    // Return success along with Razor Pay payment ID
-    return { success: true, paymentId: order.id };
   } catch (error) {
-    console.error('Razor Pay error:', error.message);
-    return { success: false,message:error.message };
+    console.error("Razor Pay error:", error.message);
+    return { success: false, message: error.message };
   }
 }
 

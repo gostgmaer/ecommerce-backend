@@ -6,12 +6,13 @@ const createMiddleWare = require("../middleware/createMiddleWare");
 const userMiddleWare = require("../middleware/userAccess");
 const adminMiddleware = require("../middleware/adminAccess");
 
+const checkoutMiddleware = require("../middleware/checkout");
 const {
     processPayment
 } = require("../controller/payment/payment");
 
 PaymentRoute
   .route("/payment/checkout/process")
-  .post(processPayment);
+  .post(checkoutMiddleware,processPayment);
 
 module.exports = PaymentRoute;
