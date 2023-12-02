@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const axios = require("axios"); // You may need to install axios
 
-const { jwtSecret } = require("../config/setting");
+const { jwtSecret, charactersString } = require("../config/setting");
 
 function decodeToken(token) {
   return new Promise((resolve, reject) => {
@@ -148,10 +148,21 @@ const generateMatchQuery = (query) => {
   return dynamicQuery;
 };
 
+function generateRandomString(length) {
+  let result = "";
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charactersString.length);
+    result += charactersString.charAt(randomIndex);
+  }
+
+  return result;
+}
+
 module.exports = {
   decodeToken,
   FilterOptions,
   getLocationInfo,
   removeEmptyKeys,
-  FilterOptionsSearch,
+  FilterOptionsSearch,generateRandomString
 };
