@@ -5,15 +5,15 @@ const {
   getStatusCode,
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
-const UserAddress = require("../../models/address");
+const Address = require("../../models/address");
 
 const create = async (req, res) => {
   try {
-    const newUserAddress = await UserAddress.create(req.body);
+    const newAddress = await Address.create(req.body);
     res.status(201).json({
       statusCode: 201,
       status: "Created",
-      results: newUserAddress,
+      results: newAddress,
     });
   } catch (error) {
     res.status(500).json({
@@ -28,17 +28,17 @@ const get = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
   try {
     const filterquery = FilterOptions(sort, page, limit, filter);
-    const userAddresses = await UserAddress.find(
+    const Addresses = await Address.find(
       filterquery.query,
       "-__v",
       filterquery.options
     );
-    const length = await UserAddress.countDocuments(filterquery.query);
+    const length = await Address.countDocuments(filterquery.query);
     res.status(StatusCodes.OK).json({
       statusCode: StatusCodes.OK,
       status: ReasonPhrases.OK,
       total: length,
-      results: userAddresses,
+      results: Addresses,
     });
   } catch (error) {
     res.status(500).json({
@@ -51,8 +51,8 @@ const get = async (req, res) => {
 
 const getSingle = async (req, res) => {
   try {
-    const userAddress = await UserAddress.findById(req.params.id);
-    if (!userAddress) {
+    const Address = await Address.findById(req.params.id);
+    if (!Address) {
       return res.status(404).json({
         statusCode: 404,
         status: "Not Found",
@@ -62,7 +62,7 @@ const getSingle = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: userAddress,
+      results: Address,
     });
   } catch (error) {
     res.status(500).json({
@@ -74,12 +74,12 @@ const getSingle = async (req, res) => {
 };
 const update = async (req, res) => {
   try {
-    const updatedUserAddress = await UserAddress.findByIdAndUpdate(
+    const updatedAddress = await Address.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true }
     );
-    if (!updatedUserAddress) {
+    if (!updatedAddress) {
       return res.status(404).json({
         statusCode: 404,
         status: "Not Found",
@@ -89,7 +89,7 @@ const update = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: updatedUserAddress,
+      results: updatedAddress,
     });
   } catch (error) {
     res.status(500).json({
@@ -101,10 +101,10 @@ const update = async (req, res) => {
 };
 const remove = async (req, res) => {
   try {
-    const deletedUserAddress = await UserAddress.findByIdAndRemove(
+    const deletedAddress = await Address.findByIdAndDelete(
       req.params.id
     );
-    if (!deletedUserAddress) {
+    if (!deletedAddress) {
       return res.status(404).json({
         statusCode: 404,
         status: "Not Found",
@@ -114,7 +114,7 @@ const remove = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: deletedUserAddress,
+      results: deletedAddress,
     });
   } catch (error) {
     res.status(500).json({
@@ -127,10 +127,10 @@ const remove = async (req, res) => {
 
 const addAddress = async (req, res) => {
   try {
-    const deletedUserAddress = await UserAddress.findByIdAndUpdate(
+    const deletedAddress = await Address.findByIdAndUpdate(
       req.params.id
     );
-    if (!deletedUserAddress) {
+    if (!deletedAddress) {
       return res.status(404).json({
         statusCode: 404,
         status: "Not Found",
@@ -140,7 +140,7 @@ const addAddress = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: deletedUserAddress,
+      results: deletedAddress,
     });
   } catch (error) {
     res.status(500).json({
