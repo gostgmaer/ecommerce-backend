@@ -6,6 +6,7 @@ const {
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
 const Razorpay = require("razorpay");
+const currency = require("currency.js");
 
 const paypal = require("@paypal/checkout-server-sdk");
 const {
@@ -71,7 +72,9 @@ const processPayment = async (req, res) => {
     } else if (paymentMethod === "razorpay") {
       // Implement Razor Pay payment logic here
       // Replace the following line with actual Razor Pay integration code
-      paymentResult = await payWithRazorPay(total, req.body.user);
+      paymentResult = await  payWithRazorPay(total, req.body.user);
+
+      console.log(paymentResult);
     } else {
       throw new Error("Invalid payment method");
     }
@@ -150,30 +153,49 @@ async function payWithPayPal(amount) {
   }
 }
 
+var instance = new Razorpay({
+  key_id: razorPayPublic,
+  key_secret: razorPaySecret,
+});
+
 async function payWithRazorPay(amount, id) {
-  var instance = new Razorpay({
-    key_id: razorPayPublic,
-    key_secret: razorPaySecret,
-  });
+ 
 
   try {
     // Create a Razor Pay order
-    const amountData = Number(amount.toFixed(2))
-    var options = {
-      amount: amount.toFixed(2), // amount in the smallest currency unit
-      currency: "INR",
-      receipt: id,
-    };
 
-  const orderData = await instance.orders.create(options, function (err, order) {
-    console.log(err);
+    //     var stringNumber = '1.00';
+    // var floatNumber = parseFloat(stringNumber);
+    // var value = currency("123.45");
+    // console.log(currency(value).value);
+
+    // Ensure two decimal places
+    // var numberWithTwoDecimals = floatNumber.toFixed(2);
+
+    // console.log(numberWithTwoDecimals);
+
+    var result
+
+    var options = {
+      amount: 50000,
+      currency: "INR",
+      receipt: "receipt#1",
+      notes: {
+        key1: "value3",
+        key2: "value2",
+      },
+    };
+    instance.orders.create(options, function (err, order) {
       if (err) {
+        result= { success: false, message: err.message }
         return { success: false, message: err.message };
       } else {
-        return { success: true, order };
+        result= { success: true, order }
+      return { success: true, order };
       }
     });
-
+    return result
+  
   } catch (error) {
     console.error("Razor Pay error:", error.message);
     return { success: false, message: error.message };
