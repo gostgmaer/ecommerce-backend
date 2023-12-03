@@ -1,43 +1,55 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const addressSchema = new mongoose.Schema({
-  street: {
-    type: String,
-    required: true,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Assuming there's a User model to reference
+    required: true
   },
-  city: {
+  addressname: {
     type: String,
-    required: true,
+    required: true
+  },
+  firstName: {
+    type: String,
+    required: true
+  },
+  lastName: {
+    type: String,
+    required: true
+  },
+  phone: {
+    type: String,
+    required: true
+  },
+  company: {
+    type: String
   },
   state: {
     type: String,
-    required: true,
-  },
-  postalCode: {
-    type: String,
-    required: true,
+    required: true
   },
   country: {
     type: String,
-    required: true,
+    required: true
   },
-  type: {
+  apartment: {
+    type: String
+  },
+  city: {
     type: String,
+    required: true
   },
+  postalCode: {
+    type: String,
+    required: true
+  },
+  street: {
+    type: String,
+    required: true
+  }
 });
 
-const userAddressSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model
-      required: true,
-    },
-    address:addressSchema,
-  },
-  { timestamps: true }
-);
+const Address = mongoose.model('Address', addressSchema);
 
-const UserAddress = mongoose.model("Address", userAddressSchema);
-
-module.exports = UserAddress;
+module.exports = Address;

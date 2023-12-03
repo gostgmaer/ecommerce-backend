@@ -115,7 +115,7 @@ const signUp = async (req, res) => {
   }
 };
 
-const signIn = async (req, res,next) => {
+const signIn = async (req, res, next) => {
   try {
     if (!req.body.email || !req.body.password) {
       res.status(StatusCodes.BAD_REQUEST).json({
@@ -220,7 +220,9 @@ const signIn = async (req, res,next) => {
               address,
               isVerified,
               profilePicture,
-              contactNumber,phoneNumber,dateOfBirth,
+              contactNumber,
+              phoneNumber,
+              dateOfBirth,
             } = user;
 
             const accessToken = jwt.sign(
@@ -255,7 +257,9 @@ const signIn = async (req, res,next) => {
                 address,
                 isVerified,
                 profilePicture,
-                contactNumber,phoneNumber,dateOfBirth,
+                contactNumber,
+                phoneNumber,
+                dateOfBirth,
               },
               refressSecret,
 
@@ -443,7 +447,8 @@ const varifySession = async (req, res) => {
               address,
               isVerified,
               profilePicture,
-              phoneNumber,dateOfBirth,
+              phoneNumber,
+              dateOfBirth,
               contactNumber,
             } = data;
             const accessToken = jwt.sign(
@@ -467,7 +472,9 @@ const varifySession = async (req, res) => {
                 address,
                 isVerified,
                 profilePicture,
-                contactNumber,phoneNumber,dateOfBirth,
+                contactNumber,
+                phoneNumber,
+                dateOfBirth,
               },
               refressSecret,
 
@@ -690,10 +697,19 @@ const getProfile = async (req, res) => {
     });
   } else {
     try {
-      const userId = await User.findOne(
-        { _id: id },
-        "-__v -hash_password -resetToken -resetTokenExpiration -confirmToken -update_by"
-      );
+      const userId = await User.findOne({ _id: id }).select([
+        "_id",
+        "firstName",
+        "lastName",
+        "username",
+        "email",
+        "role",
+        "updatedAt",
+        "contactNumber",
+        "profilePicture",
+        "phoneNumber",
+        "dateOfBirth",
+      ]);
 
       if (userId.id) {
         return res.status(StatusCodes.OK).json({
@@ -816,4 +832,3 @@ module.exports = {
   getProfile,
   getRefreshToken,
 };
-
