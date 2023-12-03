@@ -12,30 +12,38 @@ const create = async (req, res) => {
     const newUserAddress = await UserAddress.create(req.body);
     res.status(201).json({
       statusCode: 201,
-      status: 'Created',
+      status: "Created",
       results: newUserAddress,
     });
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
-      status: 'Internal Server Error',
+      status: "Internal Server Error",
       error: error.message,
     });
   }
 };
 
 const get = async (req, res) => {
+  const { limit, page, filter, sort } = req.query;
   try {
-    const userAddresses = await UserAddress.find();
-    res.status(200).json({
-      statusCode: 200,
-      status: 'OK',
+    const filterquery = FilterOptions(sort, page, limit, filter);
+    const userAddresses = await UserAddress.find(
+      filterquery.query,
+      "-__v",
+      filterquery.options
+    );
+    const length = await UserAddress.countDocuments(filterquery.query);
+    res.status(StatusCodes.OK).json({
+      statusCode: StatusCodes.OK,
+      status: ReasonPhrases.OK,
+      total: length,
       results: userAddresses,
     });
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
-      status: 'Internal Server Error',
+      status: "Internal Server Error",
       error: error.message,
     });
   }
@@ -47,24 +55,24 @@ const getSingle = async (req, res) => {
     if (!userAddress) {
       return res.status(404).json({
         statusCode: 404,
-        status: 'Not Found',
-        error: 'User address not found',
+        status: "Not Found",
+        error: "User address not found",
       });
     }
     res.status(200).json({
       statusCode: 200,
-      status: 'OK',
+      status: "OK",
       results: userAddress,
     });
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
-      status: 'Internal Server Error',
+      status: "Internal Server Error",
       error: error.message,
     });
   }
 };
-const update= async (req, res) => {
+const update = async (req, res) => {
   try {
     const updatedUserAddress = await UserAddress.findByIdAndUpdate(
       req.params.id,
@@ -74,42 +82,44 @@ const update= async (req, res) => {
     if (!updatedUserAddress) {
       return res.status(404).json({
         statusCode: 404,
-        status: 'Not Found',
-        error: 'User address not found',
+        status: "Not Found",
+        error: "User address not found",
       });
     }
     res.status(200).json({
       statusCode: 200,
-      status: 'OK',
+      status: "OK",
       results: updatedUserAddress,
     });
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
-      status: 'Internal Server Error',
+      status: "Internal Server Error",
       error: error.message,
     });
   }
 };
 const remove = async (req, res) => {
   try {
-    const deletedUserAddress = await UserAddress.findByIdAndRemove(req.params.id);
+    const deletedUserAddress = await UserAddress.findByIdAndRemove(
+      req.params.id
+    );
     if (!deletedUserAddress) {
       return res.status(404).json({
         statusCode: 404,
-        status: 'Not Found',
-        error: 'User address not found',
+        status: "Not Found",
+        error: "User address not found",
       });
     }
     res.status(200).json({
       statusCode: 200,
-      status: 'OK',
+      status: "OK",
       results: deletedUserAddress,
     });
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
-      status: 'Internal Server Error',
+      status: "Internal Server Error",
       error: error.message,
     });
   }
@@ -117,29 +127,29 @@ const remove = async (req, res) => {
 
 const addAddress = async (req, res) => {
   try {
-    const deletedUserAddress = await UserAddress.findByIdAndUpdate(req.params.id);
+    const deletedUserAddress = await UserAddress.findByIdAndUpdate(
+      req.params.id
+    );
     if (!deletedUserAddress) {
       return res.status(404).json({
         statusCode: 404,
-        status: 'Not Found',
-        error: 'User address not found',
+        status: "Not Found",
+        error: "User address not found",
       });
     }
     res.status(200).json({
       statusCode: 200,
-      status: 'OK',
+      status: "OK",
       results: deletedUserAddress,
     });
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
-      status: 'Internal Server Error',
+      status: "Internal Server Error",
       error: error.message,
     });
   }
 };
-
-
 
 module.exports = {
   create,

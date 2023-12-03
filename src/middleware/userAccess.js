@@ -39,6 +39,7 @@ async function userMiddleWare(req, res, next) {
     }
 
     // User is valid, so continue to the next middleware/route
+    req.params["id"]=user.id
     next();
   } catch (error) {
     console.error(error);
