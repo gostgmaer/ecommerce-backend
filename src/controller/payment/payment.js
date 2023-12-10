@@ -13,7 +13,7 @@ const {
   jwtSecret,
   refressSecret,
   paypalClient,
-  paypalSecret,
+  paypalSecret,host,
   stripePublic,
   stripeSecret,
   razorPayPublic,
@@ -212,8 +212,8 @@ const processPaymenGategay = async (req, res) => {
       payment_method: "paypal",
     },
     redirect_urls: {
-      return_url: "http://localhost:3000/success",
-      cancel_url: "http://localhost:3000/cancel",
+      return_url: `${host}/checkout/success`,
+      cancel_url:  `${host}/checkout/cancel`,
     },
     transactions: [
       {
