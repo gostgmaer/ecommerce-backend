@@ -29,6 +29,7 @@ const confirmPath = process.env.CLIENTCONFIRMURL;
 
 const paypalClient = process.env.PAYPAL_CLIENT_ID;
 const paypalSecret = process.env.PAYPAL_CLIENT_SECRET;
+const paypalMode = process.env.PAYPAL_MODE;
 const stripePublic = process.env.STRIPE_PUBLIC_KEY;
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 const razorPayPublic = process.env.ROZORPAY_PUBLIC_KEY;
@@ -55,7 +56,7 @@ module.exports = {
   emailName,
   mailchimpKey,
   mailchimpList,
-  applicaionName,
+  applicaionName,paypalMode,
   host,
   loginPath,
   resetPath,
