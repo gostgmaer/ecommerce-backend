@@ -14,6 +14,7 @@ const {
   refressSecret,
   paypalClient,
   paypalSecret,
+  host,
   stripePublic,
   stripeSecret,
   razorPayPublic,
@@ -212,25 +213,17 @@ const processPaymenGategay = async (req, res) => {
       payment_method: "paypal",
     },
     redirect_urls: {
-      return_url: "http://localhost:3000/success",
-      cancel_url: "http://localhost:3000/cancel",
+      return_url: `${host}/checkout/success`,
+      cancel_url: `${host}/checkout/cancel`,
     },
     transactions: [
       {
         item_list: {
-          items: [
-            {
-              name: "Red Sox Hat",
-              sku: "001",
-              price: "25.00",
-              currency: "USD",
-              quantity: 1,
-            },
-          ],
+          items: req.body.items
         },
         amount: {
           currency: "USD",
-          total: "25.00",
+          total: req.body.amount,
         },
         description: "Hat for the best team ever",
       },
@@ -299,39 +292,7 @@ const processPaymenGategay = async (req, res) => {
 };
 
 const paymentSuccess = async (req, res) => {
-  var create_payment_json = {
-    intent: "sale",
-    payer: {
-      payment_method: "paypal",
-    },
-    redirect_urls: {
-      return_url: "http://return.url",
-      cancel_url: "http://cancel.url",
-    },
-    transactions: [
-      {
-        item_list: {
-          items: [
-            {
-              name: "item",
-              sku: "item",
-              price: "1.00",
-              currency: "USD",
-              quantity: 1,
-            },
-          ],
-        },
-        amount: {
-          currency: "USD",
-          total: "1.00",
-        },
-        description: "This is the payment description.",
-      },
-    ],
-  };
-
-  const payerId = req.query.PayerID;
-  const paymentId = req.query.paymentId;
+  const { payerId, paymentId } = req.body;
 
   const execute_payment_json = {
     payer_id: payerId,
@@ -350,11 +311,17 @@ const paymentSuccess = async (req, res) => {
     execute_payment_json,
     function (error, payment) {
       if (error) {
-        console.log(error.response);
-        throw error;
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message: error.message,
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+        });
       } else {
-        console.log(JSON.stringify(payment));
-        res.send("Success");
+        return res.status(StatusCodes.OK).json({
+          results: payment,
+          statusCode: StatusCodes.OK,
+          status: ReasonPhrases.OK,
+        });
       }
     }
   );
@@ -362,4 +329,5 @@ const paymentSuccess = async (req, res) => {
 
 module.exports = {
   processPaymenGategay,
+  paymentSuccess,
 };

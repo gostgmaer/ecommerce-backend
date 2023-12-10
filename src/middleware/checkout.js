@@ -36,11 +36,39 @@ const bcrypt = require("bcrypt");
 const createMailOptions = require("../email/mailOptions");
 const transporter = require("../email/mailTransporter");
 const { generateRandomString } = require("../utils/helper");
-
+const Product = require("../models/products");
+const Order = require("../models/orders");
 async function checkoutMiddleware(req, res, next) {
   // Check if the user has a Bearer token in the Authorization header
   const { authorization } = req.headers;
   try {
+    var newProd = [];
+    const newproducts = await Promise.all(
+      req.body.products.map(async (prod) => {
+        const product = await Product.findById(prod["product"]);
+        prod.product = product._doc;
+        // return [...{product._doc}];
+      })
+    );
+req.body.items=[]
+    req.body.products.map((item) => {
+      const obj = {
+        name: item.product.title,
+        sku: item.product.sku,
+        price: item.product.salePrice.toFixed(2),
+        currency: "USD",
+        quantity: item.quantity,
+      };
+      req.body.items.push(obj)
+    });
+
+    const sum = req.body.products.reduce(
+      (accumulator, currentValue) => accumulator + currentValue.product.salePrice,
+      0
+    );
+
+    req.body.amount = sum.toFixed(2);
+
     if (!authorization || !authorization.startsWith("Bearer ")) {
       const { firstName, lastName, email, username } = req.body;
       if (!firstName || !lastName || !email || !username) {
@@ -61,6 +89,7 @@ async function checkoutMiddleware(req, res, next) {
           updated_user_id: user.id,
           updated_by: user.email,
         };
+
         req.body = { ...newBody, ...req.body };
         next();
       } else {
