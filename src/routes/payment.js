@@ -8,11 +8,11 @@ const adminMiddleware = require("../middleware/adminAccess");
 
 const checkoutMiddleware = require("../middleware/checkout");
 const {
-    processPayment
+  processPaymenGategay
 } = require("../controller/payment/payment");
 
 PaymentRoute
   .route("/payment/checkout/process")
-  .post(checkoutMiddleware,processPayment);
+  .post(checkoutMiddleware,processPaymenGategay);
 
 module.exports = PaymentRoute;
