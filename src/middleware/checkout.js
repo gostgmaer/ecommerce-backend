@@ -54,6 +54,14 @@ async function checkoutMiddleware(req, res, next) {
       const user = await User.findOne({ email });
 
       if (user) {
+        const newBody = {
+          user: user.id,
+          created_user_id: user.id,
+          created_by: user.email,
+          updated_user_id: user.id,
+          updated_by: user.email,
+        };
+        req.body = { ...newBody, ...req.body };
         next();
       } else {
         const token = jwt.sign(
@@ -114,7 +122,6 @@ async function checkoutMiddleware(req, res, next) {
                 )
               )
               .then(() => {
-              
                 const newBody = {
                   user: data.id,
                   created_user_id: data.id,
@@ -122,7 +129,6 @@ async function checkoutMiddleware(req, res, next) {
                   updated_user_id: data.id,
                   updated_by: data.email,
                 };
-
                 req.body = { ...newBody, ...req.body };
                 next();
               })
@@ -147,6 +153,14 @@ async function checkoutMiddleware(req, res, next) {
 
       if (!user) {
       } else {
+        const newBody = {
+          user: user.id,
+          created_user_id: user.id,
+          created_by: user.email,
+          updated_user_id: user.id,
+          updated_by: user.email,
+        };
+        req.body = { ...newBody, ...req.body };
         next();
       }
     }
