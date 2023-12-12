@@ -26,3 +26,6 @@ orderRoute.route("/orders/user/:userId/:orderId").get(userMiddleWare);
 orderRoute.route("/orders/user/:userId/:orderId").patch(userMiddleWare,UpdatebyMiddleWare);
 orderRoute.route("/orders/user/:userId/:orderId").put(userMiddleWare,UpdatebyMiddleWare);
 orderRoute.route("/orders/user/:userId/:orderId").delete(userMiddleWare);
+
+
+module.exports = orderRoute;

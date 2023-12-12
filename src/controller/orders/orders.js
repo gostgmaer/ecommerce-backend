@@ -119,14 +119,28 @@ const getOrders = async (req, res) => {
       filterquery.query,
       "-__v ",
       filterquery.options
-    );
+    )
+      .populate("user") // Populating the 'user' reference
+      .populate("items.product") // Populating the 'product' reference within 'items'
+      .populate("address.billing") // Populating the 'billing' reference within 'address'
+      .populate("address.shipping"); // Populating the 'shipping' reference within 'address'
 
     if (Orders) {
+      Orders.forEach((element) => {
+        const { firstName, lastName, email, phoneNumber } = element.user;
+        element.user = {
+          firstName,
+          lastName,
+          email,
+          phoneNumber,
+        };
+      });
+
       return res.status(StatusCodes.OK).json({
         message: `Orders data has been Loaded Successfully!`,
         statusCode: StatusCodes.OK,
         status: ReasonPhrases.OK,
-        result: Orders,
+        results: Orders,
       });
     } else {
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -161,7 +175,7 @@ const getSingleOrder = async (req, res) => {
           message: `Orderdata data Loaded Successfully!`,
           statusCode: StatusCodes.OK,
           status: ReasonPhrases.OK,
-          result: OrderId,
+          results: OrderId,
         });
       } else {
         return res.status(StatusCodes.NOT_FOUND).json({
@@ -191,40 +205,16 @@ const updateOrder = async (req, res) => {
       });
     }
 
-    const Order = await Order.findOne({ _id: id });
+    const update = await Order.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
 
-    var myquery = { _id: id };
-
-    if (Order) {
-      try {
-        const body = { ...req.body };
-        Order.updateOne(myquery, { $set: req.body }, { upsert: true }).then(
-          (data, err) => {
-            if (err)
-              res.status(StatusCodes.NOT_MODIFIED).json({
-                message: "Update Failed",
-                status: ReasonPhrases.NOT_MODIFIED,
-                statusCode: StatusCodes.NOT_MODIFIED,
-                cause: err,
-              });
-            else {
-              res.status(StatusCodes.OK).json({
-                message: "Order Update Successfully",
-                status: ReasonPhrases.OK,
-                statusCode: StatusCodes.OK,
-                data: data,
-              });
-            }
-          }
-        );
-      } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message: error.message,
-          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-          status: ReasonPhrases.INTERNAL_SERVER_ERROR,
-          cause: error,
-        });
-      }
+    if (update) {
+      res.status(StatusCodes.OK).json({
+        message: "Order Update Successfully",
+        status: ReasonPhrases.OK,
+        statusCode: StatusCodes.OK,
+      });
     } else {
       res.status(StatusCodes.BAD_REQUEST).json({
         message: "Order does not exist..!",
@@ -237,7 +227,6 @@ const updateOrder = async (req, res) => {
       message: error.message,
       statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
       status: ReasonPhrases.INTERNAL_SERVER_ERROR,
-      cause: error,
     });
   }
 };

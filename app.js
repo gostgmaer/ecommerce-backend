@@ -18,6 +18,7 @@ const reviewRoute = require("./src/routes/reviews");
 const BrandRoute = require("./src/routes/brand");
 const PaymentRoute = require("./src/routes/payment");
 const AddressRoute = require("./src/routes/address");
+const orderRoute = require("./src/routes/orders");
 
 app.use(
   session({
@@ -48,11 +49,12 @@ app.use("/api", categoryRoute);
 app.use("/api", productRoute);
 app.use("/api", publicRoute);
 app.use("/api", cartRoute);
+app.use("/api", AddressRoute);
 app.use("/api", logRoute);
 app.use("/api", reviewRoute);
 app.use("/api", BrandRoute);
 app.use("/api", PaymentRoute);
-app.use("/api", AddressRoute);
+app.use("/api", orderRoute);
 
 const start = async () => {
   try {
