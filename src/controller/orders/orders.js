@@ -125,6 +125,8 @@ const getOrders = async (req, res) => {
       .populate("address.billing") // Populating the 'billing' reference within 'address'
       .populate("address.shipping"); // Populating the 'shipping' reference within 'address'
 
+      const length = await Order.countDocuments(filterquery.query);
+
     if (Orders) {
       Orders.forEach((element) => {
         const { firstName, lastName, email, phoneNumber } = element.user;
@@ -141,6 +143,7 @@ const getOrders = async (req, res) => {
         statusCode: StatusCodes.OK,
         status: ReasonPhrases.OK,
         results: Orders,
+        total: length,
       });
     } else {
       return res.status(StatusCodes.NOT_FOUND).json({
