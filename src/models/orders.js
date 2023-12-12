@@ -11,35 +11,51 @@ const orderItemSchema = new mongoose.Schema({
     required: true,
     min: 1,
   },
-  // Embedded product details
-  productName: String,
-  productImage: String,
-  payment_method: String,
-  useBillingAddressForShipping: String,
-  additionalNotes: String,
-  couponcode: String,
-  address: {
-    billing: {},
-    shipping: {},
-  },
-  productPrice: Number,
+
 });
 
 const orderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model
+      ref: "User", 
       required: true,
     },
-    items: [orderItemSchema], // Array of ordered items
+    additionalNotes: String,
+    couponcode: String,
+    address: {
+      billing: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address", 
+        required: true,
+      },
+      shipping: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address", 
+        required: true,
+      },
+    },
+    items: [orderItemSchema],
     total: {
       type: Number,
       required: true,
     },
+    currency:{
+      type:String
+    },
+    orderCreatedtime:{
+      type: String,
+    },
+    payer:{},
+    payment_method: String,
+    transsaction_id: {
+      type: String,
+      required: true,
+    },
+    transactions:{},
     status: {
       type: String,
-      enum: ["pending","confirmed", "shipped", "delivered"],
+      enum: ["pending","cancel","pending_payment" ,"confirmed", "shipped", "delivered"],
       default: "pending",
     },
     // Other order-related fields if needed, e.g., shipping address, payment information, etc.

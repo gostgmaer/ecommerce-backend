@@ -38,19 +38,25 @@ const transporter = require("../email/mailTransporter");
 const { generateRandomString } = require("../utils/helper");
 const Product = require("../models/products");
 const Order = require("../models/orders");
+const Address = require("../models/address");
 async function checkoutMiddleware(req, res, next) {
   // Check if the user has a Bearer token in the Authorization header
   const { authorization } = req.headers;
   try {
     var newProd = [];
+    req.body.items = [];
     const newproducts = await Promise.all(
       req.body.products.map(async (prod) => {
         const product = await Product.findById(prod["product"]);
         prod.product = product._doc;
+        req.body.items.push({
+          product: product.id,
+          quantity: prod.quantity,
+        });
         // return [...{product._doc}];
       })
     );
-req.body.items=[]
+    req.body.productItems = [];
     req.body.products.map((item) => {
       const obj = {
         name: item.product.title,
@@ -59,15 +65,21 @@ req.body.items=[]
         currency: "USD",
         quantity: item.quantity,
       };
-      req.body.items.push(obj)
+      req.body.productItems.push(obj);
     });
 
-    const sum = req.body.products.reduce(
-      (accumulator, currentValue) => accumulator + currentValue.product.salePrice,
+    const calculateItemTotal = (item) => {
+      const price = parseFloat(item.price);
+      const quantity = item.quantity;
+      return price * quantity;
+    };
+    const sum = req.body.productItems.reduce(
+      (accumulator, currentValue) =>
+        accumulator + calculateItemTotal(currentValue),
       0
     );
 
-    req.body.amount = sum.toFixed(2);
+    req.body.total = sum.toFixed(2);
 
     if (!authorization || !authorization.startsWith("Bearer ")) {
       const { firstName, lastName, email, username } = req.body;
@@ -90,7 +102,22 @@ req.body.items=[]
           updated_by: user.email,
         };
 
-        req.body = { ...newBody, ...req.body };
+        const billing = await Address.create({
+          ...req.body.billing,
+          ...newBody,
+          phone: req.body.billing.phoneNumber,
+        });
+        const shipping = await Address.create({
+          ...req.body.shipping,
+          ...newBody,
+          phone: req.body.shipping.phoneNumber,
+        });
+
+        req.body = {
+          ...newBody,
+          ...req.body,
+          address: { billing: billing.id, shipping: shipping.id },
+        };
         next();
       } else {
         const token = jwt.sign(
@@ -150,7 +177,7 @@ req.body.items=[]
                   mailBody
                 )
               )
-              .then(() => {
+              .then(async () => {
                 const newBody = {
                   user: data.id,
                   created_user_id: data.id,
@@ -158,7 +185,22 @@ req.body.items=[]
                   updated_user_id: data.id,
                   updated_by: data.email,
                 };
-                req.body = { ...newBody, ...req.body };
+                const billing = await Address.create({
+                  ...req.body.billing,
+                  ...newBody,
+                  phone: req.body.billing.phoneNumber,
+                });
+                const shipping = await Address.create({
+                  ...req.body.shipping,
+                  ...newBody,
+                  phone: req.body.shipping.phoneNumber,
+                });
+
+                req.body = {
+                  ...newBody,
+                  ...req.body,
+                  address: { billing: billing.id, shipping: shipping.id },
+                };
                 next();
               })
               .catch((error) => {
