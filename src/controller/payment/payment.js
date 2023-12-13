@@ -7,7 +7,7 @@ const {
 const { FilterOptions } = require("../../utils/helper");
 const Razorpay = require("razorpay");
 const currency = require("currency.js");
-
+const razorpayHelper = require("./razorpayHelper");
 var paypal = require("paypal-rest-sdk");
 const {
   jwtSecret,
@@ -42,12 +42,14 @@ var instance = new Razorpay({
 const processPaymenGategay = async (req, res) => {
   const { payment_method } = req.body;
   if (payment_method == "paypal") {
-    paypalPaymentCreate(req.body,res);
+    paypalPaymentCreate(req.body, res);
+  } else if (payment_method == "creditCard") {
+    razorpayPaymentCreate(req.body, res);
   }
 };
 
 const paymentSuccess = async (req, res) => {
-  const { PayerID, paymentId, token,method } = req.body;
+  const { PayerID, paymentId, token, method } = req.body;
 
   try {
     const order = await Order.findOne({ transsaction_id: paymentId });
@@ -151,7 +153,7 @@ const paymentCancel = async (req, res) => {
   // );
 };
 
-const paypalPaymentCreate = (body,res) => {
+const paypalPaymentCreate = (body, res) => {
   const create_payment_json = {
     intent: "sale",
     payer: {
@@ -216,8 +218,7 @@ const paypalPaymentCreate = (body,res) => {
   }
 };
 
-const razorpayPaymentCreate = (body,res) => {
-
+const razorpayPaymentCreate = async (body, res) => {
   const create_payment_json = {
     intent: "sale",
     payer: {
@@ -242,36 +243,11 @@ const razorpayPaymentCreate = (body,res) => {
   };
 
   try {
-    paypal.payment.create(create_payment_json, async function (error, payment) {
-      if (error) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message: error.message,
-          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-          status: ReasonPhrases.INTERNAL_SERVER_ERROR,
-        });
-      } else {
-        const redirectObj = payment.links.find(
-          (item) => item.rel === "approval_url"
-        );
-
-        const transObj = {
-          payer: payment.payer,
-          transsaction_id: payment.id,
-          transactions: payment.transactions,
-          status: "pending",
-          total: body.total,
-          currency: body.currency,
-          orderCreatedtime: payment.create_time,
-        };
-
-        const order = new Order({ ...body, ...transObj });
-        const saveOrder = await order.save();
-        return res.status(StatusCodes.OK).json({
-          results: redirectObj,
-          statusCode: StatusCodes.OK,
-          status: ReasonPhrases.OK,
-        });
-      }
+    const response = await razorpayHelper.createOrder(body);
+    return res.status(StatusCodes.OK).json({
+      results: response,
+      statusCode: StatusCodes.OK,
+      status: ReasonPhrases.OK,
     });
   } catch (error) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -280,10 +256,31 @@ const razorpayPaymentCreate = (body,res) => {
       status: ReasonPhrases.INTERNAL_SERVER_ERROR,
     });
   }
+};
+const razorpayVerifyPayment = async (req, res) => {
+ 
+  const paymentId = req.body.razorpay_payment_id;
+  const orderId = req.body.razorpay_order_id;
+  const signature = req.body.razorpay_signature;
+
+  // Verify the payment signature
+  const isValidSignature = razorpayHelper.verifyPaymentSignature(req.rawBody, signature);
+
+  if (isValidSignature) {
+    // Log payment details or perform other actions on successful payment
+    console.log(`Payment successful. Payment ID: ${paymentId}, Order ID: ${orderId}`);
+    
+    // Respond to the client indicating successful payment
+    res.send('Payment successful');
+  } else {
+    // Payment verification failed, handle error logic here
+    res.status(400).send('Payment verification failed');
+  }
+
 };
 
 module.exports = {
   processPaymenGategay,
   paymentSuccess,
-  paymentCancel,
+  paymentCancel,razorpayVerifyPayment
 };
