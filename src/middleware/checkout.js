@@ -222,6 +222,8 @@ async function checkoutMiddleware(req, res, next) {
       // Query the user document in MongoDB
       const user = await User.findById(decoded["user_id"]);
 
+     
+
       if (!user) {
       } else {
         const newBody = {
@@ -231,7 +233,20 @@ async function checkoutMiddleware(req, res, next) {
           updated_user_id: user.id,
           updated_by: user.email,
         };
-        req.body = { ...newBody, ...req.body };
+
+        const billing = await Address.create({
+          ...req.body.billing,
+          ...newBody,
+          phone: req.body.billing.phoneNumber,
+        });
+        const shipping = await Address.create({
+          ...req.body.shipping,
+          ...newBody,
+          phone: req.body.shipping.phoneNumber,
+        });
+
+
+        req.body = { ...newBody, ...req.body,  address: { billing: billing.id, shipping: shipping.id } };
         next();
       }
     }

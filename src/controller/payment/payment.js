@@ -35,73 +35,19 @@ paypal.configure({
   client_secret: paypalSecret,
 });
 
+var instance = new Razorpay({
+  key_id: razorPayPublic,
+  key_secret: razorPaySecret,
+});
 const processPaymenGategay = async (req, res) => {
-  const create_payment_json = {
-    intent: "sale",
-    payer: {
-      payment_method: "paypal",
-    },
-    redirect_urls: {
-      return_url: `${host}/checkout/success`,
-      cancel_url: `${host}/checkout/cancel`,
-    },
-    transactions: [
-      {
-        item_list: {
-          items: req.body.productItems,
-        },
-        amount: {
-          currency: "USD",
-          total: req.body.total,
-        },
-        description: "Hat for the best team ever",
-      },
-    ],
-  };
-
-  try {
-    paypal.payment.create(create_payment_json, async function (error, payment) {
-      if (error) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message: error.message,
-          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-          status: ReasonPhrases.INTERNAL_SERVER_ERROR,
-        });
-      } else {
-        const redirectObj = payment.links.find(
-          (item) => item.rel === "approval_url"
-        );
-
-        const transObj = {
-          payer: payment.payer,
-          transsaction_id: payment.id,
-          transactions: payment.transactions,
-          status: "pending",
-          total: req.body.total,
-          currency: req.body.currency,
-          orderCreatedtime: payment.create_time,
-        };
-
-        const order = new Order({ ...req.body, ...transObj });
-        const saveOrder = await order.save();
-        return res.status(StatusCodes.OK).json({
-          results: redirectObj,
-          statusCode: StatusCodes.OK,
-          status: ReasonPhrases.OK,
-        });
-      }
-    });
-  } catch (error) {
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: error.message,
-      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
-    });
+  const { payment_method } = req.body;
+  if (payment_method == "paypal") {
+    paypalPaymentCreate(req.body,res);
   }
 };
 
 const paymentSuccess = async (req, res) => {
-  const { PayerID, paymentId, token } = req.body;
+  const { PayerID, paymentId, token,method } = req.body;
 
   try {
     const order = await Order.findOne({ transsaction_id: paymentId });
@@ -203,6 +149,137 @@ const paymentCancel = async (req, res) => {
   //     }
   //   }
   // );
+};
+
+const paypalPaymentCreate = (body,res) => {
+  const create_payment_json = {
+    intent: "sale",
+    payer: {
+      payment_method: "paypal",
+    },
+    redirect_urls: {
+      return_url: `${host}/checkout/success?method=${body.payment_method}`,
+      cancel_url: `${host}/checkout/cancel?method=${body.payment_method}`,
+    },
+    transactions: [
+      {
+        item_list: {
+          items: body.productItems,
+        },
+        amount: {
+          currency: "USD",
+          total: body.total,
+        },
+        description: "Hat for the best team ever",
+      },
+    ],
+  };
+
+  try {
+    paypal.payment.create(create_payment_json, async function (error, payment) {
+      if (error) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message: error.message,
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+        });
+      } else {
+        const redirectObj = payment.links.find(
+          (item) => item.rel === "approval_url"
+        );
+
+        const transObj = {
+          payer: payment.payer,
+          transsaction_id: payment.id,
+          transactions: payment.transactions,
+          status: "pending",
+          total: body.total,
+          currency: body.currency,
+          orderCreatedtime: payment.create_time,
+        };
+
+        const order = new Order({ ...body, ...transObj });
+        const saveOrder = await order.save();
+        return res.status(StatusCodes.OK).json({
+          results: redirectObj,
+          statusCode: StatusCodes.OK,
+          status: ReasonPhrases.OK,
+        });
+      }
+    });
+  } catch (error) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
+const razorpayPaymentCreate = (body,res) => {
+
+  const create_payment_json = {
+    intent: "sale",
+    payer: {
+      payment_method: "paypal",
+    },
+    redirect_urls: {
+      return_url: `${host}/checkout/success?method=${body.payment_method}`,
+      cancel_url: `${host}/checkout/cancel?method=${body.payment_method}`,
+    },
+    transactions: [
+      {
+        item_list: {
+          items: body.productItems,
+        },
+        amount: {
+          currency: "USD",
+          total: body.total,
+        },
+        description: "Hat for the best team ever",
+      },
+    ],
+  };
+
+  try {
+    paypal.payment.create(create_payment_json, async function (error, payment) {
+      if (error) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message: error.message,
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+        });
+      } else {
+        const redirectObj = payment.links.find(
+          (item) => item.rel === "approval_url"
+        );
+
+        const transObj = {
+          payer: payment.payer,
+          transsaction_id: payment.id,
+          transactions: payment.transactions,
+          status: "pending",
+          total: body.total,
+          currency: body.currency,
+          orderCreatedtime: payment.create_time,
+        };
+
+        const order = new Order({ ...body, ...transObj });
+        const saveOrder = await order.save();
+        return res.status(StatusCodes.OK).json({
+          results: redirectObj,
+          statusCode: StatusCodes.OK,
+          status: ReasonPhrases.OK,
+        });
+      }
+    });
+  } catch (error) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
+  }
 };
 
 module.exports = {
