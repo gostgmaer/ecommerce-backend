@@ -14,7 +14,7 @@ const getusers = async (req, res) => {
     const filterquery = FilterOptions(sort, page, limit, filter);
     const users = await User.find(
       filterquery.query,
-      "-__v -hash_password -resetToken -resetTokenExpiration -confirmToken -update_by",
+      "-__v -hash_password -resetToken -resetTokenExpiration -confirmToken -update_by -session -tokens",
       filterquery.options
     );
     const length = await User.countDocuments(filterquery.query);
@@ -24,7 +24,7 @@ const getusers = async (req, res) => {
         message: `Users data has been Loaded Successfully!`,
         statusCode: StatusCodes.OK,
         status: ReasonPhrases.OK,
-        result: users,
+        results: users,
         total: length,
       });
     } else {
