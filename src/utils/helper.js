@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const axios = require("axios"); // You may need to install axios
+const os = require("os");
 
 const { jwtSecret, charactersString } = require("../config/setting");
 
@@ -159,10 +160,69 @@ function generateRandomString(length) {
   return result;
 }
 
+async function getLocalIpAddress() {
+  const interfaces = os.networkInterfaces();
+  let ipAddress,IPv4,IPv6;
+
+  // Iterate over network interfaces
+  Object.keys(interfaces).forEach((interfaceName) => {
+    const interfaceInfo = interfaces[interfaceName];
+
+    // Iterate over addresses for the current interface
+    interfaceInfo.forEach((address) => {
+      if (address.family === "IPv4" && !address.internal) {
+        // Found a non-internal IPv4 address
+        IPv4=address.address
+      }else if (address.family === 'IPv6' && !address.internal) {
+        // Found a non-internal IPv6 address
+        IPv6 = address.address
+      }
+    });
+  });
+
+  return {IPv4,IPv6};
+}
+
+function getPublicIpAddress() {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: "api64.ipify.org", // You can use other services like 'api.ipify.org' or 'api.ident.me'
+      path: "/?format=json",
+      method: "GET",
+    };
+
+    const req = http.request(options, (res) => {
+      let data = "";
+
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+
+      res.on("end", () => {
+        try {
+          const result = JSON.parse(data);
+          resolve(result.ip);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+
+    req.on("error", (error) => {
+      reject(error);
+    });
+
+    req.end();
+  });
+}
+
 module.exports = {
   decodeToken,
   FilterOptions,
   getLocationInfo,
   removeEmptyKeys,
-  FilterOptionsSearch,generateRandomString
+  FilterOptionsSearch,
+  generateRandomString,
+  getLocalIpAddress,
+  getPublicIpAddress,
 };
