@@ -10,12 +10,11 @@ const logEntrySchema = new mongoose.Schema(
     params: Object,
     useragent:String,
     response: Object,
-    ip: String, // Add IP field
+    ip: {
+      type:Object
+    }, // Add IP field
     location: {
-      city: String,
-      region: String,
-      country: String,
-      zip: String,
+     type:Object
     },
   },
   { timestamps: true }
