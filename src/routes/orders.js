@@ -21,7 +21,7 @@ orderRoute.route("/orders/:id").get(userMiddleWare,getSingleOrder);
 orderRoute.route("/orders/:id").put(userMiddleWare,UpdatebyMiddleWare,updateOrder);
 orderRoute.route("/orders/:id").patch(userMiddleWare,UpdatebyMiddleWare,updateOrder);
 orderRoute.route("/orders/:id").delete(userMiddleWare,UpdatebyMiddleWare,deleteOrder);
-orderRoute.route("/orders/user/:userId").get(userMiddleWare);
+orderRoute.route("/orders/user/:userId").get(userMiddleWare,getOrders);
 orderRoute.route("/orders/user/:userId/:orderId").get(userMiddleWare);
 orderRoute.route("/orders/user/:userId/:orderId").patch(userMiddleWare,UpdatebyMiddleWare);
 orderRoute.route("/orders/user/:userId/:orderId").put(userMiddleWare,UpdatebyMiddleWare);

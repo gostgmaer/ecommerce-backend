@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Address",
     },
+    orders: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order", // Reference to the Product model
+    },
     profilePicture: String,
     resetToken: String,
     resetTokenExpiration: Date,
