@@ -688,7 +688,7 @@ const changedPassword = async (req, res) => {
 };
 
 const getProfile = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.body;
   if (!id) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       message: "user id is not provide",
