@@ -267,6 +267,10 @@ const signIn = async (req, res, next) => {
                 expiresIn: "30d",
               }
             );
+            res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
+            res.cookie('refreshToken', refreshToken, { path: '/', httpOnly: true });
+            res.cookie('idToken', id_token, { path: '/', httpOnly: true });
+
 
             res.status(StatusCodes.OK).json({
               access_token: accessToken,
@@ -482,7 +486,9 @@ const varifySession = async (req, res) => {
                 expiresIn: "30d",
               }
             );
-
+            res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
+            res.cookie('idToken', id_token, { path: '/', httpOnly: true });
+            
             res.status(StatusCodes.OK).json({
               accessToken,
               id_token,
@@ -798,6 +804,9 @@ const getRefreshToken = async (req, res) => {
                       expiresIn: "1d",
                     }
                   );
+                  res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
+            
+                  
                   res.status(StatusCodes.OK).json({
                     accessToken,
                     message: "Authorized",
