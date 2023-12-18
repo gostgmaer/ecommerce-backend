@@ -20,7 +20,7 @@ const gethomeDetails = async (req, res) => {
     const filterquery = FilterOptions(sort, page, limit, filter);
     const featured = await Product.find(
       { isFeatured: true, status: "publish" },
-      "-__v",
+      "-status -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v -seo_info",
       filterquery.options
     )
       .populate("reviews")
@@ -51,7 +51,7 @@ const gethomeDetails = async (req, res) => {
         },
         status: "publish",
       },
-      "-__v",
+      "-status -productUPCEAN -manufacturerPartNumber -isFeatured -gtin -createdAt -updatedAt -__v -seo_info",
       filterquery.options
     )
       .populate("reviews")
@@ -67,7 +67,7 @@ const gethomeDetails = async (req, res) => {
 
     const newArive = await Product.find(
       { createdAt: { $gte: sevenDaysAgo }, status: "publish" },
-      "-__v",
+      "-status -productUPCEAN -manufacturerPartNumber -isFeatured -gtin -createdAt -updatedAt -seo_info",
       filterquery.options
     )
       .populate("reviews")
@@ -81,21 +81,10 @@ const gethomeDetails = async (req, res) => {
       };
     });
 
-    const products = await Product.find(
-      filterquery.query,
-      "-__v",
-      filterquery.options
-    );
 
-    const currentall = products.map((product) => {
-      const ratingStatistics = product.ratingStatistics;
-      return {
-        ...product["_doc"],
-        ...ratingStatistics,
-      };
-    });
 
-    const cate = await Category.find({ status: { $ne: "INACTIVE" } });
+
+    const cate = await Category.find({ status: { $ne: "INACTIVE" } } , "images name slug");
     // Iterate over each category and get the product count
     const categories = await Promise.all(
       cate.map(async (category) => {
@@ -116,15 +105,7 @@ const gethomeDetails = async (req, res) => {
       message: "Products retrieved successfully",
     });
 
-    if (products) {
-      const currentProd = products.map((product) => {
-        const ratingStatistics = product.ratingStatistics;
-        return {
-          ...product["_doc"],
-          ...ratingStatistics,
-        };
-      });
-    }
+
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
@@ -140,9 +121,9 @@ const getSingleProductDetails = async (req, res) => {
   const q = req.query;
 
   try {
-    const singleProduct = await Product.findOne(q)
+    const singleProduct = await Product.findOne(q,  "-status -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v",)
       .populate("reviews")
-      .populate("categories");
+      .populate("categories").populate("brand");
 
     const currentProd = {
       ...singleProduct["_doc"],
@@ -151,10 +132,10 @@ const getSingleProductDetails = async (req, res) => {
 
     const related = await Product.find(
       { categories: singleProduct["categories"] },
-      "-__v"
+      "-status -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v",
     )
       .populate("reviews")
-      .populate("categories");
+      .populate("categories").populate("brand");
 
     if (singleProduct) {
       res.status(200).json({
@@ -180,7 +161,7 @@ const getProductsSearch = async (req, res) => {
 
   try {
     const filterquery = FilterOptionsSearch(sort, page, limit, filter);
-    const products = await Product.find(filterquery.query, "-__v", {
+    const products = await Product.find(filterquery.query, "-status -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v", {
       ...filterquery.options,
     })
       .populate("reviews")
