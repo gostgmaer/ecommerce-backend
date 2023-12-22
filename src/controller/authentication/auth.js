@@ -694,8 +694,8 @@ const changedPassword = async (req, res) => {
 };
 
 const getProfile = async (req, res) => {
-  const { id } = req.body;
-  if (!id) {
+  const { user } = req.params;
+  if (!user) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       message: "user id is not provide",
       statusCode: StatusCodes.BAD_REQUEST,
@@ -703,7 +703,7 @@ const getProfile = async (req, res) => {
     });
   } else {
     try {
-      const userId = await User.findOne({ _id: id }).select([
+      const userId = await User.findOne({ _id: user }).select([
         "_id",
         "firstName",
         "lastName",
