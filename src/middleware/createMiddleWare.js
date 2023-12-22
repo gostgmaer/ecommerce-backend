@@ -19,10 +19,9 @@ async function createMiddleWare(req, res, next) {
         created_user_id: userData.id,
         created_by: userData.email,
         updated_user_id: userData.id,
-        updated_by: userData.email,
-        ...userData._doc,
+        updated_by: userData.email
       };
-      delete newBody._id;
+      
 
       // Add user_id, created_by, and updated_by to the request body
       // req.body["created_user_id"] = decoded.user_id; // Assuming 'id' contains user_id
