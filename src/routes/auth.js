@@ -29,7 +29,8 @@ const {
 
 authRoute.route("/user/auth/register").post(validateSignUpRequest, isRequestValidated,signUp);
 authRoute.route("/user/auth/confirm-account/:token").post(accountConfirm);
-authRoute.route("/user/auth/login").post(validateSignIpRequest, isRequestValidated,signIn);
+authRoute.
+route("/user/auth/login").post(validateSignIpRequest, isRequestValidated,signIn);
 authRoute.route("/user/auth/verify/session").post(varifySession);
 authRoute.route("/user/auth/session/refresh/token").post(getRefreshToken);
 authRoute.route("/user/auth/reset-password/:token").post(validateResetpassword,isRequestValidated,resetPassword);
