@@ -9,19 +9,36 @@ const Wishlist = require("../../models/wishlist");
 
 const createWishlist = async (req, res) => {
   const { product } = req.body;
-
   try {
-    const wishlist = new Wishlist({
-      user: req.params.user,
-      products: req.body.products // Assuming products field contains an array of product IDs
-    });
-    const savedWishlist = await wishlist.save();
-    res.status(201).json({
-      statusCode: 201,
-      status: "Created",
-      result: { id: savedWishlist.id },
-      message: "Wishlist created",
-    });
+    const wishlists = await Wishlist.findOne({ user: req.params.user });
+    if (wishlists) {
+      wishlists.products.push(product); // Assuming product field contains a product ID
+      await wishlists.save();
+      res.status(200).json({
+        statusCode: 200,
+        status: "OK",
+        message: "Add Successful",
+      });
+    } else {
+      const wishlist = new Wishlist({
+        user: req.params.user,
+        products: product // Assuming products field contains an array of product IDs
+      });
+      const savedWishlist = await wishlist.save();
+      res.status(201).json({
+        statusCode: 201,
+        status: "Created",
+        result: { id: savedWishlist.id },
+        message: "Wishlist created",
+      });
+    }
+
+
+
+
+
+
+
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
@@ -49,7 +66,6 @@ const addProduct = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      result: wishlist,
       message: "Add Successful",
     });
   } catch (error) {
@@ -91,7 +107,7 @@ const removeProduct = async (req, res) => {
 
 const getWishlist = async (req, res) => {
   try {
-    const wishlists = await Wishlist.find({ user: req.params.user }).populate('products');
+    const wishlists = await Wishlist.findOne({ user: req.params.user }).populate('products');
     const length = await Wishlist.countDocuments({ user: req.params.user });
     res.status(200).json({
       statusCode: 200,
@@ -209,5 +225,5 @@ module.exports = {
   getSingle,
   update,
   remove,
-  getWishlist,removeProduct,addProduct,createWishlist
+  getWishlist, removeProduct, addProduct, createWishlist
 };
