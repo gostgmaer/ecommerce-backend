@@ -93,7 +93,6 @@ const removeProduct = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      result: wishlist,
       message: "Remove Successful",
     });
   } catch (error) {
@@ -114,7 +113,7 @@ const getWishlist = async (req, res) => {
       status: "OK",
       message: "Wishlists retrieved successfully",
       result: wishlists,
-      total: length,
+      total: wishlists.products.length,
     });
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
