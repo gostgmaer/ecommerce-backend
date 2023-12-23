@@ -123,7 +123,7 @@ const getSingleProductDetails = async (req, res) => {
   try {
     const singleProduct = await Product.findOne(q,  "-status -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v",)
       .populate("reviews")
-      .populate("categories").populate("brand");
+      .populate("categories").populate("brandName");
 
     const currentProd = {
       ...singleProduct["_doc"],
@@ -135,7 +135,7 @@ const getSingleProductDetails = async (req, res) => {
       "-status -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v",
     )
       .populate("reviews")
-      .populate("categories").populate("brand");
+      .populate("categories").populate("brandName");
 
     if (singleProduct) {
       res.status(200).json({

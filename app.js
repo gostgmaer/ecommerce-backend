@@ -65,7 +65,11 @@ const start = async () => {
       console.log(`Server is running on port ${serverPort}`);
     });
   } catch (error) {
-    console.log("error =>", error);
+    res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      message: error.message,
+    });
   }
 };
 start();
