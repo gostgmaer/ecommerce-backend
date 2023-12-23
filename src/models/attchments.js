@@ -1,8 +1,13 @@
-var admin = require("firebase-admin");
+const mongoose = require('mongoose');
 
-var serviceAccount = require("path/to/serviceAccountKey.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://development-382105-default-rtdb.asia-southeast1.firebasedatabase.app"
+const fileSchema = new mongoose.Schema({
+  filename: String,
+  originalname: String,
+  contentType: String,
+  url:String,
+  uploadDate: { type: Date, default: Date.now },
 });
+
+const Attachments = mongoose.model('Attachments', fileSchema);
+
+module.exports = Attachments;

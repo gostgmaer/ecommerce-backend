@@ -20,6 +20,8 @@ const PaymentRoute = require("./src/routes/payment");
 const AddressRoute = require("./src/routes/address");
 const orderRoute = require("./src/routes/orders");
 const wishlistRoute = require("./src/routes/wishlist");
+const AttachmentRoute = require("./src/routes/attachments");
+
 
 app.use(
   session({
@@ -57,6 +59,7 @@ app.use("/api", BrandRoute);
 app.use("/api", PaymentRoute);
 app.use("/api", orderRoute);
 app.use("/api", wishlistRoute);
+app.use("/api", AttachmentRoute);
 
 const start = async () => {
   try {
