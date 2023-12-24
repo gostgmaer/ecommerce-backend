@@ -28,8 +28,9 @@ const gethomeDetails = async (req, res) => {
 
     const currentfeatured = featured.map((product) => {
       const ratingStatistics = product.ratingStatistics;
+      const simplifiedImages = product.getSimplifiedImages();
       return {
-        ...product["_doc"],
+        ...product["_doc"],images:simplifiedImages,
         ...ratingStatistics,
       };
     });
@@ -59,8 +60,9 @@ const gethomeDetails = async (req, res) => {
 
     const currentflash = flashDeal.map((product) => {
       const ratingStatistics = product.ratingStatistics;
+      const simplifiedImages = product.getSimplifiedImages();
       return {
-        ...product["_doc"],
+        ...product["_doc"],images:simplifiedImages,
         ...ratingStatistics,
       };
     });
@@ -75,8 +77,9 @@ const gethomeDetails = async (req, res) => {
 
     const currentnewArive = newArive.map((product) => {
       const ratingStatistics = product.ratingStatistics;
+      const simplifiedImages = product.getSimplifiedImages();
       return {
-        ...product["_doc"],
+        ...product["_doc"],images:simplifiedImages,
         ...ratingStatistics,
       };
     });
@@ -172,9 +175,17 @@ const getProductsSearch = async (req, res) => {
     if (products) {
       const currentProd = products.map((product) => {
         const ratingStatistics = product.ratingStatistics;
+        var cate = []
+
+        product.categories.forEach(element => {
+          cate.push({name:element.name,slug:element.slug})
+        });
+        const simplifiedImages = product.getSimplifiedImages();
+        // const reviewImage = product.reviews.getSimplifiedImages();
+
         return {
-          ...product["_doc"],
-          ...ratingStatistics,
+          ...product._doc,images:simplifiedImages,
+          ...ratingStatistics,categories:cate
         };
       });
 

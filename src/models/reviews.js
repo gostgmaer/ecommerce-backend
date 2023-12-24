@@ -32,6 +32,12 @@ const reviewSchema = new mongoose.Schema({
   // You can add more fields as needed
 }, { timestamps: true });
 
+reviewSchema.methods.getSimplifiedImages = function() {
+  return this.images.map(image => ({
+    url: image.url,
+    name: image.name,
+  }));
+};
 const Review = mongoose.model('Review', reviewSchema);
 
 module.exports = Review;
