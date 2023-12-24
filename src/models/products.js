@@ -129,6 +129,13 @@ productSchema.virtual("ratingStatistics").get(function () {
   }
 });
 
+productSchema.methods.getSimplifiedImages = function() {
+  return this.images.map(image => ({
+    url: image.url,
+    name: image.name,
+  }));
+};
+
 const Product = mongoose.model("Product", productSchema);
 
 module.exports = Product;
