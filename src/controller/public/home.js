@@ -178,7 +178,7 @@ const getProductsSearch = async (req, res) => {
         var cate = []
 
         product.categories.forEach(element => {
-          cate.push({name:element.name,slug:element.slug})
+          cate.push({name:element.name,slug:element.slug,_id:element._id})
         });
         const simplifiedImages = product.getSimplifiedImages();
         // const reviewImage = product.reviews.getSimplifiedImages();
