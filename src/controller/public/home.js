@@ -161,7 +161,7 @@ const getProductsSearch = async (req, res) => {
 
   try {
     const filterquery = FilterOptionsSearch(sort, page, limit, filter);
-    const products = await Product.find(filterquery.query, "-status -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v", {
+    const products = await Product.find(filterquery.query, "-status -seo_info -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v", {
       ...filterquery.options,
     })
       .populate("reviews")
