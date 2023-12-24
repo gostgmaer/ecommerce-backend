@@ -141,7 +141,7 @@ const signIn = async (req, res, next) => {
             },
             process.env.JWT_SECRET,
             {
-              expiresIn: "1h",
+              expiresIn: "2h",
             }
           );
 

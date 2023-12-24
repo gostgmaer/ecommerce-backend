@@ -160,8 +160,6 @@ const getSingleProductDetails = async (req, res) => {
 const getProductsSearch = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
 
-  var sortObj = {};
-
   try {
     const filterquery = FilterOptionsSearch(sort, page, limit, filter);
     const products = await Product.find(filterquery.query, "-status -seo_info -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v", {
