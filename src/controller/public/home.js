@@ -4,7 +4,7 @@ const {
   getReasonPhrase,
   getStatusCode,
 } = require("http-status-codes");
-const { FilterOptions, FilterOptionsSearch } = require("../../utils/helper");
+const { FilterOptions, FilterOptionsSearch, advanceQueryHandling } = require("../../utils/helper");
 const Product = require("../../models/products");
 const Category = require("../../models/categories");
 const Review = require("../../models/reviews");
@@ -103,7 +103,7 @@ const gethomeDetails = async (req, res) => {
         featured: currentfeatured,
         flashDeal: currentflash,
         newArive: currentnewArive,
-      
+
       },
       message: "Products retrieved successfully",
     });
@@ -170,11 +170,11 @@ const getProductsSearch = async (req, res) => {
 
 
     if (products) {
-      const currentProd = products.map((product) => {
+      const currentProd = products?.map((product) => {
         const ratingStatistics = product.ratingStatistics;
         var cate = []
 
-        product.categories.forEach(element => {
+        product.categories?.forEach(element => {
           cate.push({ name: element.name, slug: element.slug, _id: element._id })
         });
         const simplifiedImages = product.getSimplifiedImages();
@@ -205,20 +205,20 @@ const getProductsSearch = async (req, res) => {
 };
 const getPublicBrands = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
-  
+
   try {
     const filterquery = FilterOptions(sort, page, limit, filter);
-    const responseData = await Brand.find( filterquery.query,
+    const responseData = await Brand.find(filterquery.query,
       "slug name images",
       filterquery.options);
 
-      const count = await Promise.all(
-        responseData.map(async (item) => {
-          const total = await item.getProductCount('publish');
-          const simplifiedImages = item?.getSimplifiedImages();
-          return { ...item._doc, total,images:simplifiedImages };
-        })
-      );
+    const count = await Promise.all(
+      responseData.map(async (item) => {
+        const total = await item.getProductCount('publish');
+        const simplifiedImages = item?.getSimplifiedImages();
+        return { ...item._doc, total, images: simplifiedImages };
+      })
+    );
 
     const length = await Brand.countDocuments(filterquery.query);
 
@@ -243,17 +243,17 @@ const publicCategoriesDetails = async (req, res) => {
 
   try {
     const filterquery = FilterOptions(sort, page, limit, filter);
-    const responseData = await Category.find( filterquery.query,
+    const responseData = await Category.find(filterquery.query,
       "slug name images",
       filterquery.options);
 
-      const categoryCounts = await Promise.all(
-        responseData.map(async (category) => {
-          const total = await category.getProductCount('publish');
-          const simplifiedImages = category?.getSimplifiedImages();
-          return { ...category._doc, total,images:simplifiedImages };
-        })
-      );
+    const categoryCounts = await Promise.all(
+      responseData.map(async (category) => {
+        const total = await category.getProductCount('publish');
+        const simplifiedImages = category?.getSimplifiedImages();
+        return { ...category._doc, total, images: simplifiedImages };
+      })
+    );
 
     const length = await Category.countDocuments(filterquery.query);
 
@@ -273,10 +273,27 @@ const publicCategoriesDetails = async (req, res) => {
     });
   }
 };
-
+const getAllTage = async (req, res) => {
+  try {
+    const tags = await Product.distinct('tags');
+    res.status(200).json({
+      statusCode: 200,
+      status: "OK",
+      message: "Tags retrieved successfully",
+      results: tags,
+      total: tags.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      message: error.message,
+    });
+  }
+}
 
 module.exports = {
   gethomeDetails,
   getSingleProductDetails,
-  getProductsSearch,publicCategoriesDetails,getPublicBrands
+  getProductsSearch, publicCategoriesDetails, getPublicBrands,getAllTage
 };
