@@ -4,7 +4,7 @@ const {
   getReasonPhrase,
   getStatusCode,
 } = require("http-status-codes");
-const { FilterOptions, FilterOptionsSearch } = require("../../utils/helper");
+const { FilterOptions, FilterOptionsSearch,advanceQueryHandling } = require("../../utils/helper");
 const Product = require("../../models/products");
 const Category = require("../../models/categories");
 const Review = require("../../models/reviews");
@@ -170,11 +170,11 @@ const getProductsSearch = async (req, res) => {
 
 
     if (products) {
-      const currentProd = products.map((product) => {
+      const currentProd = products?.map((product) => {
         const ratingStatistics = product.ratingStatistics;
         var cate = []
 
-        product.categories.forEach(element => {
+        product.categories?.forEach(element => {
           cate.push({ name: element.name, slug: element.slug, _id: element._id })
         });
         const simplifiedImages = product.getSimplifiedImages();

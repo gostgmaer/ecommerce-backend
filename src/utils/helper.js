@@ -3,6 +3,7 @@ const axios = require("axios"); // You may need to install axios
 const os = require("os");
 
 const { jwtSecret, charactersString } = require("../config/setting");
+const { log } = require("console");
 
 function decodeToken(token) {
   return new Promise((resolve, reject) => {
@@ -29,6 +30,8 @@ const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
     for (const key in filterObj) {
       query[key] = filterObj[key];
     }
+
+
   }
   let statusFilter = { status: { $ne: "INACTIVE" } };
 
@@ -68,24 +71,28 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
 
   if (filter) {
     const filterObj = JSON.parse(filter);
+    const currObj = parseAndExtractValues(filterObj, ["categories", "salePrice", "rating", "brandName", "discount", "isAvailable", "tags"])
+    //  const advance= advanceQueryHandling(filter)
     // const startwith = generateMatchQuery(filterObj["match"])
 
+    const advFilter = generateQuery(currObj)
     delete filterObj?.["match"];
     delete filterObj?.["startwith"];
 
     for (const key in filterObj) {
       query[key] = filterObj[key];
     }
+    let statusFilter = { status: { $ne: "INACTIVE" } };
+
+    if (query.status != "" && query.status) {
+      statusFilter = { ...statusFilter, status: query.status };
+    }
+
+    query = { ...query, ...statusFilter, ...advFilter };
+
+    removeEmptyKeys(query);
   }
-  let statusFilter = { status: { $ne: "INACTIVE" } };
 
-  if (query.status != "" && query.status) {
-    statusFilter = { ...statusFilter, status: query.status };
-  }
-
-  query = { ...query, ...statusFilter };
-
-  removeEmptyKeys(query);
   var sortOptions = {};
 
   if (sort) {
@@ -118,29 +125,26 @@ const advanceQueryHandling = (filter) => {
 
   if (filter) {
     const filterObj = JSON.parse(filter);
-    // const startwith = generateMatchQuery(filterObj["match"])
 
-    delete filterObj?.["match"];
-    delete filterObj?.["startwith"];
-
+    const Obj = parseAndExtractValues(filterObj, ["categories", "salePrice", "rating", "brandName", "discount", "isAvailable", "tags"])
     for (const key in filterObj) {
       query[key] = filterObj[key];
     }
 
-  let statusFilter = { status: { $ne: "INACTIVE" } };
+    let statusFilter = { status: { $ne: "INACTIVE" } };
 
-  if (query.status != "" && query.status) {
-    statusFilter = { ...statusFilter, status: query.status };
-  }
+    if (query.status != "" && query.status) {
+      statusFilter = { ...statusFilter, status: query.status };
+    }
 
-  query = { ...query, ...statusFilter };
+    query = { ...query, ...statusFilter };
 
-  removeEmptyKeys(query);
+    removeEmptyKeys(query);
   }
 
 
   return {
-   
+
     query: query,
   };
 };
@@ -204,7 +208,7 @@ function generateRandomString(length) {
 
 async function getLocalIpAddress() {
   const interfaces = os.networkInterfaces();
-  let ipAddress,IPv4,IPv6;
+  let ipAddress, IPv4, IPv6;
 
   // Iterate over network interfaces
   Object.keys(interfaces).forEach((interfaceName) => {
@@ -214,15 +218,15 @@ async function getLocalIpAddress() {
     interfaceInfo.forEach((address) => {
       if (address.family === "IPv4" && !address.internal) {
         // Found a non-internal IPv4 address
-        IPv4=address.address
-      }else if (address.family === 'IPv6' && !address.internal) {
+        IPv4 = address.address
+      } else if (address.family === 'IPv6' && !address.internal) {
         // Found a non-internal IPv6 address
         IPv6 = address.address
       }
     });
   });
 
-  return {IPv4,IPv6};
+  return { IPv4, IPv6 };
 }
 
 function getPublicIpAddress() {
@@ -258,6 +262,40 @@ function getPublicIpAddress() {
   });
 }
 
+function parseAndExtractValues(filterObj, keys) {
+  const filterObjData = {};
+  keys.forEach(key => {
+    if (filterObj[key]) {
+      filterObjData[key] = Object.values(filterObj[key]);
+    }
+  });
+
+  return filterObjData;
+}
+
+const generateQuery = (filterkeys) => {
+ var currObj = {}
+  if (filterkeys.salePrice) {
+    currObj = {
+      ...currObj, salePrice: {
+        $gte: Number(filterkeys.salePrice[0]),
+        $lte: Number(filterkeys.salePrice[1]),
+      }
+    }
+
+  }
+  if (filterkeys.categories) {
+    currObj = {
+      ...currObj, categories: filterkeys.categories
+    }
+
+  }
+
+
+  return currObj
+}
+
+
 module.exports = {
   decodeToken,
   FilterOptions,
@@ -266,5 +304,5 @@ module.exports = {
   FilterOptionsSearch,
   generateRandomString,
   getLocalIpAddress,
-  getPublicIpAddress,
+  getPublicIpAddress, advanceQueryHandling
 };
