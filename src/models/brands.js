@@ -46,6 +46,16 @@ brandSchema.methods.getProductCount = async function (status = "publish") {
   }
 };
 
+brandSchema.methods.getSimplifiedImages = function() {
+  if (this.images) {
+    return this.images.map(image => ({
+      url: image.url,
+      name: image.name,
+    }));
+  }
+ 
+};
+
 const Brand = mongoose.model("Brand", brandSchema);
 
 module.exports = Brand;

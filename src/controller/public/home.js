@@ -30,7 +30,7 @@ const gethomeDetails = async (req, res) => {
       const ratingStatistics = product.ratingStatistics;
       const simplifiedImages = product.getSimplifiedImages();
       return {
-        ...product["_doc"],images:simplifiedImages,
+        ...product["_doc"], images: simplifiedImages,
         ...ratingStatistics,
       };
     });
@@ -62,7 +62,7 @@ const gethomeDetails = async (req, res) => {
       const ratingStatistics = product.ratingStatistics;
       const simplifiedImages = product.getSimplifiedImages();
       return {
-        ...product["_doc"],images:simplifiedImages,
+        ...product["_doc"], images: simplifiedImages,
         ...ratingStatistics,
       };
     });
@@ -79,7 +79,7 @@ const gethomeDetails = async (req, res) => {
       const ratingStatistics = product.ratingStatistics;
       const simplifiedImages = product.getSimplifiedImages();
       return {
-        ...product["_doc"],images:simplifiedImages,
+        ...product["_doc"], images: simplifiedImages,
         ...ratingStatistics,
       };
     });
@@ -87,14 +87,14 @@ const gethomeDetails = async (req, res) => {
 
 
 
-    const cate = await Category.find({ status: { $ne: "INACTIVE" } } , "images name slug");
-    // Iterate over each category and get the product count
-    const categories = await Promise.all(
-      cate.map(async (category) => {
-        const productCount = await category.getProductCount("publish");
-        return { ...category._doc, productCount };
-      })
-    );
+    // const cate = await Category.find({ status: { $ne: "INACTIVE" } }, "images name slug");
+    // // Iterate over each category and get the product count
+    // const categories = await Promise.all(
+    //   cate.map(async (category) => {
+    //     const productCount = await category.getProductCount("publish");
+    //     return { ...category._doc, productCount };
+    //   })
+    // );
 
     res.status(200).json({
       statusCode: 200,
@@ -103,7 +103,7 @@ const gethomeDetails = async (req, res) => {
         featured: currentfeatured,
         flashDeal: currentflash,
         newArive: currentnewArive,
-        categories,
+      
       },
       message: "Products retrieved successfully",
     });
@@ -124,7 +124,7 @@ const getSingleProductDetails = async (req, res) => {
   const q = req.query;
 
   try {
-    const singleProduct = await Product.findOne(q,  "-status -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v",)
+    const singleProduct = await Product.findOne(q, "-status -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v",)
       .populate("reviews")
       .populate("categories").populate("brandName");
 
@@ -156,7 +156,6 @@ const getSingleProductDetails = async (req, res) => {
     });
   }
 };
-
 const getProductsSearch = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
 
@@ -176,14 +175,14 @@ const getProductsSearch = async (req, res) => {
         var cate = []
 
         product.categories.forEach(element => {
-          cate.push({name:element.name,slug:element.slug,_id:element._id})
+          cate.push({ name: element.name, slug: element.slug, _id: element._id })
         });
         const simplifiedImages = product.getSimplifiedImages();
         // const reviewImage = product.reviews.getSimplifiedImages();
 
         return {
-          ...product._doc,images:simplifiedImages,
-          ...ratingStatistics,categories:cate
+          ...product._doc, images: simplifiedImages,
+          ...ratingStatistics, categories: cate
         };
       });
 
@@ -204,9 +203,80 @@ const getProductsSearch = async (req, res) => {
     });
   }
 };
+const getPublicBrands = async (req, res) => {
+  const { limit, page, filter, sort } = req.query;
+  
+  try {
+    const filterquery = FilterOptions(sort, page, limit, filter);
+    const responseData = await Brand.find( filterquery.query,
+      "slug name images",
+      filterquery.options);
+
+      const count = await Promise.all(
+        responseData.map(async (item) => {
+          const total = await item.getProductCount('publish');
+          const simplifiedImages = item?.getSimplifiedImages();
+          return { ...item._doc, total,images:simplifiedImages };
+        })
+      );
+
+    const length = await Brand.countDocuments(filterquery.query);
+
+    res.status(200).json({
+      statusCode: 200,
+      status: "OK",
+      message: "retrieved successfully",
+      results: count,
+      total: length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      results: null,
+      message: error.message,
+    });
+  }
+};
+const publicCategoriesDetails = async (req, res) => {
+  const { limit, page, filter, sort } = req.query;
+
+  try {
+    const filterquery = FilterOptions(sort, page, limit, filter);
+    const responseData = await Category.find( filterquery.query,
+      "slug name images",
+      filterquery.options);
+
+      const categoryCounts = await Promise.all(
+        responseData.map(async (category) => {
+          const total = await category.getProductCount('publish');
+          const simplifiedImages = category?.getSimplifiedImages();
+          return { ...category._doc, total,images:simplifiedImages };
+        })
+      );
+
+    const length = await Category.countDocuments(filterquery.query);
+
+    res.status(200).json({
+      statusCode: 200,
+      status: "OK",
+      message: "Categorys retrieved successfully",
+      results: categoryCounts,
+      total: length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      results: null,
+      message: error.message,
+    });
+  }
+};
+
 
 module.exports = {
   gethomeDetails,
   getSingleProductDetails,
-  getProductsSearch,
+  getProductsSearch,publicCategoriesDetails,getPublicBrands
 };
