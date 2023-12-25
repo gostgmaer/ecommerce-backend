@@ -45,10 +45,13 @@ categorySchema.methods.getProductCount = async function (status = "publish") {
 };
 
 categorySchema.methods.getSimplifiedImages = function() {
-  return this.images.map(image => ({
-    url: image.url,
-    name: image.name,
-  }));
+  if (this.images) {
+    return this.images.map(image => ({
+      url: image.url,
+      name: image.name,
+    }));
+  }
+ 
 };
 
 const Category = mongoose.model("Category", categorySchema);

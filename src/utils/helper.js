@@ -110,6 +110,48 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
   };
 };
 
+
+
+
+const advanceQueryHandling = (filter) => {
+  var query = {};
+
+  if (filter) {
+    const filterObj = JSON.parse(filter);
+    // const startwith = generateMatchQuery(filterObj["match"])
+
+    delete filterObj?.["match"];
+    delete filterObj?.["startwith"];
+
+    for (const key in filterObj) {
+      query[key] = filterObj[key];
+    }
+
+  let statusFilter = { status: { $ne: "INACTIVE" } };
+
+  if (query.status != "" && query.status) {
+    statusFilter = { ...statusFilter, status: query.status };
+  }
+
+  query = { ...query, ...statusFilter };
+
+  removeEmptyKeys(query);
+  }
+
+
+  return {
+   
+    query: query,
+  };
+};
+
+
+
+
+
+
+
+
 async function getLocationInfo(ip) {
   try {
     const response = await axios.get(`http://ip-api.com/json/${ip}`);

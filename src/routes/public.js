@@ -3,13 +3,15 @@ var session = require("express-session");
 const publicRoute = express.Router();
 
 const {
-    gethomeDetails,getSingleProductDetails,getProductsSearch
+    gethomeDetails,getSingleProductDetails,getProductsSearch,publicCategoriesDetails,getPublicBrands
 } = require("../controller/public/home");
 
-publicRoute.route("/home/data").get(gethomeDetails);
+publicRoute.route("/public/home/data").get(gethomeDetails);
 
-publicRoute.route("/product/details").get(getSingleProductDetails);
-publicRoute.route("/product/search/data").get(getProductsSearch);
+publicRoute.route("/public/product/details").get(getSingleProductDetails);
+publicRoute.route("/public/product/search").get(getProductsSearch);
+publicRoute.route("/public/categories").get(publicCategoriesDetails);
+publicRoute.route("/public/brands").get(getPublicBrands);
 
 
 module.exports = publicRoute;
