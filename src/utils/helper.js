@@ -72,9 +72,6 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
   if (filter) {
     const filterObj = JSON.parse(filter);
     const currObj = parseAndExtractValues(filterObj, ["categories", "salePrice", "rating", "brandName", "discount", "isAvailable", "tags"])
-    //  const advance= advanceQueryHandling(filter)
-    // const startwith = generateMatchQuery(filterObj["match"])
-
     const advFilter = generateQuery(currObj)
     delete filterObj?.["match"];
     delete filterObj?.["startwith"];
@@ -274,7 +271,7 @@ function parseAndExtractValues(filterObj, keys) {
 }
 
 const generateQuery = (filterkeys) => {
- var currObj = {}
+  var currObj = {}
   if (filterkeys.salePrice) {
     currObj = {
       ...currObj, salePrice: {
@@ -290,6 +287,24 @@ const generateQuery = (filterkeys) => {
     }
 
   }
+  if (filterkeys.brandName) {
+    currObj = {
+      ...currObj, brandName: filterkeys.brandName
+    }
+
+  }
+  if (filterkeys.tags) {
+    currObj = {
+      ...currObj, tags: filterkeys.tags
+    }
+
+  }
+  if (filterkeys.isAvailable) {
+    currObj = {
+      ...currObj, isAvailable: filterkeys.isAvailable
+    }
+  }
+
 
 
   return currObj
