@@ -75,6 +75,8 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
     const advFilter = generateQuery(currObj)
     delete filterObj?.["match"];
     delete filterObj?.["startwith"];
+    delete filterObj?.["discount"];
+
 
     for (const key in filterObj) {
       query[key] = filterObj[key];
@@ -86,7 +88,7 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
     }
 
     query = { ...query, ...statusFilter, ...advFilter };
-
+    delete query?.["rating"];
     removeEmptyKeys(query);
   }
 
@@ -108,9 +110,15 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
     limit: parseInt(limit),
     sort: sortOptions,
   };
+  const extra = {
+    rating: query.minValue
+  }
+
+  delete query?.["minValue"];
   return {
     options: options,
     query: query,
+    extra: extra
   };
 };
 
@@ -270,7 +278,7 @@ function parseAndExtractValues(filterObj, keys) {
   return filterObjData;
 }
 
-const generateQuery = (filterkeys) => {
+const generateQuery =(filterkeys) => {
   var currObj = {}
   if (filterkeys.salePrice) {
     currObj = {
@@ -302,6 +310,37 @@ const generateQuery = (filterkeys) => {
   if (filterkeys.isAvailable) {
     currObj = {
       ...currObj, isAvailable: filterkeys.isAvailable
+    }
+  }
+  // if (filterkeys.rating) {
+  //   const numberArray = filterkeys.rating.map(Number);
+  //   const minValue = Math.max(...numberArray);
+
+  //   currObj = {
+  //     ...currObj, "reviews": { $exists: true, $not: { $size: 0 } }, minValue
+  //   }
+
+  // }
+  if (filterkeys.discount) {
+    const numberArray = filterkeys.discount.map(Number);
+    const minValue = Math.min(...numberArray);
+    currObj = {
+      ...currObj,
+      $expr: {
+        $gte: [
+          { $multiply: [100, { $divide: [{ $subtract: ['$price', '$salePrice'] }, '$price'] }] },
+          minValue
+        ]
+      }
+    },
+    {
+      $expr: {
+        $lte: [
+          { $multiply: [100, { $divide: [{ $subtract: ['$price', '$salePrice'] }, '$price'] }] },
+          100
+        ]
+      }
+
     }
   }
 
