@@ -76,6 +76,7 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
     delete filterObj?.["match"];
     delete filterObj?.["startwith"];
 
+
     for (const key in filterObj) {
       query[key] = filterObj[key];
     }
@@ -86,7 +87,7 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
     }
 
     query = { ...query, ...statusFilter, ...advFilter };
-
+    delete query?.["rating"];
     removeEmptyKeys(query);
   }
 
@@ -108,9 +109,15 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
     limit: parseInt(limit),
     sort: sortOptions,
   };
+  const extra = {
+    rating: query.minValue
+  }
+
+  delete query?.["minValue"];
   return {
     options: options,
     query: query,
+    extra: extra
   };
 };
 
@@ -304,6 +311,15 @@ const generateQuery = (filterkeys) => {
       ...currObj, isAvailable: filterkeys.isAvailable
     }
   }
+  // if (filterkeys.rating) {
+  //   const numberArray = filterkeys.rating.map(Number);
+  //   const minValue = Math.max(...numberArray);
+
+  //   currObj = {
+  //     ...currObj, "reviews": { $exists: true, $not: { $size: 0 } }, minValue
+  //   }
+
+  // }
 
 
 
