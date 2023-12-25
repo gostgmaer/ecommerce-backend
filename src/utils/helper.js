@@ -75,6 +75,7 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
     const advFilter = generateQuery(currObj)
     delete filterObj?.["match"];
     delete filterObj?.["startwith"];
+    delete filterObj?.["discount"];
 
 
     for (const key in filterObj) {
@@ -277,7 +278,7 @@ function parseAndExtractValues(filterObj, keys) {
   return filterObjData;
 }
 
-const generateQuery = (filterkeys) => {
+const generateQuery =(filterkeys) => {
   var currObj = {}
   if (filterkeys.salePrice) {
     currObj = {
@@ -320,6 +321,28 @@ const generateQuery = (filterkeys) => {
   //   }
 
   // }
+  if (filterkeys.discount) {
+    const numberArray = filterkeys.discount.map(Number);
+    const minValue = Math.min(...numberArray);
+    currObj = {
+      ...currObj,
+      $expr: {
+        $gte: [
+          { $multiply: [100, { $divide: [{ $subtract: ['$price', '$salePrice'] }, '$price'] }] },
+          minValue
+        ]
+      }
+    },
+    {
+      $expr: {
+        $lte: [
+          { $multiply: [100, { $divide: [{ $subtract: ['$price', '$salePrice'] }, '$price'] }] },
+          100
+        ]
+      }
+
+    }
+  }
 
 
 
