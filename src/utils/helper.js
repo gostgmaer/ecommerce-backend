@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const axios = require("axios"); // You may need to install axios
 const os = require("os");
-
+const mongoose = require("mongoose");
 const { jwtSecret, charactersString } = require("../config/setting");
 const { log } = require("console");
 
@@ -73,11 +73,16 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
     const filterObj = JSON.parse(filter);
     const currObj = parseAndExtractValues(filterObj, ["categories", "salePrice", "rating", "brandName", "discount", "isAvailable", "tags"])
     const advFilter = generateQuery(currObj)
-    delete filterObj?.["match"];
-    delete filterObj?.["startwith"];
+    const regex = new RegExp(filterObj.search, "i");
+    const search= {
+     
+        // { title: { $regex: regex } }, // Case-insensitive title match
+        // { slug: { $regex: regex } }, // Case-insensitive slug match
+        // { brandName: { $regex: regex } }, // Case-insensitive brandName match
+    
+    }
     delete filterObj?.["discount"];
-
-
+    delete filterObj?.["search"];
     for (const key in filterObj) {
       query[key] = filterObj[key];
     }
@@ -87,7 +92,7 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
       statusFilter = { ...statusFilter, status: query.status };
     }
 
-    query = { ...query, ...statusFilter, ...advFilter };
+    query = { ...query, ...statusFilter, ...advFilter,...search };
     delete query?.["rating"];
     removeEmptyKeys(query);
   }
