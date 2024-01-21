@@ -130,35 +130,6 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
 
 
 
-const advanceQueryHandling = (filter) => {
-  var query = {};
-
-  if (filter) {
-    const filterObj = JSON.parse(filter);
-
-    const Obj = parseAndExtractValues(filterObj, ["categories", "salePrice", "rating", "brandName", "discount", "isAvailable", "tags"])
-    for (const key in filterObj) {
-      query[key] = filterObj[key];
-    }
-
-    let statusFilter = { status: { $ne: "INACTIVE" } };
-
-    if (query.status != "" && query.status) {
-      statusFilter = { ...statusFilter, status: query.status };
-    }
-
-    query = { ...query, ...statusFilter };
-
-    removeEmptyKeys(query);
-  }
-
-
-  return {
-
-    query: query,
-  };
-};
-
 
 
 
@@ -178,7 +149,9 @@ async function getLocationInfo(ip) {
     };
   } catch (error) {
     console.error("Error getting location info:", error);
-    return {};
+    return {
+      ip: ip,
+    };
   }
 }
 
@@ -363,5 +336,5 @@ module.exports = {
   FilterOptionsSearch,
   generateRandomString,
   getLocalIpAddress,
-  getPublicIpAddress, advanceQueryHandling
+  getPublicIpAddress
 };
