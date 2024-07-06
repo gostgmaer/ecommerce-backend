@@ -19,17 +19,17 @@ const getAllLogs = async (req, res) => {
     );
     const length = await LogEntry.countDocuments(filterquery.query);
 
-    res.status(200).json({
-      statusCode: 200,
-      status: "OK",
+    res.status(StatusCodes.OK).json({
+      statusCode: StatusCodes.OK,
+      status: ReasonPhrases.OK,
       message: "Carts retrieved successfully",
       results: responseData,
       total: length,
     });
   } catch (error) {
-    res.status(500).json({
-      statusCode: 500,
-      status: "Internal Server Error",
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
       results: null,
       message: error.message,
     });
@@ -40,23 +40,23 @@ const getSingleLogs = async (req, res) => {
   try {
     const singleData = await LogEntry.findById(req.params.id);
     if (!singleData) {
-      return res.status(404).json({
-        statusCode: 404,
-        status: "Not Found",
+      return res.status(StatusCodes.NOT_FOUND).json({
+        statusCode: StatusCodes.NOT_FOUND,
+        status: ReasonPhrases.NOT_FOUND,
         results: null,
         message: "Logs not found",
       });
     }
-    res.status(200).json({
-      statusCode: 200,
-      status: "OK",
+    res.status(StatusCodes.OK).json({
+      statusCode: StatusCodes.OK,
+      status: ReasonPhrases.OK,
       results: singleData,
       message: "Log retrieved successfully",
     });
   } catch (error) {
-    res.status(500).json({
-      statusCode: 500,
-      status: "Internal Server Error",
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
       results: null,
       message: error.message,
     });
@@ -68,23 +68,23 @@ const updateLogs = async (req, res) => {
       new: true,
     });
     if (!data) {
-      return res.status(404).json({
-        statusCode: 404,
-        status: "Not Found",
+      return res.status(StatusCodes.NOT_FOUND).json({
+        statusCode: StatusCodes.NOT_FOUND,
+        status: ReasonPhrases.NOT_FOUND,
         results: null,
         message: "Log not found",
       });
     }
-    res.status(200).json({
-      statusCode: 200,
-      status: "OK",
+    res.status(StatusCodes.OK).json({
+      statusCode: StatusCodes.OK,
+      status: ReasonPhrases.OK,
       results: data,
       message: "Log updated successfully",
     });
   } catch (error) {
-    res.status(400).json({
-      statusCode: 400,
-      status: "Bad Request",
+    res.status(StatusCodes.BAD_REQUEST).json({
+      statusCode: StatusCodes.BAD_REQUEST,
+      status: ReasonPhrases.BAD_REQUEST,
       results: null,
       message: error.message,
     });
@@ -94,22 +94,22 @@ const deleteLogs = async (req, res) => {
   try {
     const currData = await Cart.findByIdAndDelete(req.params.id);
     if (!currData) {
-      return res.status(404).json({
-        statusCode: 404,
-        status: "Not Found",
+      return res.status(StatusCodes.NOT_FOUND).json({
+        statusCode: StatusCodes.NOT_FOUND,
+        status: ReasonPhrases.NOT_FOUND,
         results: null,
         message: "log not found",
       });
     }
-    res.status(200).json({
-      statusCode: 200,
-      status: "OK",
+    res.status(StatusCodes.OK).json({
+      statusCode: StatusCodes.OK,
+      status: ReasonPhrases.OK,
       message: "deleted successfully",
     });
   } catch (error) {
-    res.status(500).json({
-      statusCode: 500,
-      status: "Internal Server Error",
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
       results: null,
       message: error.message,
     });

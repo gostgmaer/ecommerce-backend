@@ -148,7 +148,7 @@ async function getLocationInfo(ip) {
       zip: response.data.zip,
     };
   } catch (error) {
-    console.error("Error getting location info:", error);
+    // console.error("Error getting location info:", error);
     return {
       ip: ip,
     };
