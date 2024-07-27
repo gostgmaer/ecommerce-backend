@@ -74,12 +74,12 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
     const currObj = parseAndExtractValues(filterObj, ["categories", "salePrice", "rating", "brandName", "discount", "isAvailable", "tags"])
     const advFilter = generateQuery(currObj)
     const regex = new RegExp(filterObj.search, "i");
-    const search= {
-     
-        // { title: { $regex: regex } }, // Case-insensitive title match
-        // { slug: { $regex: regex } }, // Case-insensitive slug match
-        // { brandName: { $regex: regex } }, // Case-insensitive brandName match
-    
+    const search = {
+
+      // { title: { $regex: regex } }, // Case-insensitive title match
+      // { slug: { $regex: regex } }, // Case-insensitive slug match
+      // { brandName: { $regex: regex } }, // Case-insensitive brandName match
+
     }
     delete filterObj?.["discount"];
     delete filterObj?.["search"];
@@ -92,7 +92,7 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
       statusFilter = { ...statusFilter, status: query.status };
     }
 
-    query = { ...query, ...statusFilter, ...advFilter,...search };
+    query = { ...query, ...statusFilter, ...advFilter, ...search };
     delete query?.["rating"];
     removeEmptyKeys(query);
   }
@@ -132,7 +132,30 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
 
 
 
-
+function getAppIdAndEntity(url) {
+  const [pathPart] = url.split("?");
+  const parts = pathPart.split("/");
+  const tableIndex = parts.indexOf("table");
+  if (
+    tableIndex !== -1 &&
+    tableIndex > 0 &&
+    tableIndex < parts.length - 1 &&
+    parts[tableIndex - 1] &&
+    !parts[tableIndex - 1].includes("/") &&
+    parts[tableIndex + 1] &&
+    !parts[tableIndex + 1].includes("/")
+  ) {
+    const appId = parts[tableIndex - 1];
+    const entity = parts[tableIndex + 1];
+    return {
+      app_id: appId,
+      entity: entity,
+    };
+  } else {
+    // "table" not found or doesn't have exactly one '/' on each side
+    return null;
+  }
+}
 
 
 
@@ -148,7 +171,7 @@ async function getLocationInfo(ip) {
       zip: response.data.zip,
     };
   } catch (error) {
-    console.error("Error getting location info:", error);
+    // console.error("Error getting location info:", error);
     return {
       ip: ip,
     };
@@ -256,7 +279,7 @@ function parseAndExtractValues(filterObj, keys) {
   return filterObjData;
 }
 
-const generateQuery =(filterkeys) => {
+const generateQuery = (filterkeys) => {
   var currObj = {}
   if (filterkeys.salePrice) {
     currObj = {
@@ -336,5 +359,5 @@ module.exports = {
   FilterOptionsSearch,
   generateRandomString,
   getLocalIpAddress,
-  getPublicIpAddress
+  getPublicIpAddress, getAppIdAndEntity
 };
