@@ -53,7 +53,7 @@ const signUp = async (req, res) => {
       {
         email: userData.email,
       },
-      process.env.JWT_SECRET,
+      jwtSecret,
       {
         expiresIn: "1h",
       }
@@ -294,6 +294,55 @@ const signIn = async (req, res, next) => {
   }
 };
 
+const checkAuth = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({
+      email,
+    });
+    if (user) {
+      res.status(StatusCodes.OK).json({
+        message: "User Success",
+        statusCode: StatusCodes.OK,
+        status: ReasonPhrases.OK,
+        result: user
+      });
+    } else {
+      const token = jwt.sign(
+        {
+          email: email,
+        },
+        jwtSecret,
+        {
+          expiresIn: "1h",
+        }
+      );
+
+      User.create({
+        ...req.body,
+        confirmToken: token,
+        isEmailconfirm: true,username:email
+      }).then((data) => {
+        res.status(StatusCodes.CREATED).json({
+          message: "User created",
+          status: ReasonPhrases.CREATED,
+          statusCode: StatusCodes.CREATED,
+          result: data
+        });
+      })
+    }
+  } catch (error) {
+
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
 const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
@@ -488,7 +537,7 @@ const varifySession = async (req, res) => {
             );
             res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
             res.cookie('idToken', id_token, { path: '/', httpOnly: true });
-            
+
             res.status(StatusCodes.OK).json({
               accessToken,
               id_token,
@@ -805,8 +854,8 @@ const getRefreshToken = async (req, res) => {
                     }
                   );
                   res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
-            
-                  
+
+
                   res.status(StatusCodes.OK).json({
                     accessToken,
                     message: "Authorized",
@@ -839,5 +888,5 @@ module.exports = {
   forgetPassword,
   accountConfirm,
   getProfile,
-  getRefreshToken,
+  getRefreshToken, checkAuth
 };
