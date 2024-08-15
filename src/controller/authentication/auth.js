@@ -442,6 +442,43 @@ const checkAuth = async (req, res) => {
   }
 };
 
+
+
+const chechUser = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({
+      email,
+    });
+    if (user) {
+      res.status(StatusCodes.OK).json({
+        message: "User Found",
+        statusCode: StatusCodes.OK,
+        status: ReasonPhrases.OK,
+        result: user
+      });
+    } else {
+      res.status(StatusCodes.OK).json({
+        message: "Not Found",
+        status: ReasonPhrases.NOT_FOUND,
+        statusCode: StatusCodes.NOT_FOUND,
+        
+      });
+
+     
+    }
+  } catch (error) {
+
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
 const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
@@ -987,5 +1024,5 @@ module.exports = {
   forgetPassword,
   accountConfirm,
   getProfile,
-  getRefreshToken, checkAuth,SocialsignUp
+  getRefreshToken, checkAuth,SocialsignUp,chechUser
 };
