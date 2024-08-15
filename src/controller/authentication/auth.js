@@ -114,7 +114,106 @@ const signUp = async (req, res) => {
     });
   }
 };
+const SocialsignUp = async (req, res) => {
+  const { firstName, email, username } = req.body;
+  if (!firstName  || !email || !username) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Please Provide Required Information",
+      statusCode: StatusCodes.BAD_REQUEST,
+      status: ReasonPhrases.BAD_REQUEST,
+    });
+  }
 
+
+
+  const userData = {
+    firstName,
+  
+    email,
+    username,
+  };
+
+  const user = await User.findOne({ email });
+  const userId = await User.findOne({ username });
+
+  if (user) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: `User with email ${user.email} already registered`,
+      statusCode: StatusCodes.BAD_REQUEST,
+      status: ReasonPhrases.BAD_REQUEST,
+    });
+  } else if (userId) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: `User Id ${userId.username} is already taken`,
+      statusCode: StatusCodes.BAD_REQUEST,
+      status: ReasonPhrases.BAD_REQUEST,
+    });
+  } else {
+    const token = jwt.sign(
+      {
+        email: userData.email,
+      },
+      jwtSecret,
+      {
+        expiresIn: "1h",
+      }
+    );
+    User.create({
+      ...userData,
+      confirmToken: token,
+      isEmailconfirm: false,
+    }).then((data, err) => {
+      if (err)
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message: err.message,
+          statusCode: StatusCodes.BAD_REQUEST,
+          status: ReasonPhrases.BAD_REQUEST,
+        });
+      else {
+        let mailBody = {
+          body: {
+            name: data.fullName,
+            intro: `Welcome to ${process.env.APPLICATION_NAME}! We are excited to have you on board.`,
+            additionalInfo: `Thank you for choosing ${process.env.APPLICATION_NAME}. You now have access to our premium features, including unlimited storage and priority customer support.`,
+            action: {
+              instructions: `To get started with ${process.env.APPLICATION_NAME}, please click here:`,
+              button: {
+                color: "#22BC66", // Optional action button color
+                text: "Confirm Your Account",
+                link: `${process.env.LOGINHOST}/${process.env.CLIENTCONFIRMURL}?token=${token}`,
+              },
+            },
+            outro:
+              "Need help, or have questions? Just reply to this email, we'd love to help.",
+          },
+        };
+        transporter
+          .sendMail(
+            createMailOptions(
+              "salted",
+              data.email,
+              `Welcome to ${process.env.APPLICATION_NAME} - Confirm Your Email`,
+              mailBody
+            )
+          )
+          .then(() => {
+            res.status(StatusCodes.CREATED).json({
+              message: "User created Successfully",
+              status: ReasonPhrases.CREATED,
+              statusCode: StatusCodes.CREATED,
+            });
+          })
+          .catch((error) => {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+              message: error.message,
+              statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+              status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+            });
+          });
+      }
+    });
+  }
+};
 const signIn = async (req, res, next) => {
   try {
     if (!req.body.email || !req.body.password) {
@@ -888,5 +987,5 @@ module.exports = {
   forgetPassword,
   accountConfirm,
   getProfile,
-  getRefreshToken, checkAuth
+  getRefreshToken, checkAuth,SocialsignUp
 };
