@@ -115,8 +115,8 @@ const signUp = async (req, res) => {
   }
 };
 const SocialsignUp = async (req, res) => {
-  const { firstName, email, username } = req.body;
-  if (!firstName  || !email || !username) {
+  const { firstName, email, username, socialID } = req.body;
+  if (!firstName || !email || !username) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       message: "Please Provide Required Information",
       statusCode: StatusCodes.BAD_REQUEST,
@@ -128,7 +128,6 @@ const SocialsignUp = async (req, res) => {
 
   const userData = {
     firstName,
-  
     email,
     username,
   };
@@ -317,19 +316,20 @@ const signIn = async (req, res, next) => {
               username,
               email,
               address,
-              isVerified,
               profilePicture,
-              contactNumber,
               phoneNumber,
-              dateOfBirth,
+              id
+
             } = user;
 
             const accessToken = jwt.sign(
               {
-                user_id: user.id,
+                id: user.id,
                 role: user.role,
                 email: user.email,
                 username: user.username,
+                name: firstName + " " + lastName
+
               },
               jwtSecret,
               {
@@ -353,12 +353,11 @@ const signIn = async (req, res, next) => {
                 lastName,
                 username,
                 email,
+                id,
                 address,
-                isVerified,
                 profilePicture,
-                contactNumber,
-                phoneNumber,
-                dateOfBirth,
+                phoneNumber
+
               },
               refressSecret,
 
@@ -421,7 +420,7 @@ const checkAuth = async (req, res) => {
       User.create({
         ...req.body,
         confirmToken: token,
-        isEmailconfirm: true,username:email
+        isEmailconfirm: true, username: email
       }).then((data) => {
         res.status(StatusCodes.CREATED).json({
           message: "User created",
@@ -432,6 +431,171 @@ const checkAuth = async (req, res) => {
       })
     }
   } catch (error) {
+
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
+
+
+const chechUser = async (req, res) => {
+  const { email, username } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    const userId = await User.findOne({ username });
+
+    if (user) {
+      const {
+        firstName,
+        lastName,
+        username,
+        email,
+        address,
+        profilePicture,
+        phoneNumber,
+
+      } = user;
+
+      const accessToken = jwt.sign(
+        {
+          id: user.id,
+          role: user.role,
+          email: user.email,
+          username: user.username,
+          name: firstName + " " + lastName
+
+        },
+        jwtSecret,
+        {
+          expiresIn: "1d",
+        }
+      );
+
+      // Generate a refresh token (for extended sessions)
+
+      const refreshToken = jwt.sign(
+        { username: user.username, userId: user.id },
+        refressSecret,
+        {
+          expiresIn: "7d",
+        }
+      );
+
+      const id_token = jwt.sign(
+        {
+          firstName,
+          lastName,
+          username,
+          email,
+          address,
+          profilePicture,
+          phoneNumber
+
+        },
+        refressSecret,
+
+        {
+          expiresIn: "30d",
+        }
+      );
+      res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
+      res.cookie('refreshToken', refreshToken, { path: '/', httpOnly: true });
+      res.cookie('idToken', id_token, { path: '/', httpOnly: true });
+
+
+      res.status(StatusCodes.OK).json({
+        access_token: accessToken,
+        token_type: "Bearer",
+        id_token,
+        refresh_token: refreshToken,
+        expires_in: 900000, // 15 minutes in seconds
+        statusCode: StatusCodes.OK,
+        status: ReasonPhrases.OK,
+      });
+    } else if (userId) {
+      const {
+        firstName,
+        lastName,
+        username,
+        email,
+        address,
+        profilePicture,
+        phoneNumber,
+
+      } = userId;
+
+      const accessToken = jwt.sign(
+        {
+          id: userId.id,
+          role: userId.role,
+          email: userId.email,
+          username: userId.username,
+          name: firstName + " " + lastName
+
+        },
+        jwtSecret,
+        {
+          expiresIn: "1d",
+        }
+      );
+
+      // Generate a refresh token (for extended sessions)
+
+      const refreshToken = jwt.sign(
+        { username: userId.username, userId: userId.id },
+        refressSecret,
+        {
+          expiresIn: "7d",
+        }
+      );
+
+      const id_token = jwt.sign(
+        {
+          firstName,
+          lastName,
+          username,
+          email,
+          address,
+          profilePicture,
+          phoneNumber
+
+        },
+        refressSecret,
+
+        {
+          expiresIn: "30d",
+        }
+      );
+      res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
+      res.cookie('refreshToken', refreshToken, { path: '/', httpOnly: true });
+      res.cookie('idToken', id_token, { path: '/', httpOnly: true });
+
+
+      res.status(StatusCodes.OK).json({
+        access_token: accessToken,
+        token_type: "Bearer",
+        id_token,
+        refresh_token: refreshToken,
+        expires_in: 900000, // 15 minutes in seconds
+        statusCode: StatusCodes.OK,
+        status: ReasonPhrases.OK,
+      });
+    } else {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: `Not Found`,
+        statusCode: StatusCodes.NOT_FOUND,
+        status: ReasonPhrases.NOT_FOUND,
+      });
+    }
+
+  }
+  catch (error) {
 
 
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -987,5 +1151,5 @@ module.exports = {
   forgetPassword,
   accountConfirm,
   getProfile,
-  getRefreshToken, checkAuth,SocialsignUp
+  getRefreshToken, checkAuth, SocialsignUp, chechUser
 };
