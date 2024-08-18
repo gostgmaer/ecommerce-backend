@@ -4,7 +4,15 @@ const {
   getReasonPhrase,
   getStatusCode,
 } = require("http-status-codes");
-const { dbUrl, jwtSecret, refressSecret } = require("../../config/setting");
+const {
+  dbUrl,
+  jwtSecret,
+  refressSecret,
+  applicaionName,
+  host,
+  confirmPath,
+  resetPath,
+} = require("../../config/setting");
 const User = require("../../models/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -73,14 +81,14 @@ const signUp = async (req, res) => {
         let mailBody = {
           body: {
             name: data.fullName,
-            intro: `Welcome to ${process.env.APPLICATION_NAME}! We are excited to have you on board.`,
-            additionalInfo: `Thank you for choosing ${process.env.APPLICATION_NAME}. You now have access to our premium features, including unlimited storage and priority customer support.`,
+            intro: `Welcome to ${applicaionName}! We are excited to have you on board.`,
+            additionalInfo: `Thank you for choosing ${applicaionName}. You now have access to our premium features, including unlimited storage and priority customer support.`,
             action: {
-              instructions: `To get started with ${process.env.APPLICATION_NAME}, please click here:`,
+              instructions: `To get started with ${applicaionName}, please click here:`,
               button: {
                 color: "#22BC66", // Optional action button color
                 text: "Confirm Your Account",
-                link: `${process.env.LOGINHOST}/${process.env.CLIENTCONFIRMURL}?token=${token}`,
+                link: `${host}/${confirmPath}?token=${token}`,
               },
             },
             outro:
@@ -92,7 +100,7 @@ const signUp = async (req, res) => {
             createMailOptions(
               "salted",
               data.email,
-              `Welcome to ${process.env.APPLICATION_NAME} - Confirm Your Email`,
+              `Welcome to ${applicaionName} - Confirm Your Email`,
               mailBody
             )
           )
@@ -115,7 +123,7 @@ const signUp = async (req, res) => {
   }
 };
 const SocialsignUp = async (req, res) => {
-  const { firstName, email, username, socialID } = req.body;
+  const { firstName, email, username } = req.body;
   if (!firstName || !email || !username) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       message: "Please Provide Required Information",
@@ -124,33 +132,10 @@ const SocialsignUp = async (req, res) => {
     });
   }
 
-
-
-  const userData = {
-    firstName,
-    email,
-    username,
-  };
-
-  const user = await User.findOne({ email });
-  const userId = await User.findOne({ username });
-
-  if (user) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: `User with email ${user.email} already registered`,
-      statusCode: StatusCodes.BAD_REQUEST,
-      status: ReasonPhrases.BAD_REQUEST,
-    });
-  } else if (userId) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: `User Id ${userId.username} is already taken`,
-      statusCode: StatusCodes.BAD_REQUEST,
-      status: ReasonPhrases.BAD_REQUEST,
-    });
-  } else {
+  try {
     const token = jwt.sign(
       {
-        email: userData.email,
+        email: email,
       },
       jwtSecret,
       {
@@ -158,9 +143,9 @@ const SocialsignUp = async (req, res) => {
       }
     );
     User.create({
-      ...userData,
+      ...req.body,
       confirmToken: token,
-      isEmailconfirm: false,
+      isEmailconfirm: true,
     }).then((data, err) => {
       if (err)
         return res.status(StatusCodes.BAD_REQUEST).json({
@@ -172,14 +157,14 @@ const SocialsignUp = async (req, res) => {
         let mailBody = {
           body: {
             name: data.fullName,
-            intro: `Welcome to ${process.env.APPLICATION_NAME}! We are excited to have you on board.`,
-            additionalInfo: `Thank you for choosing ${process.env.APPLICATION_NAME}. You now have access to our premium features, including unlimited storage and priority customer support.`,
+            intro: `Welcome to ${applicaionName}! We are excited to have you on board.`,
+            additionalInfo: `Thank you for choosing ${applicaionName}. You now have access to our premium features, including unlimited storage and priority customer support.`,
             action: {
-              instructions: `To get started with ${process.env.APPLICATION_NAME}, please click here:`,
+              instructions: `To get started with ${applicaionName}, please click here:`,
               button: {
                 color: "#22BC66", // Optional action button color
                 text: "Confirm Your Account",
-                link: `${process.env.LOGINHOST}/${process.env.CLIENTCONFIRMURL}?token=${token}`,
+                link: `${host}/${confirmPath}?token=${token}`,
               },
             },
             outro:
@@ -191,7 +176,7 @@ const SocialsignUp = async (req, res) => {
             createMailOptions(
               "salted",
               data.email,
-              `Welcome to ${process.env.APPLICATION_NAME} - Confirm Your Email`,
+              `Welcome to ${applicaionName} - Confirm Your Email`,
               mailBody
             )
           )
@@ -211,9 +196,15 @@ const SocialsignUp = async (req, res) => {
           });
       }
     });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
   }
 };
-const signIn = async (req, res, next) => {
+const signIn = async (req, res) => {
   try {
     if (!req.body.email || !req.body.password) {
       res.status(StatusCodes.BAD_REQUEST).json({
@@ -237,7 +228,7 @@ const signIn = async (req, res, next) => {
               email: user.email,
               id: user.id,
             },
-            process.env.JWT_SECRET,
+            jwtSecret,
             {
               expiresIn: "2h",
             }
@@ -258,14 +249,14 @@ const signIn = async (req, res, next) => {
               let mailBody = {
                 body: {
                   name: user.fullName,
-                  intro: `Welcome to ${process.env.APPLICATION_NAME}! We are excited to have you on board.`,
-                  additionalInfo: `Thank you for choosing ${process.env.APPLICATION_NAME}. You now have access to our premium features, including unlimited storage and priority customer support.`,
+                  intro: `Welcome to ${applicaionName}! We are excited to have you on board.`,
+                  additionalInfo: `Thank you for choosing ${applicaionName}. You now have access to our premium features, including unlimited storage and priority customer support.`,
                   action: {
-                    instructions: `To get started with ${process.env.APPLICATION_NAME}, please click here:`,
+                    instructions: `To get started with ${applicaionName}, please click here:`,
                     button: {
                       color: "#22BC66", // Optional action button color
                       text: "Confirm Your Account",
-                      link: `${process.env.LOGINHOST}/${process.env.CLIENTCONFIRMURL}?token=${token}`,
+                      link: `${host}/${confirmPath}?token=${token}`,
                     },
                   },
                   outro:
@@ -277,7 +268,7 @@ const signIn = async (req, res, next) => {
                   createMailOptions(
                     "salted",
                     user.email,
-                    `Welcome to ${process.env.APPLICATION_NAME} - Confirm Your Email`,
+                    `Welcome to ${applicaionName} - Confirm Your Email`,
                     mailBody
                   )
                 )
@@ -318,8 +309,7 @@ const signIn = async (req, res, next) => {
               address,
               profilePicture,
               phoneNumber,
-              id
-
+              id,
             } = user;
 
             const accessToken = jwt.sign(
@@ -328,8 +318,7 @@ const signIn = async (req, res, next) => {
                 role: user.role,
                 email: user.email,
                 username: user.username,
-                name: firstName + " " + lastName
-
+                name: firstName + " " + lastName,
               },
               jwtSecret,
               {
@@ -356,8 +345,7 @@ const signIn = async (req, res, next) => {
                 id,
                 address,
                 profilePicture,
-                phoneNumber
-
+                phoneNumber,
               },
               refressSecret,
 
@@ -365,17 +353,25 @@ const signIn = async (req, res, next) => {
                 expiresIn: "30d",
               }
             );
-            res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
-            res.cookie('refreshToken', refreshToken, { path: '/', httpOnly: true });
-            res.cookie('idToken', id_token, { path: '/', httpOnly: true });
-
+            res.cookie("accessToken", accessToken, {
+              path: "/",
+              httpOnly: true,
+            });
+            res.cookie("refreshToken", refreshToken, {
+              path: "/",
+              httpOnly: true,
+            });
+            res.cookie("idToken", id_token, { path: "/", httpOnly: true });
 
             res.status(StatusCodes.OK).json({
-              access_token: accessToken,
+              accessToken,
               token_type: "Bearer",
+              id,
+              email,
+              image: profilePicture,
               id_token,
-              refresh_token: refreshToken,
-              expires_in: 900000, // 15 minutes in seconds
+              refreshToken,
+              name: firstName + " " + lastName,
               statusCode: StatusCodes.OK,
               status: ReasonPhrases.OK,
             });
@@ -392,6 +388,87 @@ const signIn = async (req, res, next) => {
   }
 };
 
+
+const customsignIn = async (req, res) => {
+  try {
+    if (!req.body.email || !req.body.password) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        message: "Please enter email and password",
+        statusCode: StatusCodes.BAD_REQUEST,
+        status: ReasonPhrases.BAD_REQUEST,
+      });
+    } else {
+      const user = await User.findOne({ email: req.body.email });
+      if (!user) {
+        res.status(StatusCodes.NOT_FOUND).json({
+          message: "Inavalid User Name!",
+          statusCode: StatusCodes.NOT_FOUND,
+          status: ReasonPhrases.NOT_FOUND,
+        });
+      } else {
+        const isPasswordValid = await bcrypt.compare(
+          req.body.password,
+          user.hash_password
+        );
+        if (!isPasswordValid) {
+          res.status(StatusCodes.UNAUTHORIZED).json({
+            message: "Password is invalid!",
+            statusCode: StatusCodes.UNAUTHORIZED,
+            status: ReasonPhrases.UNAUTHORIZED,
+          });
+        } else {
+          const {
+            firstName,
+            lastName,
+            username,
+            id,
+          } = user;
+
+          const accessToken = jwt.sign(
+            {
+
+              role: user.role,
+              email: user.email,
+              username,
+              id,
+              name: firstName + " " + lastName,
+            },
+            jwtSecret,
+            {
+              expiresIn: "1d",
+            }
+          );
+
+          // Generate a refresh token (for extended sessions)
+
+
+          res.cookie("accessToken", accessToken, {
+            path: "/",
+            httpOnly: true,
+          })
+
+
+          res.status(StatusCodes.OK).json({
+            accessToken,
+            token_type: "Bearer",
+            username,
+            id,
+            statusCode: StatusCodes.OK,
+            status: ReasonPhrases.OK,
+          });
+        }
+      }
+    }
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
+
 const checkAuth = async (req, res) => {
   const { email } = req.body;
 
@@ -404,7 +481,7 @@ const checkAuth = async (req, res) => {
         message: "User Success",
         statusCode: StatusCodes.OK,
         status: ReasonPhrases.OK,
-        result: user
+        result: user,
       });
     } else {
       const token = jwt.sign(
@@ -420,19 +497,18 @@ const checkAuth = async (req, res) => {
       User.create({
         ...req.body,
         confirmToken: token,
-        isEmailconfirm: true, username: email
+        isEmailconfirm: true,
+        username: email,
       }).then((data) => {
         res.status(StatusCodes.CREATED).json({
           message: "User created",
           status: ReasonPhrases.CREATED,
           statusCode: StatusCodes.CREATED,
-          result: data
+          result: data,
         });
-      })
+      });
     }
   } catch (error) {
-
-
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: error.message,
       statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -440,8 +516,6 @@ const checkAuth = async (req, res) => {
     });
   }
 };
-
-
 
 const chechUser = async (req, res) => {
   const { email, username } = req.body;
@@ -459,17 +533,16 @@ const chechUser = async (req, res) => {
         address,
         profilePicture,
         phoneNumber,
-
+        id,
       } = user;
 
       const accessToken = jwt.sign(
         {
-          id: user.id,
+          id,
           role: user.role,
-          email: user.email,
-          username: user.username,
-          name: firstName + " " + lastName
-
+          email,
+          username,
+          name: firstName + " " + lastName,
         },
         jwtSecret,
         {
@@ -480,7 +553,7 @@ const chechUser = async (req, res) => {
       // Generate a refresh token (for extended sessions)
 
       const refreshToken = jwt.sign(
-        { username: user.username, userId: user.id },
+        { username, userId: id },
         refressSecret,
         {
           expiresIn: "7d",
@@ -493,10 +566,10 @@ const chechUser = async (req, res) => {
           lastName,
           username,
           email,
+          id,
           address,
           profilePicture,
-          phoneNumber
-
+          phoneNumber,
         },
         refressSecret,
 
@@ -504,17 +577,25 @@ const chechUser = async (req, res) => {
           expiresIn: "30d",
         }
       );
-      res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
-      res.cookie('refreshToken', refreshToken, { path: '/', httpOnly: true });
-      res.cookie('idToken', id_token, { path: '/', httpOnly: true });
-
+      res.cookie("accessToken", accessToken, {
+        path: "/",
+        httpOnly: true,
+      });
+      res.cookie("refreshToken", refreshToken, {
+        path: "/",
+        httpOnly: true,
+      });
+      res.cookie("idToken", id_token, { path: "/", httpOnly: true });
 
       res.status(StatusCodes.OK).json({
-        access_token: accessToken,
+        accessToken,
         token_type: "Bearer",
+        id,
+        email,
+        image: profilePicture,
         id_token,
-        refresh_token: refreshToken,
-        expires_in: 900000, // 15 minutes in seconds
+        refreshToken,
+        name: firstName + " " + lastName,
         statusCode: StatusCodes.OK,
         status: ReasonPhrases.OK,
       });
@@ -527,17 +608,16 @@ const chechUser = async (req, res) => {
         address,
         profilePicture,
         phoneNumber,
-
+        id,
       } = userId;
 
       const accessToken = jwt.sign(
         {
-          id: userId.id,
+          id,
           role: userId.role,
-          email: userId.email,
-          username: userId.username,
-          name: firstName + " " + lastName
-
+          email,
+          username,
+          name: firstName + " " + lastName,
         },
         jwtSecret,
         {
@@ -548,7 +628,7 @@ const chechUser = async (req, res) => {
       // Generate a refresh token (for extended sessions)
 
       const refreshToken = jwt.sign(
-        { username: userId.username, userId: userId.id },
+        { username, userId: id },
         refressSecret,
         {
           expiresIn: "7d",
@@ -561,10 +641,10 @@ const chechUser = async (req, res) => {
           lastName,
           username,
           email,
+          id,
           address,
           profilePicture,
-          phoneNumber
-
+          phoneNumber,
         },
         refressSecret,
 
@@ -572,17 +652,25 @@ const chechUser = async (req, res) => {
           expiresIn: "30d",
         }
       );
-      res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
-      res.cookie('refreshToken', refreshToken, { path: '/', httpOnly: true });
-      res.cookie('idToken', id_token, { path: '/', httpOnly: true });
-
+      res.cookie("accessToken", accessToken, {
+        path: "/",
+        httpOnly: true,
+      });
+      res.cookie("refreshToken", refreshToken, {
+        path: "/",
+        httpOnly: true,
+      });
+      res.cookie("idToken", id_token, { path: "/", httpOnly: true });
 
       res.status(StatusCodes.OK).json({
-        access_token: accessToken,
+        accessToken,
         token_type: "Bearer",
+        id,
+        email,
+        image: profilePicture,
         id_token,
-        refresh_token: refreshToken,
-        expires_in: 900000, // 15 minutes in seconds
+        refreshToken,
+        name: firstName + " " + lastName,
         statusCode: StatusCodes.OK,
         status: ReasonPhrases.OK,
       });
@@ -593,11 +681,7 @@ const chechUser = async (req, res) => {
         status: ReasonPhrases.NOT_FOUND,
       });
     }
-
-  }
-  catch (error) {
-
-
+  } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: error.message,
       statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -632,7 +716,7 @@ const resetPassword = async (req, res) => {
             button: {
               color: "#22BC66", // Optional action button color
               text: "Login Now",
-              link: `${process.env.LOGINHOST}/${process.env.CLIENTLOGINPAGE}`,
+              link: `${host}/${confirmPath}`,
             },
           },
           outro:
@@ -701,7 +785,7 @@ const singout = async (req, res) => {
         sessionStore.destroy(sessionId, (destroyErr) => {
           if (destroyErr) {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-              message: error.message,
+              message: destroyErr.message,
               statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
               status: ReasonPhrases.INTERNAL_SERVER_ERROR,
               cause: destroyErr,
@@ -798,8 +882,11 @@ const varifySession = async (req, res) => {
                 expiresIn: "30d",
               }
             );
-            res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
-            res.cookie('idToken', id_token, { path: '/', httpOnly: true });
+            res.cookie("accessToken", accessToken, {
+              path: "/",
+              httpOnly: true,
+            });
+            res.cookie("idToken", id_token, { path: "/", httpOnly: true });
 
             res.status(StatusCodes.OK).json({
               accessToken,
@@ -843,7 +930,7 @@ const forgetPassword = async (req, res) => {
           role: user.role,
           email: user.email,
         },
-        process.env.JWT_SECRET,
+        jwtSecret,
         {
           expiresIn: "1h",
         }
@@ -874,7 +961,7 @@ const forgetPassword = async (req, res) => {
               button: {
                 color: "#22BC66", // Optional action button color
                 text: "Reset Password",
-                link: `${process.env.LOGINHOST}/${process.env.CLIENTRESETPASSURL}?token=${resetToken}`,
+                link: `${host}/${resetPath}?token=${resetToken}`,
               },
             },
             outro:
@@ -1116,8 +1203,10 @@ const getRefreshToken = async (req, res) => {
                       expiresIn: "1d",
                     }
                   );
-                  res.cookie('accessToken', accessToken, { path: '/', httpOnly: true });
-
+                  res.cookie("accessToken", accessToken, {
+                    path: "/",
+                    httpOnly: true,
+                  });
 
                   res.status(StatusCodes.OK).json({
                     accessToken,
@@ -1151,5 +1240,8 @@ module.exports = {
   forgetPassword,
   accountConfirm,
   getProfile,
-  getRefreshToken, checkAuth, SocialsignUp, chechUser
+  getRefreshToken,
+  checkAuth,
+  SocialsignUp,
+  chechUser, customsignIn
 };

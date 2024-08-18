@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const dbUrl = process.env.MONGO_URL;
 const jwtSecret = process.env.JWT_SECRET;
 const refressSecret = process.env.JWT_REFRESH_SECRET;
