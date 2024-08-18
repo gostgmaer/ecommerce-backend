@@ -9,7 +9,8 @@ const {
   varifySession,
   changedPassword,
   forgetPassword,SocialsignUp,
-  accountConfirm, getProfile, getRefreshToken,checkAuth,chechUser
+  accountConfirm, getProfile, getRefreshToken,checkAuth,chechUser,
+  customsignIn
 } = require("../controller/authentication/auth");
 const UpdatebyMiddleWare = require("../middleware/updatedBy");
 
@@ -30,6 +31,8 @@ authRoute.route("/user/auth/social-register").post(SocialsignUp);
 authRoute.route("/user/auth/confirm-account/:token").post(accountConfirm);
 authRoute.
   route("/user/auth/login").post(validateSignIpRequest, isRequestValidated, signIn);
+  authRoute.
+  route("/user/auth/custom/login").post(customsignIn);
   authRoute.
   route("/user/auth/checkAuth").post(isRequestValidated, checkAuth);
 
