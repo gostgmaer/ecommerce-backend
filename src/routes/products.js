@@ -1,7 +1,5 @@
 const express = require("express");
-var session = require("express-session");
 const productRoute = express.Router();
-const UpdatebyMiddleWare = require("../middleware/updatedBy");
 const createMiddleWare = require("../middleware/createMiddleWare");
 const userMiddleWare = require("../middleware/userAccess");
 const adminMiddleware = require("../middleware/adminAccess");
@@ -11,8 +9,7 @@ const {
   getProducts,
   getSingleProducts,
   updateProduct,
-  deleteProducts,
-  getproductReviews,
+  deleteProducts
 } = require("../controller/products/products");
 
 productRoute
