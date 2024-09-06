@@ -157,7 +157,7 @@ const getSingleProducts = async (req, res) => {
 };
 
 const getCurrentSingle = async (req, res) => {
-  const params = req.params;
+ 
   const q = req.query;
   // const query = JSON.parse(q)
 
