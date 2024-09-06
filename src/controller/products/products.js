@@ -68,7 +68,47 @@ const getProducts = async (req, res) => {
   }
 };
 
+const getCurrentProducts = async (req, res) => {
 
+  const { limit, page, filter, sort,query } = req.query;
+
+  try {
+    const filterquery = FilterOptions(sort, page, limit, filter);
+    const products = await Product.find(
+      filterquery.query,
+      "-__v", 
+      filterquery.options
+    )
+      .populate("reviews").populate("brandName")
+      .populate("categories");
+    const length = await Product.countDocuments(filterquery.query);
+
+    if (products) {
+      const currentProd = products.map((product) => {
+        const ratingStatistics = product.ratingStatistics;
+        return {
+          ...product["_doc"],
+          ...ratingStatistics,
+        };
+      });
+
+      res.status(200).json({
+        statusCode: 200,
+        status: "OK",
+        results: currentProd,
+        total: length,
+        message: "Products retrieved successfully",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      results: null,
+      message: error.message,
+    });
+  }
+};
 
 
 
@@ -115,6 +155,51 @@ const getSingleProducts = async (req, res) => {
     });
   }
 };
+
+const getCurrentSingle = async (req, res) => {
+  const params = req.params;
+  const q = req.query;
+  // const query = JSON.parse(q)
+
+  try {
+    var product;
+    if (Object.keys(q).length != 0) {
+      product = await Product.findOne(q)
+        .populate("reviews")
+        .populate("categories");
+    } else {
+      product = await Product.findById(req.params.id)
+        .populate("reviews")
+        .populate("categories");
+    }
+
+    if (!product) {
+      return res.status(404).json({
+        statusCode: 404,
+        status: "Not Found",
+        results: null,
+        message: "Product not found",
+      });
+    }
+
+    const currentProd = { ...product["_doc"], ...product.ratingStatistics };
+
+    res.status(200).json({
+      statusCode: 200,
+      status: "OK",
+      results: currentProd,
+      message: "Product retrieved successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      results: null,
+      message: error.message,
+    });
+  }
+};
+
 const updateProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
@@ -208,5 +293,5 @@ module.exports = {
   getSingleProducts,
   updateProduct,
   deleteProducts,
-  getproductReviews,
+  getproductReviews,getCurrentProducts,getCurrentSingle
 };

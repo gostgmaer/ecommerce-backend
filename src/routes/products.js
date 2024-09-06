@@ -9,14 +9,16 @@ const {
   getProducts,
   getSingleProducts,
   updateProduct,
-  deleteProducts
+  deleteProducts,getCurrentProducts,getCurrentSingle
 } = require("../controller/products/products");
 
 productRoute
   .route("/products")
   .post(adminMiddleware, createMiddleWare, createProduct);
 productRoute.route("/products").get(getProducts);
+productRoute.route("/products/show").get(getCurrentProducts);
 productRoute.route("/products/:id").get(getSingleProducts);
+productRoute.route("/products/:slug").get(getCurrentSingle);
 // productRoute.route("/products/:id/reviews").get(getproductReviews);
 productRoute
   .route("/products/:id")
