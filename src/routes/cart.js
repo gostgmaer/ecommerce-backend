@@ -10,7 +10,7 @@ const {
   deleteCarts,
 } = require("../controller/cart/cart");
 
-cartRoute.route("/cart").post(createMiddleWare,createCart);
+cartRoute.route("/cart/add").post(createMiddleWare,createCart);
 cartRoute.route("/cart/:id/add").post(updateSingleCart);
 cartRoute.route("/cart/:id/remove").post(updateSingleCart);
 cartRoute.route("/cart/:id/checkout").post();

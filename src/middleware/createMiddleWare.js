@@ -11,7 +11,7 @@ async function createMiddleWare(req, res, next) {
       const decoded = await decodeToken(tokenValue);
 
       const userData = await User.findOne(
-        { _id: decoded.user_id },
+        { _id: decoded.id },
         "firstName lastName username email contactNumber profilePicture"
       );
       const newBody = {
