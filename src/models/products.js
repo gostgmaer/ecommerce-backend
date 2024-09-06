@@ -12,7 +12,7 @@ const productSchema = new mongoose.Schema(
     },
     productType: {
       type: String,
-      required: true,
+      required: false,
     },
     categories: [
       {
@@ -68,7 +68,7 @@ const productSchema = new mongoose.Schema(
     brandName: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Brand",
-      required: true,
+      required: false,
     },
     overview:{
       type: String,

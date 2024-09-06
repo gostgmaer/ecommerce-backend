@@ -9,7 +9,7 @@ const Cart = require("../../models/cart");
 const Product = require("../../models/products");
 
 const createCart = async (req, res) => {
-  const { cartItems } = req.body;
+  // const { cartItems } = req.body;
 
   // Assuming you have an authenticated user object
 
@@ -18,19 +18,19 @@ const createCart = async (req, res) => {
   try {
     const iscart = await Cart.findOne({ user: req.body.created_user_id });
 
-    if (cartItems) {
+    if (req.body) {
       var myArr = [];
-      cartItems.forEach((element) => {
-        const { product, quantity, subtotal } = element;
-        const obj = {
-          quantity,
-          subtotal,
-          product: product._id,
-        };
+      // cartItems.forEach((element) => {
+      //   const { product, quantity, subtotal } = element;
+      //   const obj = {
+      //     quantity,
+      //     subtotal,
+      //     product: product._id,
+      //   };
 
-        myArr.push(obj);
-      });
-      var body = { user: req.body.created_user_id, items: myArr };
+      //   myArr.push(obj);
+      // });
+      var body = { user: req.body.created_user_id };
 
       if (iscart) {
         myArr.forEach((newItem) => {

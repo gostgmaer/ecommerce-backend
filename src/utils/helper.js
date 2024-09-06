@@ -56,7 +56,7 @@ const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
   }
 
   const options = {
-    skip: (page - 1) * limit,
+    skip: (Number(page) - 1) * Number(limit),
     limit: parseInt(limit),
     sort: sortOptions,
   };
