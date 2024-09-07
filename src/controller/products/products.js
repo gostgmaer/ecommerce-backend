@@ -178,8 +178,16 @@ const getCurrentSingle = async (req, res) => {
         .populate("brand");
     } else {
       const defaultSlug = req.params.slug; // Assuming you pass the slug via params
-      product = await Product.findOne({ slug: defaultSlug })
-        .populate("reviews")
+      // product = await Product.findOne({ slug: defaultSlug })
+      //   .populate("reviews")
+      //   .populate("categories")
+      //   .populate("brand");
+
+      product = await Product.findOneAndUpdate(
+        { slug: defaultSlug },
+        { $inc: { total_view: 1 } }, // Increment total_view by 1
+        { new: true } // Return the updated document
+      ).populate("reviews")
         .populate("categories")
         .populate("brand");
 
@@ -203,7 +211,7 @@ const getCurrentSingle = async (req, res) => {
       });
     }
 
-    await Product.updateOne({ _id: product._id }, { $inc: { total_view: 1 } });
+    // await Product.updateOne({ _id: product._id }, { $inc: { total_view: 1 } });
     const currentProd = { ...product["_doc"], ...product.ratingStatistics };
 
     return res.status(200).json({
