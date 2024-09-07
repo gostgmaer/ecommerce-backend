@@ -1,106 +1,142 @@
 const {
   ReasonPhrases,
   StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
 } = require("http-status-codes");
-const paypal = require("paypal-rest-sdk");
+// const paypal = require("paypal-rest-sdk");
 const { FilterOptions } = require("../../utils/helper");
 const Order = require("../../models/orders");
-const User = require("../../models/user");
+// const User = require("../../models/user");
 const Product = require("../../models/products");
 
+// const createOrder = async (req, res) => {
+
+//   try {
+//     const userData = req.body.user;
+//     // let user = await User.findOne({ email: userData });
+
+//     // // If the user doesn't exist, create a new user account
+//     // if (!user) {
+//     //   const newUser = new User(userData);
+//     //   user = await newUser.save();
+//     // }
+//     // Process each product in the request body
+//     let invalidProducts = [];
+//     const items = req.body.products.map(async (productData) => {
+//       const productId = productData.id;
+//       const product = await Product.findById(productId);
+
+//       if (!product) {
+//         invalidProducts.push(productId);
+
+//       } else {
+//         return {
+//           product: productId,
+//           quantity: productData.cartQuantity,
+//           productPrice: product.price,
+//           // Add other product details as needed
+//         };
+//       }
+//     });
+
+//     if (invalidProducts.length > 0) {
+//       return res.status(400).json({
+//         message: "Invalid product(s) provided.",
+//         invalidProducts: invalidProducts, // Return the list of invalid products
+//         statusCode: StatusCodes.BAD_REQUEST,
+//         status: ReasonPhrases.BAD_REQUEST,
+//       });
+//     }else{
+//       const orders = await Promise.all(items);
+//       const total = orders.reduce(
+//         (acc, item) => acc + item.cartQuantity * item.price,
+//         0
+//       );
+
+//       // Create a new order
+//       const newOrder = new Order({
+
+//         items: items,
+//         total: total,
+//         // Add other order details as needed
+//       });
+
+//       // Save the order to the database
+//       const savedOrder = await newOrder.save();
+//     }
+
+//   } catch (error) {
+//     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//       message: error.message,
+//       statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+//       status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+//     });
+//   }
+// };
+
+
 const createOrder = async (req, res) => {
-  const { user } = req.body;
   try {
-    const userData = req.body.user;
-    let user = await User.findOne({ email: userData.email });
+    // const userData = req.body.user;
 
-    // If the user doesn't exist, create a new user account
-    if (!user) {
-      const newUser = new User(userData);
-      user = await newUser.save();
-    }
+    let invalidProducts = [];
+
     // Process each product in the request body
-    const items = req.body.products.map(async (productData) => {
-      const productId = productData.productId;
-      const product = await Product.findById(productId);
+    const items = await Promise.all(
+      req.body.products.map(async (productData) => {
+        const productId = productData.id;
+        const product = await Product.findById(productId);
 
-      if (!product) {
-        return res
-          .status(404)
-          .json({ error: `Product with ID ${productId} not found` });
-      }
+        if (!product) {
+          invalidProducts.push(productId);
+          return null; // Return null for invalid products
+        } else {
+          return {
+            product: productId,
+            quantity: productData.cartQuantity,
+            productPrice: product.price,
+          };
+        }
+      })
+    );
 
-      return {
-        product: productId,
-        quantity: productData.quantity,
-        productName: product.productName,
-        productImage: product.productImage,
-        productPrice: product.productPrice,
-        // Add other product details as needed
-      };
-    });
+    if (invalidProducts.length > 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "Invalid product(s) provided.",
+        invalidProducts: invalidProducts,
+        statusCode: StatusCodes.BAD_REQUEST,
+        status: ReasonPhrases.BAD_REQUEST,
+      });
+    }
 
-    const orders = await Promise.all(items);
+    const validItems = items.filter(item => item !== null); // Filter out invalid items
 
-    // Calculate the total order amount
-    const total = orders.reduce(
+    const total = validItems.reduce(
       (acc, item) => acc + item.quantity * item.productPrice,
       0
     );
 
     // Create a new order
+
+    if (req.body.payment_method === "COD") {
+      req.body.status = "confirmed"
+    }
+
     const newOrder = new Order({
-      user: user._id,
-      items: items,
-      total: total,
+      items: validItems,
+      total: total, ...req.body
       // Add other order details as needed
     });
 
     // Save the order to the database
     const savedOrder = await newOrder.save();
 
-    // Create a PayPal payment
-    const create_payment_json = {
-      intent: "sale",
-      payer: {
-        payment_method: "paypal",
-      },
-      redirect_urls: {
-        return_url: "YOUR_RETURN_URL",
-        cancel_url: "YOUR_CANCEL_URL",
-      },
-      transactions: [
-        {
-          item_list: {
-            items: orders.map((item) => {
-              return {
-                name: item.productName,
-                sku: item.product.toString(),
-                price: item.productPrice,
-                currency: "USD",
-                quantity: item.quantity,
-              };
-            }),
-          },
-          amount: {
-            currency: "USD",
-            total: total,
-          },
-          description: "Your order description",
-        },
-      ],
-    };
-
-    paypal.payment.create(create_payment_json, function (error, payment) {
-      if (error) {
-        throw error;
-      } else {
-        // Redirect the user to PayPal for approval
-        res.redirect(payment.links[1].href);
-      }
+    return res.status(StatusCodes.CREATED).json({
+      message: "Order created successfully",
+      result: savedOrder,
+      statusCode: StatusCodes.CREATED,
+      status: ReasonPhrases.CREATED,
     });
+
   } catch (error) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: error.message,
@@ -109,6 +145,7 @@ const createOrder = async (req, res) => {
     });
   }
 };
+
 
 const getOrders = async (req, res) => {
   try {
@@ -125,7 +162,7 @@ const getOrders = async (req, res) => {
       .populate("address.billing") // Populating the 'billing' reference within 'address'
       .populate("address.shipping"); // Populating the 'shipping' reference within 'address'
 
-      const length = await Order.countDocuments(filterquery.query);
+    const length = await Order.countDocuments(filterquery.query);
 
     if (Orders) {
       Orders.forEach((element) => {
@@ -171,7 +208,10 @@ const getSingleOrder = async (req, res) => {
     });
   } else {
     try {
-      const OrderId = await Order.findOne({ _id: id }, "-__v");
+      const OrderId = await Order.findOne({ _id: id }, "-__v").populate({
+        path: 'items.product',
+        model: 'Product' // Ensure this matches the name of your Product model
+      }).exec();
 
       if (OrderId.id) {
         return res.status(StatusCodes.OK).json({

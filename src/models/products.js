@@ -23,7 +23,7 @@ const productSchema = new mongoose.Schema(
     ],
 
     descriptions: {
-      type: String,
+      type: Object,
       required: true,
     },
     status: {
@@ -36,6 +36,9 @@ const productSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true,
+    },
+    discount: {
+      type: Number,
     },
     costPrice: {
       type: Number,
@@ -65,7 +68,7 @@ const productSchema = new mongoose.Schema(
     manufacturerPartNumber: {
       type: String,
     },
-    brandName: {
+    brand: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Brand",
       required: false,
@@ -73,8 +76,12 @@ const productSchema = new mongoose.Schema(
     overview:{
       type: String,
     },
+    total_view:{
+      type:Number
+    },
     slug: {
       type: String,
+      unique:true
     },
     productUPCEAN: {
       type: String,
