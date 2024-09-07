@@ -15,7 +15,7 @@ const {
   createOrder,
 } = require("../controller/orders/orders");
 
-orderRoute.route("/orders").post(userMiddleWare,createMiddleWare,createOrder);
+orderRoute.route("/orders/create").post(userMiddleWare,createMiddleWare,createOrder);
 orderRoute.route("/orders").get(adminMiddleware,getOrders);
 orderRoute.route("/orders/:id").get(userMiddleWare,getSingleOrder);
 orderRoute.route("/orders/:id").put(userMiddleWare,UpdatebyMiddleWare,updateOrder);

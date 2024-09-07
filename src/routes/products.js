@@ -18,7 +18,8 @@ productRoute
 productRoute.route("/products").get(getProducts);
 productRoute.route("/products/show").get(getCurrentProducts);
 productRoute.route("/products/:id").get(getSingleProducts);
-productRoute.route("/products/:slug").get(getCurrentSingle);
+productRoute.route("/products/view/:slug").get(getCurrentSingle);
+productRoute.route("/products/details").get(getCurrentSingle);
 // productRoute.route("/products/:id/reviews").get(getproductReviews);
 productRoute
   .route("/products/:id")

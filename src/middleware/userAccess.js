@@ -28,7 +28,7 @@ async function userMiddleWare(req, res, next) {
     const decoded = jwt.verify(tokenValue, jwtSecret); // Replace with your secret key
 
     // Query the user document in MongoDB
-    const user = await User.findById(decoded.user_id);
+    const user = await User.findById(decoded.id);
 
     if (!user) {
       return res.status(StatusCodes.UNAUTHORIZED).json({

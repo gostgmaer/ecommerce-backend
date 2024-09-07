@@ -1,9 +1,4 @@
-const {
-  ReasonPhrases,
-  StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
-} = require("http-status-codes");
+const { ReasonPhrases, StatusCodes } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
 const Product = require("../../models/products");
 
@@ -34,10 +29,11 @@ const getProducts = async (req, res) => {
     const filterquery = FilterOptions(sort, page, limit, filter);
     const products = await Product.find(
       filterquery.query,
-      "-__v", 
+      "-__v",
       filterquery.options
     )
-      .populate("reviews").populate("brandName")
+      .populate("reviews")
+      .populate("brandName")
       .populate("categories");
     const length = await Product.countDocuments(filterquery.query);
 
@@ -69,17 +65,17 @@ const getProducts = async (req, res) => {
 };
 
 const getCurrentProducts = async (req, res) => {
-
-  const { limit, page, filter, sort,query } = req.query;
+  const { limit, page, filter, sort } = req.query;
 
   try {
     const filterquery = FilterOptions(sort, page, limit, filter);
     const products = await Product.find(
       filterquery.query,
-      "-__v", 
+      "-__v",
       filterquery.options
     )
-      .populate("reviews").populate("brandName")
+      .populate("reviews")
+      .populate("brandName")
       .populate("categories");
     const length = await Product.countDocuments(filterquery.query);
 
@@ -110,10 +106,7 @@ const getCurrentProducts = async (req, res) => {
   }
 };
 
-
-
 const getSingleProducts = async (req, res) => {
-  const params = req.params;
   const q = req.query;
   // const query = JSON.parse(q)
 
@@ -157,20 +150,56 @@ const getSingleProducts = async (req, res) => {
 };
 
 const getCurrentSingle = async (req, res) => {
- 
-  const q = req.query;
-  // const query = JSON.parse(q)
+  const { slug, id, sku, unid } = req.query;
 
   try {
-    var product;
-    if (Object.keys(q).length != 0) {
-      product = await Product.findOne(q)
+    let product;
+
+    // Determine query parameter and fetch product based on that
+    if (slug) {
+      product = await Product.findOne({ slug })
         .populate("reviews")
-        .populate("categories");
+        .populate("categories")
+        .populate("brand");
+    } else if (id) {
+      product = await Product.findById(id)
+        .populate("reviews")
+        .populate("categories")
+        .populate("brand");
+    } else if (sku) {
+      product = await Product.findOne({ sku })
+        .populate("reviews")
+        .populate("categories")
+        .populate("brand");
+    } else if (unid) {
+      product = await Product.findOne({ unid })
+        .populate("reviews")
+        .populate("categories")
+        .populate("brand");
     } else {
-      product = await Product.findById(req.params.id)
-        .populate("reviews")
-        .populate("categories");
+      const defaultSlug = req.params.slug; // Assuming you pass the slug via params
+      // product = await Product.findOne({ slug: defaultSlug })
+      //   .populate("reviews")
+      //   .populate("categories")
+      //   .populate("brand");
+
+      product = await Product.findOneAndUpdate(
+        { slug: defaultSlug },
+        { $inc: { total_view: 1 } }, // Increment total_view by 1
+        { new: true } // Return the updated document
+      ).populate("reviews")
+        .populate("categories")
+        .populate("brand");
+
+      // If no slug is passed in params and no product is found, return a bad request
+      if (!defaultSlug) {
+        return res.status(400).json({
+          statusCode: 400,
+          status: "Bad Request",
+          results: null,
+          message: "No query parameters provided and no default slug found.",
+        });
+      }
     }
 
     if (!product) {
@@ -182,16 +211,17 @@ const getCurrentSingle = async (req, res) => {
       });
     }
 
+    // await Product.updateOne({ _id: product._id }, { $inc: { total_view: 1 } });
     const currentProd = { ...product["_doc"], ...product.ratingStatistics };
 
-    res.status(200).json({
+    return res.status(200).json({
       statusCode: 200,
       status: "OK",
       results: currentProd,
       message: "Product retrieved successfully",
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       statusCode: 500,
       status: "Internal Server Error",
       results: null,
@@ -293,5 +323,7 @@ module.exports = {
   getSingleProducts,
   updateProduct,
   deleteProducts,
-  getproductReviews,getCurrentProducts,getCurrentSingle
+  getproductReviews,
+  getCurrentProducts,
+  getCurrentSingle,
 };
