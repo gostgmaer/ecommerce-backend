@@ -34,7 +34,7 @@ const getProducts = async (req, res) => {
     )
       .populate("reviews")
       .populate("brand")
-      .populate("categories").populate("category");
+      .populate("categories",'_id title slug').populate("category",'_id title slug');
     const length = await Product.countDocuments(filterquery.query);
 
     if (products) {
@@ -76,7 +76,7 @@ const getCurrentProducts = async (req, res) => {
     )
       .populate("reviews")
       .populate("brand")
-      .populate("categories").populate("category");
+      .populate("categories",'_id title slug').populate("category",'_id title slug');
     const length = await Product.countDocuments(filterquery.query);
 
     if (products) {
@@ -114,12 +114,12 @@ const getSingleProducts = async (req, res) => {
     var product;
     if (Object.keys(q).length != 0) {
       product = await Product.findOne(q)
-        .populate("reviews")
-        .populate("categories");
+        .populate("reviews",'_id title slug')
+        .populate("categories",'_id title slug');
     } else {
       product = await Product.findById(req.params.id)
-        .populate("reviews")
-        .populate("categories");
+        .populate("reviews",'_id title slug')
+        .populate("categories",'_id title slug');
     }
 
     if (!product) {
@@ -161,22 +161,22 @@ const getCurrentSingle = async (req, res) => {
     if (slug) {
       product = await Product.findOne({ slug })
         .populate("reviews")
-        .populate("categories").populate("category")
+        .populate("categories",'_id title slug').populate("category",'_id title slug')
         .populate("brand");
     } else if (id) {
       product = await Product.findById(id)
         .populate("reviews")
-        .populate("categories").populate("category")
+        .populate("categories",'_id title slug').populate("category",'_id title slug')
         .populate("brand");
     } else if (sku) {
       product = await Product.findOne({ sku })
         .populate("reviews")
-        .populate("categories").populate("category")
+        .populate("categories",'_id title slug').populate("category",'_id title slug')
         .populate("brand");
     } else if (unid) {
       product = await Product.findOne({ unid })
         .populate("reviews")
-        .populate("categories").populate("category")
+        .populate("categories",'_id title slug').populate("category",'_id title slug')
         .populate("brand");
     } else {
       const defaultSlug = req.params.slug; // Assuming you pass the slug via params
@@ -190,8 +190,8 @@ const getCurrentSingle = async (req, res) => {
         { $inc: { total_view: 1 } }, // Increment total_view by 1
         { new: true } // Return the updated document
       ).populate("reviews")
-        .populate("categories")
-        .populate("category")
+        .populate("categories",'_id title slug')
+        .populate("category",'_id title slug')
         .populate("brand");
 
       // If no slug is passed in params and no product is found, return a bad request
@@ -242,8 +242,8 @@ const getRelatedProducts = async (req, res) => {
       "-__v",
     ).populate("reviews")
       .populate("brand")
-      .populate("categories")
-      .populate("category");
+      .populate("categories",'_id title slug')
+      .populate("category",'_id title slug');
     const length = await Product.countDocuments({ category: category });
 
     if (products) {
@@ -285,8 +285,8 @@ const getPopularProducts = async (req, res) => {
       "-__v",
     ).populate("reviews")
       .populate("brand")
-      .populate("categories")
-      .populate("category").sort({ total_view: -1 });
+      .populate("categories",'_id title slug')
+      .populate("category",'_id title slug').sort({ total_view: -1 });
     const length = await Product.countDocuments(filter);
 
     if (products) {
@@ -327,9 +327,9 @@ const getDiscountedProducts = async (req, res) => {
       "-__v",
     ).populate("reviews")
       .populate("brand")
-      .populate("categories")
-      .populate("category").sort({ discount: -1 });
-      
+      .populate("categories",'_id title slug')
+      .populate("category",'_id title slug').sort({ discount: -1 });
+
     const length = await Product.countDocuments(filter);
 
     if (products) {

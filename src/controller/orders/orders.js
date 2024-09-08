@@ -198,6 +198,156 @@ const getOrders = async (req, res) => {
   }
 };
 
+const getCustomerOrders = async (req, res) => {
+  try {
+    const { sort, page, limit, filter } = req.query;
+
+    const filterquery = FilterOptions(sort, page, limit, filter);
+    const Orders = await Order.find(
+      filterquery.query,
+      "-__v ",
+      filterquery.options
+    ).populate("user") // Populating the 'user' reference
+      .populate("items.product", '-_id -categories -category -variants -status') // Populating the 'product' reference within 'items'
+      .populate("address")
+
+    const length = await Order.countDocuments(filterquery.query);
+
+    if (Orders) {
+      Orders.forEach((element) => {
+        const { firstName, lastName, email, phoneNumber } = element.user;
+        element.user = {
+          firstName,
+          lastName,
+          email,
+          phoneNumber,
+        };
+      });
+
+      return res.status(StatusCodes.OK).json({
+        message: `Orders data has been Loaded Successfully!`,
+        statusCode: StatusCodes.OK,
+        status: ReasonPhrases.OK,
+        results: Orders,
+        total: length,
+      });
+    } else {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: `No information found`,
+        statusCode: StatusCodes.NOT_FOUND,
+        status: ReasonPhrases.NOT_FOUND,
+      });
+    }
+  } catch (error) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
+const getCustomerDashboard = async (req, res) => {
+  try {
+    const { sort, page, limit, filter } = req.query;
+
+    const filterquery = FilterOptions(sort, page, limit, filter);
+
+    const orderStats = await Order.aggregate([
+      {
+        $match: {}  // Apply the provided filters (if any)
+      },
+      {
+        $facet: {
+          total: [
+            { $count: "total" }  // Total number of orders
+          ],
+          pending: [
+            { $match: { status: "pending" } },  // Orders with status 'pending'
+            { $count: "pending" }
+          ],
+          confirmed: [
+            { $match: { status: "confirmed" } },  // Orders with status 'pending'
+            { $count: "confirmed" }
+          ],
+          success: [
+            { $match: { status: "success" } },  // Orders with status 'success'
+            { $count: "success" }
+          ],
+          failed: [
+            { $match: { status: "failed" } },  // Orders with status 'failed'
+            { $count: "failed" }
+          ],
+          cancelled: [
+            { $match: { status: "cancelled" } },  // Orders with status 'cancelled'
+            { $count: "cancelled" }
+          ],
+          shipped: [
+            { $match: { status: "shipped" } },  // Orders with status 'shipped'
+            { $count: "shipped" }
+          ]
+        }
+      },
+      {
+        $project: {
+          total: { $arrayElemAt: ["$total.total", 0] },
+          pending: { $ifNull: [{ $arrayElemAt: ["$pending.pending", 0] }, 0] },
+          success: { $ifNull: [{ $arrayElemAt: ["$success.success", 0] }, 0] },
+          failed: { $ifNull: [{ $arrayElemAt: ["$failed.failed", 0] }, 0] },
+          cancelled: { $ifNull: [{ $arrayElemAt: ["$cancelled.cancelled", 0] }, 0] },
+          confirmed: { $ifNull: [{ $arrayElemAt: ["$confirmed.confirmed", 0] }, 0] },
+          shipped: { $ifNull: [{ $arrayElemAt: ["$shipped.shipped", 0] }, 0] }
+        }
+      }
+    ]);
+
+
+
+    const Orders = await Order.find(
+      filterquery.query,
+      "-__v ",
+      filterquery.options
+    ).populate("user")
+
+    const length = await Order.countDocuments(filterquery.query);
+
+    if (Orders) {
+      Orders.forEach((element) => {
+        const { firstName, lastName, email, phoneNumber } = element.user;
+        element.user = {
+          firstName,
+          lastName,
+          email,
+          phoneNumber,
+        };
+      });
+
+      return res.status(StatusCodes.OK).json({
+        message: `Orders data has been Loaded Successfully!`,
+        statusCode: StatusCodes.OK,
+        status: ReasonPhrases.OK,
+        results: {
+          order: {
+            data: Orders, total: length
+          }, ...orderStats[0]
+        }
+      });
+    } else {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: `No information found`,
+        statusCode: StatusCodes.NOT_FOUND,
+        status: ReasonPhrases.NOT_FOUND,
+      });
+    }
+  } catch (error) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
 const getSingleOrder = async (req, res) => {
   const { id } = req.params;
   if (!id) {
@@ -326,5 +476,5 @@ module.exports = {
   getOrders,
   getSingleOrder,
   deleteOrder,
-  createOrder,
+  createOrder, getCustomerOrders, getCustomerDashboard
 };

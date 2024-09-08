@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const OrderCounter = require("./orderId");
 // const orderItemSchema = new mongoose.Schema({
 //   product: {
 //     type: mongoose.Schema.Types.ObjectId,
@@ -29,41 +29,28 @@ const orderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", 
+      ref: "User",
       required: true,
     },
     additionalNotes: String,
     couponcode: String,
-    // address: {
-    //   billing: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "Address", 
-    //     required: true,
-    //   },
-    //   shipping: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "Address", 
-    //     required: true,
-    //   },
-    // },
+    // address: [{
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Address",
+
+    // }],
     items: [CartItemSchema],
     total: {
       type: Number,
       required: true,
     },
-    currency:{
-      type:String
+    currency: {
+      type: String
     },
-    orderCreatedtime:{
+    orderCreatedtime: {
       type: String,
     },
-    payer:{},
-   
-    address: {
-      type: String,
-      required: true
-    },
-  
+    payer: {},
     city: {
       type: String,
       required: true
@@ -97,13 +84,16 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true
     },
- 
+
     invoice: {
       type: String,
       unique: true,
-     
+
     },
- 
+    address:{
+      type: String
+    },
+
     phone: {
       type: String,
       required: true
@@ -112,16 +102,45 @@ const orderSchema = new mongoose.Schema(
     transsaction_id: {
       type: String
     },
-    transactions:{},
+    transactions: {},
     status: {
       type: String,
-      enum: ["pending","cancel","pending_payment" ,"confirmed", "shipped", "delivered"],
+      enum: ["pending", "cancel", "pending_payment", "confirmed", "shipped", "delivered"],
       default: "pending",
+    },
+    order_id: {
+      type: String,
+      unique: true,
     },
     // Other order-related fields if needed, e.g., shipping address, payment information, etc.
   },
   { timestamps: true }
 );
+
+orderSchema.pre("save", async function (next) {
+  const order = this;
+
+  // Check if order_id already exists, if so, skip
+  if (order.order_id) {
+    return next();
+  }
+
+  try {
+    // Find the current counter value and increment it
+    let counter = await OrderCounter.findOneAndUpdate(
+      { prefix: "ECO" }, // Find by prefix
+      { $inc: { counter: 1 } }, // Increment the counter
+      { new: true, upsert: true } // Create a new document if it doesn't exist
+    );
+
+    // Generate the order_id in the format "ECO1234567"
+    order.order_id = `${counter.prefix}${counter.counter}`;
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 const Order = mongoose.model("Order", orderSchema);
 
