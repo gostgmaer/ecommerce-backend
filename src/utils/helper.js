@@ -1,9 +1,7 @@
 const jwt = require("jsonwebtoken");
 const axios = require("axios"); // You may need to install axios
 const os = require("os");
-const mongoose = require("mongoose");
 const { jwtSecret, charactersString } = require("../config/setting");
-const { log } = require("console");
 
 function decodeToken(token) {
   return new Promise((resolve, reject) => {
@@ -73,7 +71,7 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
     const filterObj = JSON.parse(filter);
     const currObj = parseAndExtractValues(filterObj, ["categories", "salePrice", "rating", "brandName", "discount", "isAvailable", "tags"])
     const advFilter = generateQuery(currObj)
-    const regex = new RegExp(filterObj.search, "i");
+
     const search = {
 
       // { title: { $regex: regex } }, // Case-insensitive title match
@@ -171,7 +169,7 @@ async function getLocationInfo(ip) {
       zip: response.data.zip,
     };
   } catch (error) {
-    // console.error("Error getting location info:", error);
+    console.error("Error getting location info:", error);
     return {
       ip: ip,
     };
@@ -190,16 +188,16 @@ function removeEmptyKeys(obj) {
   }
 }
 
-const generateMatchQuery = (query) => {
-  const dynamicQuery = {};
-  Object.keys(query).forEach((key) => {
-    // Use RegExp only if the property exists in the query
-    if (query[key]) {
-      dynamicQuery[key] = new RegExp(query[key], "i");
-    }
-  });
-  return dynamicQuery;
-};
+// const generateMatchQuery = (query) => {
+//   const dynamicQuery = {};
+//   Object.keys(query).forEach((key) => {
+//     // Use RegExp only if the property exists in the query
+//     if (query[key]) {
+//       dynamicQuery[key] = new RegExp(query[key], "i");
+//     }
+//   });
+//   return dynamicQuery;
+// };
 
 function generateRandomString(length) {
   let result = "";
@@ -214,7 +212,7 @@ function generateRandomString(length) {
 
 async function getLocalIpAddress() {
   const interfaces = os.networkInterfaces();
-  let ipAddress, IPv4, IPv6;
+  let IPv4, IPv6;
 
   // Iterate over network interfaces
   Object.keys(interfaces).forEach((interfaceName) => {
