@@ -12,7 +12,7 @@ async function updateMiddleWare(req, res, next) {
 
       const userData = await User.findOne(
         { _id: decoded.user_id },
-        "firstName lastName username email contactNumber profilePicture"
+        "email"
       );
       
       const newBody = {

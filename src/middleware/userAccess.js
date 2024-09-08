@@ -1,19 +1,14 @@
 // customerMiddleware.js
-const {
-  ReasonPhrases,
-  StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
-} = require("http-status-codes");
+const { ReasonPhrases, StatusCodes } = require("http-status-codes");
 
-const jwt = require('jsonwebtoken');
-const User = require('../models/user'); // Import your Mongoose user model
-const {  jwtSecret } = require("../config/setting");
+const jwt = require("jsonwebtoken");
+const User = require("../models/user"); // Import your Mongoose user model
+const { jwtSecret } = require("../config/setting");
 
 async function userMiddleWare(req, res, next) {
   // Check if the user has a Bearer token in the Authorization header
   const token = req.headers.authorization;
-  if (!token || !token.startsWith('Bearer ')) {
+  if (!token || !token.startsWith("Bearer ")) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: `No authorization token was found`,
       statusCode: StatusCodes.UNAUTHORIZED,
@@ -21,7 +16,7 @@ async function userMiddleWare(req, res, next) {
     });
   }
 
-  const tokenValue = token.split(' ')[1];
+  const tokenValue = token.split(" ")[1];
 
   try {
     // Decode the token to get the user's ID
@@ -36,11 +31,12 @@ async function userMiddleWare(req, res, next) {
         statusCode: StatusCodes.UNAUTHORIZED,
         status: ReasonPhrases.UNAUTHORIZED,
       });
+    } else {
+      req.params["user"] = user.id;
+      next();
     }
 
     // User is valid, so continue to the next middleware/route
-    req.params["user"]=user.id
-    next();
   } catch (error) {
     console.error(error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -49,6 +45,7 @@ async function userMiddleWare(req, res, next) {
       status: ReasonPhrases.INTERNAL_SERVER_ERROR,
     });
   }
+  
 }
 
 module.exports = userMiddleWare;

@@ -11,7 +11,7 @@ const {
   getOrders,
   getSingleOrder,
   deleteOrder,
-  createOrder,
+  createOrder,getCustomerOrders,getCustomerDashboard
 } = require("../controller/orders/orders");
 
 orderRoute.route("/orders/create").post(userMiddleWare,createMiddleWare,createOrder);
@@ -21,6 +21,8 @@ orderRoute.route("/orders/:id").put(userMiddleWare,UpdatebyMiddleWare,updateOrde
 orderRoute.route("/orders/:id").patch(userMiddleWare,UpdatebyMiddleWare,updateOrder);
 orderRoute.route("/orders/:id").delete(userMiddleWare,UpdatebyMiddleWare,deleteOrder);
 orderRoute.route("/orders/user/:userId").get(userMiddleWare,getOrders);
+orderRoute.route("/orders/customer/fetch").get(userMiddleWare,getCustomerOrders);
+orderRoute.route("/orders/customer/dashboard").get(userMiddleWare,getCustomerDashboard);
 orderRoute.route("/orders/user/:userId/:orderId").get(userMiddleWare);
 orderRoute.route("/orders/user/:userId/:orderId").patch(userMiddleWare,UpdatebyMiddleWare);
 orderRoute.route("/orders/user/:userId/:orderId").put(userMiddleWare,UpdatebyMiddleWare);
