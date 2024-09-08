@@ -1,5 +1,4 @@
 const express = require("express");
-var session = require("express-session");
 const orderRoute = express.Router();
 const UpdatebyMiddleWare = require("../middleware/updatedBy");
 const createMiddleWare = require("../middleware/createMiddleWare");

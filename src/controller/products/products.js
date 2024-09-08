@@ -1,4 +1,4 @@
-const { ReasonPhrases, StatusCodes } = require("http-status-codes");
+// const { ReasonPhrases, StatusCodes } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
 const Product = require("../../models/products");
 
@@ -33,8 +33,8 @@ const getProducts = async (req, res) => {
       filterquery.options
     )
       .populate("reviews")
-      .populate("brandName")
-      .populate("categories");
+      .populate("brand")
+      .populate("categories").populate("category");
     const length = await Product.countDocuments(filterquery.query);
 
     if (products) {
@@ -75,8 +75,8 @@ const getCurrentProducts = async (req, res) => {
       filterquery.options
     )
       .populate("reviews")
-      .populate("brandName")
-      .populate("categories");
+      .populate("brand")
+      .populate("categories").populate("category");
     const length = await Product.countDocuments(filterquery.query);
 
     if (products) {
@@ -149,6 +149,8 @@ const getSingleProducts = async (req, res) => {
   }
 };
 
+
+
 const getCurrentSingle = async (req, res) => {
   const { slug, id, sku, unid } = req.query;
 
@@ -159,22 +161,22 @@ const getCurrentSingle = async (req, res) => {
     if (slug) {
       product = await Product.findOne({ slug })
         .populate("reviews")
-        .populate("categories")
+        .populate("categories").populate("category")
         .populate("brand");
     } else if (id) {
       product = await Product.findById(id)
         .populate("reviews")
-        .populate("categories")
+        .populate("categories").populate("category")
         .populate("brand");
     } else if (sku) {
       product = await Product.findOne({ sku })
         .populate("reviews")
-        .populate("categories")
+        .populate("categories").populate("category")
         .populate("brand");
     } else if (unid) {
       product = await Product.findOne({ unid })
         .populate("reviews")
-        .populate("categories")
+        .populate("categories").populate("category")
         .populate("brand");
     } else {
       const defaultSlug = req.params.slug; // Assuming you pass the slug via params
@@ -189,6 +191,7 @@ const getCurrentSingle = async (req, res) => {
         { new: true } // Return the updated document
       ).populate("reviews")
         .populate("categories")
+        .populate("category")
         .populate("brand");
 
       // If no slug is passed in params and no product is found, return a bad request
@@ -222,6 +225,128 @@ const getCurrentSingle = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      results: null,
+      message: error.message,
+    });
+  }
+};
+const getRelatedProducts = async (req, res) => {
+  const { category } = req.query;
+
+  try {
+    // const filterquery = FilterOptions(sort, page, limit, filter);
+    const products = await Product.find(
+      { category: category },
+      "-__v",
+    ).populate("reviews")
+      .populate("brand")
+      .populate("categories")
+      .populate("category");
+    const length = await Product.countDocuments({ category: category });
+
+    if (products) {
+      const currentProd = products.map((product) => {
+        const ratingStatistics = product.ratingStatistics;
+        return {
+          ...product["_doc"],
+          ...ratingStatistics,
+        };
+      });
+
+      res.status(200).json({
+        statusCode: 200,
+        status: "OK",
+        results: currentProd,
+        total: length,
+        message: "Products retrieved successfully",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      results: null,
+      message: error.message,
+    });
+  }
+};
+
+const getPopularProducts = async (req, res) => {
+  const { category } = req.query;
+
+  try {
+    // const filterquery = FilterOptions(sort, page, limit, filter);
+    const products = await Product.find(
+      { category: category },
+      "-__v",
+    ).populate("reviews")
+      .populate("brand")
+      .populate("categories")
+      .populate("category");
+    const length = await Product.countDocuments({ category: category });
+
+    if (products) {
+      const currentProd = products.map((product) => {
+        const ratingStatistics = product.ratingStatistics;
+        return {
+          ...product["_doc"],
+          ...ratingStatistics,
+        };
+      });
+
+      res.status(200).json({
+        statusCode: 200,
+        status: "OK",
+        results: currentProd,
+        total: length,
+        message: "Products retrieved successfully",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      results: null,
+      message: error.message,
+    });
+  }
+};
+
+const getDiscountedProducts = async (req, res) => {
+  const { category } = req.query;
+
+  try {
+    // const filterquery = FilterOptions(sort, page, limit, filter);
+    const products = await Product.find(
+      { category: category },
+      "-__v",
+    ).populate("reviews")
+      .populate("brand")
+      .populate("categories")
+      .populate("category");
+    const length = await Product.countDocuments({ category: category });
+
+    if (products) {
+      const currentProd = products.map((product) => {
+        const ratingStatistics = product.ratingStatistics;
+        return {
+          ...product["_doc"],
+          ...ratingStatistics,
+        };
+      });
+
+      res.status(200).json({
+        statusCode: 200,
+        status: "OK",
+        results: currentProd,
+        total: length,
+        message: "Products retrieved successfully",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
       statusCode: 500,
       status: "Internal Server Error",
       results: null,
@@ -325,5 +450,5 @@ module.exports = {
   deleteProducts,
   getproductReviews,
   getCurrentProducts,
-  getCurrentSingle,
+  getCurrentSingle, getRelatedProducts,getDiscountedProducts,getPopularProducts
 };
