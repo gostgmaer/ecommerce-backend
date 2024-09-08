@@ -274,18 +274,20 @@ const getRelatedProducts = async (req, res) => {
 };
 
 const getPopularProducts = async (req, res) => {
-  const { category } = req.query;
+
+
+  const filter = { total_view: { $gt: 0 } };
 
   try {
     // const filterquery = FilterOptions(sort, page, limit, filter);
     const products = await Product.find(
-      { category: category },
+      filter,
       "-__v",
     ).populate("reviews")
       .populate("brand")
       .populate("categories")
-      .populate("category");
-    const length = await Product.countDocuments({ category: category });
+      .populate("category").sort({ total_view: -1 });
+    const length = await Product.countDocuments(filter);
 
     if (products) {
       const currentProd = products.map((product) => {
@@ -315,18 +317,20 @@ const getPopularProducts = async (req, res) => {
 };
 
 const getDiscountedProducts = async (req, res) => {
-  const { category } = req.query;
+  
+  const filter = { discount: { $gt: 0 } };
 
   try {
     // const filterquery = FilterOptions(sort, page, limit, filter);
     const products = await Product.find(
-      { category: category },
+      filter,
       "-__v",
     ).populate("reviews")
       .populate("brand")
       .populate("categories")
-      .populate("category");
-    const length = await Product.countDocuments({ category: category });
+      .populate("category").sort({ discount: -1 });
+      
+    const length = await Product.countDocuments(filter);
 
     if (products) {
       const currentProd = products.map((product) => {
@@ -450,5 +454,5 @@ module.exports = {
   deleteProducts,
   getproductReviews,
   getCurrentProducts,
-  getCurrentSingle, getRelatedProducts,getDiscountedProducts,getPopularProducts
+  getCurrentSingle, getRelatedProducts, getDiscountedProducts, getPopularProducts
 };
