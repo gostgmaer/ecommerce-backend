@@ -204,17 +204,17 @@ const getCustomerOrders = async (req, res) => {
 
     const filterquery = FilterOptions(sort, page, limit, filter);
     const Orders = await Order.find(
-      filterquery.query,
+      { ...filterquery.query, user: req.params.user },
       "-__v ",
       filterquery.options
     ).populate("user") // Populating the 'user' reference
       .populate("items.product", '-_id -categories -category -variants -status') // Populating the 'product' reference within 'items'
       .populate("address")
 
-    const length = await Order.countDocuments(filterquery.query);
+    const length = await Order.countDocuments({ ...filterquery.query, user: req.params.user});
 
     if (Orders) {
-      Orders.forEach((element) => {
+      Orders.map((element) => {
         const { firstName, lastName, email, phoneNumber } = element.user;
         element.user = {
           firstName,
@@ -255,7 +255,7 @@ const getCustomerDashboard = async (req, res) => {
 
     const orderStats = await Order.aggregate([
       {
-        $match: {}  // Apply the provided filters (if any)
+        $match: {user: req.params.user}  // Apply the provided filters (if any)
       },
       {
         $facet: {
@@ -304,12 +304,12 @@ const getCustomerDashboard = async (req, res) => {
 
 
     const Orders = await Order.find(
-      filterquery.query,
+      {...filterquery.query, user: req.params.user},
       "-__v ",
       filterquery.options
     ).populate("user")
 
-    const length = await Order.countDocuments(filterquery.query);
+    const length = await Order.countDocuments({...filterquery.query, user: req.params.user});
 
     if (Orders) {
       Orders.forEach((element) => {
@@ -328,7 +328,7 @@ const getCustomerDashboard = async (req, res) => {
         status: ReasonPhrases.OK,
         results: {
           order: {
-            data: Orders, total: length
+            results: Orders, total: length
           }, ...orderStats[0]
         }
       });
