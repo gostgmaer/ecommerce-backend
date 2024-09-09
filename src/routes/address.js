@@ -18,7 +18,7 @@ AddressRoute.route("/address/:id").get(userMiddleWare, getSingle);
 AddressRoute.route("/address").get(userMiddleWare, get);
 AddressRoute.route("/address/:id").patch(createMiddleWare, update);
 AddressRoute.route("/address/:id").delete(createMiddleWare, remove);
-AddressRoute.route("/address/:id/user/:user_id").post(
+AddressRoute.route("/address/user/:user_id").post(
   createMiddleWare,
   addAddress
 );

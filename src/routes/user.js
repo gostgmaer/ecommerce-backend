@@ -9,11 +9,12 @@ const adminMiddleware = require("../middleware/adminAccess");
 const {
   updateUser,
   getusers,
-  deleteUser,getSingleUser
+  deleteUser,getSingleUser,getUserProfile
 } = require("../controller/user/user");
 
 userRouter.route("/users").get(adminMiddleware, getusers);
 userRouter.route("/users/:id").get(userMiddleWare,getSingleUser);
+userRouter.route("/users/customer/profile").get(userMiddleWare,getUserProfile);
 userRouter.route("/users/:id").patch(userMiddleWare,UpdatebyMiddleWare,updateUser);
 userRouter.route("/users/:id").put(userMiddleWare,UpdatebyMiddleWare,updateUser);
 userRouter.route("/users/:id").delete(adminMiddleware,deleteUser);
