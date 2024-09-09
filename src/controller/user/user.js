@@ -1,11 +1,12 @@
 const {
   ReasonPhrases,
   StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
 const User = require("../../models/user");
+const Address = require("../../models/user");
+
+
 
 const getusers = async (req, res) => {
   try {
@@ -64,6 +65,47 @@ const getSingleUser = async (req, res) => {
           statusCode: StatusCodes.OK,
           status: ReasonPhrases.OK,
           result: userId,
+        });
+      } else {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          message: `No information found for given id`,
+          statusCode: StatusCodes.NOT_FOUND,
+          status: ReasonPhrases.NOT_FOUND,
+        });
+      }
+    } catch (error) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: error.message,
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+};
+
+const getUserProfile = async (req, res) => {
+  const  id  = req.params["user"];
+  if (!id) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "user id is not provide",
+      statusCode: StatusCodes.BAD_REQUEST,
+      status: ReasonPhrases.BAD_REQUEST,
+    });
+  } else {
+    try {
+      const user = await User.findOne(
+        { _id: id },
+        "-__v -hash_password -resetToken -resetTokenExpiration -confirmToken -update_by -role -tokens -session"
+      ).populate('address')
+
+   
+
+      if (user) {
+        return res.status(StatusCodes.OK).json({
+          message: `Profile Loaded Successfully!`,
+          statusCode: StatusCodes.OK,
+          status: ReasonPhrases.OK,
+          result: user,
         });
       } else {
         return res.status(StatusCodes.NOT_FOUND).json({
@@ -191,4 +233,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { updateUser, getusers, getSingleUser, deleteUser };
+module.exports = { updateUser, getusers, getSingleUser, deleteUser,getUserProfile };
