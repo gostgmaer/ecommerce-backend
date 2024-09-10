@@ -65,19 +65,10 @@ const createOrder = async (req, res) => {
           paymentResponse = await createRazorpayOrder(total, "INR", invoice);
           break;
 
-        case 'cod':
+        case 'COD':
           paymentResponse = processCodOrder(total, "$", orderDetails);
 
-          var newOrder = new Order({
-            items: validItems,
-            total,
-            currency:"USD",
-            payment_status: 'processing', // COD is pending until delivery
-            receipt: invoice || null,
-            transaction_id: paymentResponse.id || null, ...req.body,...paymentResponse
-          });
-
-           savedOrder = await newOrder.save();
+         
 
           break;
 
@@ -87,26 +78,39 @@ const createOrder = async (req, res) => {
 
     
 
-       savedOrder ={
-      ...paymentResponse
-      }
+      //  savedOrder ={
+      // ...paymentResponse
+      // }
 
+   
 
-
-      // const newOrder = new Order({
-      //   items: validItems,
-      //   total: total, ...req.body
-      //   // Add other order details as needed
-      // });
-
-      // Save the order to the database
-
-      return res.status(StatusCodes.OK).json({
-        message: "Order successfully!",
-        result: savedOrder,
-        statusCode: StatusCodes.OK,
-        status: ReasonPhrases.OK,
+      var newOrder = new Order({
+        items: validItems,
+        total,
+        currency:"INR",
+        payment_status: 'processing', // COD is pending until delivery
+        receipt: invoice || null,
+        transaction_id: paymentResponse.id || null, ...req.body,...paymentResponse
       });
+
+       savedOrder = await newOrder.save();
+
+   if (payment_method==="COD") {
+    return res.status(StatusCodes.OK).json({
+      message: "Order successfully!",
+      result: savedOrder,
+      statusCode: StatusCodes.OK,
+      status: ReasonPhrases.OK,
+    });
+   } else {
+    return res.status(StatusCodes.OK).json({
+      message: "Order Created!",
+      result: paymentResponse,
+      statusCode: StatusCodes.OK,
+      status: ReasonPhrases.OK,
+    });
+    
+   }
 
     }
 
@@ -130,7 +134,7 @@ const verifyPayment = async (req, res) => {
         paymentResponse = await verifyPayPalPayment(paymentId, PayerID);
         break;
 
-      case 'razorpay':
+      case 'RazorPay':
         paymentResponse = verifyRazorpayPayment(order_id, paymentId, signature);
         break;
 
@@ -142,13 +146,18 @@ const verifyPayment = async (req, res) => {
     }
 
     // Update order payment status in the database
-    const order = await Order.findOne({ transaction_id: paymentId || order_id });
+    var savedOrder 
+    const order = await Order.findOne({ transaction_id: order_id });
     if (order) {
       order.payment_status = 'completed';
-      await order.save();
+      savedOrder =  await order.save();
     }
-
-    res.status(200).json({ success: true, paymentResponse });
+    return res.status(StatusCodes.OK).json({
+      message: "Order successfully!",
+      result: savedOrder,
+      statusCode: StatusCodes.OK,
+      status: ReasonPhrases.OK,...paymentResponse
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error verifying payment' });

@@ -1,11 +1,7 @@
 // razorpayHelper.js
 const Razorpay = require('razorpay');
 const {
-    jwtSecret,
-    refressSecret,
-    paypalClient,
-    paypalSecret,
-    host,
+   
 
     razorPayPublic,
     razorPaySecret,

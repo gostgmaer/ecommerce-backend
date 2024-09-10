@@ -34,11 +34,6 @@ const orderSchema = new mongoose.Schema(
     },
     additionalNotes: String,
     couponcode: String,
-    // address: [{
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "Address",
-
-    // }],
     items: [CartItemSchema],
     total: {
       type: Number,
@@ -103,14 +98,58 @@ const orderSchema = new mongoose.Schema(
       type: String
     },
     transactions: {},
+    payment_status: {
+      type: String,
+    },
     status: {
       type: String,
-      enum: ["pending", "cancel", "pending_payment", "confirmed", "shipped", "delivered"],
+      enum: ["pending", "cancel", "pending_payment", "confirmed", "shipped", "delivered","created"],
       default: "pending",
     },
     order_id: {
       type: String,
       unique: true,
+    },
+    shippingPrice: {
+      type: Number,
+      default: 0
+    },
+    totalPrice: {
+      type: Number,
+      default: 0
+    },
+    amount: {
+      type: Number,
+      default: 0
+    },
+    amount_due: {
+      type: Number,
+      default: 0
+    },
+    amount_paid: {
+      type: Number,
+      default: 0
+    },
+    attempts: {
+      type: Number,
+      default: 0
+    },
+    created_at: {
+      type: Number,
+      default: () => Math.floor(Date.now() / 1000)
+    },
+    entity: {
+      type: String,
+      default: 'order'
+    },
+    transaction_id: {
+      type: String,
+      default: 'order'
+    },
+    notes: [String],
+    offer_id: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null
     },
     // Other order-related fields if needed, e.g., shipping address, payment information, etc.
   },
