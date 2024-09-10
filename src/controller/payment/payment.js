@@ -1,32 +1,20 @@
 const {
   ReasonPhrases,
   StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
 } = require("http-status-codes");
-const { FilterOptions } = require("../../utils/helper");
+
 const Razorpay = require("razorpay");
-const currency = require("currency.js");
+
 const razorpayHelper = require("./razorpayHelper");
 var paypal = require("paypal-rest-sdk");
 const {
-  jwtSecret,
-  refressSecret,
+
   paypalClient,
   paypalSecret,
   host,
-  stripePublic,
-  stripeSecret,
   razorPayPublic,
   razorPaySecret,
 } = require("../../config/setting");
-const User = require("../../models/user");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const sessionStore = require("../../db/sessionConnact");
-const createMailOptions = require("../../email/mailOptions");
-const transporter = require("../../email/mailTransporter");
-const Product = require("../../models/products");
 const Order = require("../../models/orders");
 
 paypal.configure({
@@ -35,10 +23,10 @@ paypal.configure({
   client_secret: paypalSecret,
 });
 
-var instance = new Razorpay({
-  key_id: razorPayPublic,
-  key_secret: razorPaySecret,
-});
+// var instance = new Razorpay({
+//   key_id: razorPayPublic,
+//   key_secret: razorPaySecret,
+// });
 const processPaymenGategay = async (req, res) => {
   const { payment_method } = req.body;
   if (payment_method == "paypal") {
@@ -219,28 +207,6 @@ const paypalPaymentCreate = (body, res) => {
 };
 
 const razorpayPaymentCreate = async (body, res) => {
-  const create_payment_json = {
-    intent: "sale",
-    payer: {
-      payment_method: "paypal",
-    },
-    redirect_urls: {
-      return_url: `${host}/checkout/success?method=${body.payment_method}`,
-      cancel_url: `${host}/checkout/cancel?method=${body.payment_method}`,
-    },
-    transactions: [
-      {
-        item_list: {
-          items: body.productItems,
-        },
-        amount: {
-          currency: "USD",
-          total: body.total,
-        },
-        description: "Hat for the best team ever",
-      },
-    ],
-  };
 
   try {
     const response = await razorpayHelper.createOrder(body);
@@ -279,8 +245,11 @@ const razorpayVerifyPayment = async (req, res) => {
 
 };
 
+
+
+
 module.exports = {
   processPaymenGategay,
   paymentSuccess,
-  paymentCancel,razorpayVerifyPayment
+  paymentCancel,razorpayVerifyPayment,razorpayPaymentCreate
 };

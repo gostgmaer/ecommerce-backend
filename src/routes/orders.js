@@ -11,10 +11,24 @@ const {
   getOrders,
   getSingleOrder,
   deleteOrder,
-  createOrder,getCustomerOrders,getCustomerDashboard
+  createOrder,getCustomerOrders,getCustomerDashboard,
+  verifyPayment
 } = require("../controller/orders/orders");
+const { razorpayPaymentCreate,razorpayVerifyPayment } = require("../controller/payment/payment");
+
+
+
+
+
+
+
+
+
+
+
 
 orderRoute.route("/orders/create").post(userMiddleWare,createMiddleWare,createOrder);
+orderRoute.route("/orders/verify-payment").post(userMiddleWare,UpdatebyMiddleWare,verifyPayment);
 orderRoute.route("/orders").get(adminMiddleware,getOrders);
 orderRoute.route("/orders/:id").get(userMiddleWare,getSingleOrder);
 orderRoute.route("/orders/:id").put(userMiddleWare,UpdatebyMiddleWare,updateOrder);
@@ -23,6 +37,8 @@ orderRoute.route("/orders/:id").delete(userMiddleWare,UpdatebyMiddleWare,deleteO
 orderRoute.route("/orders/user/:userId").get(userMiddleWare,getOrders);
 orderRoute.route("/orders/customer/fetch").get(userMiddleWare,getCustomerOrders);
 orderRoute.route("/orders/customer/dashboard").get(userMiddleWare,getCustomerDashboard);
+orderRoute.route("/orders/customer/rozorpay").post(userMiddleWare,razorpayPaymentCreate);
+orderRoute.route("/orders/customer/rozorpay/verify").post(userMiddleWare,razorpayVerifyPayment);
 orderRoute.route("/orders/user/:userId/:orderId").get(userMiddleWare);
 orderRoute.route("/orders/user/:userId/:orderId").patch(userMiddleWare,UpdatebyMiddleWare);
 orderRoute.route("/orders/user/:userId/:orderId").put(userMiddleWare,UpdatebyMiddleWare);

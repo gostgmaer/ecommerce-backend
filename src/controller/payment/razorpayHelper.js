@@ -6,8 +6,7 @@ const {
     paypalClient,
     paypalSecret,
     host,
-    stripePublic,
-    stripeSecret,
+
     razorPayPublic,
     razorPaySecret,
   } = require("../../config/setting");
@@ -20,17 +19,16 @@ async function createOrder(body) {
   const options = {
     amount: 50000, // amount in paise (50 INR)
     currency: 'INR',
-    receipt: 'order_receipt_1',
-    payment_capture: 1, // Auto capture payment when successful (0 for manual capture)
-    notes: {
-      merchant: 'MyApp',
-    },
+    receipt: body.receipt || `receipt_${Date.now()}`,
+ 
   };
 
   try {
     const response = await razorpay.orders.create(options);
     return response;
   } catch (error) {
+    console.log(error);
+    
     throw new Error('Unable to create order');
   }
 }

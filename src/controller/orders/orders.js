@@ -7,80 +7,20 @@ const { FilterOptions } = require("../../utils/helper");
 const Order = require("../../models/orders");
 // const User = require("../../models/user");
 const Product = require("../../models/products");
+const { createPayPalOrder, verifyPayPalPayment } = require("../payment/paypalHelper");
+const { createRazorpayOrder, verifyRazorpayPayment } = require("../payment/rozorpay");
+const { processCodOrder } = require("../payment/codhelper");
+// const { createPayPalOrder, verifyPayPalPayment } = require('../services/paypalService');
+// const { createRazorpayOrder, verifyRazorpayPayment } = require('../services/razorpayService');
+// const { processCodOrder } = require('../services/codService');
 
-// const createOrder = async (req, res) => {
-
-//   try {
-//     const userData = req.body.user;
-//     // let user = await User.findOne({ email: userData });
-
-//     // // If the user doesn't exist, create a new user account
-//     // if (!user) {
-//     //   const newUser = new User(userData);
-//     //   user = await newUser.save();
-//     // }
-//     // Process each product in the request body
-//     let invalidProducts = [];
-//     const items = req.body.products.map(async (productData) => {
-//       const productId = productData.id;
-//       const product = await Product.findById(productId);
-
-//       if (!product) {
-//         invalidProducts.push(productId);
-
-//       } else {
-//         return {
-//           product: productId,
-//           quantity: productData.cartQuantity,
-//           productPrice: product.price,
-//           // Add other product details as needed
-//         };
-//       }
-//     });
-
-//     if (invalidProducts.length > 0) {
-//       return res.status(400).json({
-//         message: "Invalid product(s) provided.",
-//         invalidProducts: invalidProducts, // Return the list of invalid products
-//         statusCode: StatusCodes.BAD_REQUEST,
-//         status: ReasonPhrases.BAD_REQUEST,
-//       });
-//     }else{
-//       const orders = await Promise.all(items);
-//       const total = orders.reduce(
-//         (acc, item) => acc + item.cartQuantity * item.price,
-//         0
-//       );
-
-//       // Create a new order
-//       const newOrder = new Order({
-
-//         items: items,
-//         total: total,
-//         // Add other order details as needed
-//       });
-
-//       // Save the order to the database
-//       const savedOrder = await newOrder.save();
-//     }
-
-//   } catch (error) {
-//     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//       message: error.message,
-//       statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-//       status: ReasonPhrases.INTERNAL_SERVER_ERROR,
-//     });
-//   }
-// };
 
 
 const createOrder = async (req, res) => {
+
+  const {  payment_method, invoice, orderDetails } = req.body;
   try {
-    // const userData = req.body.user;
-
     let invalidProducts = [];
-
-    // Process each product in the request body
     const items = await Promise.all(
       req.body.products.map(async (productData) => {
         const productId = productData.id;
@@ -106,36 +46,70 @@ const createOrder = async (req, res) => {
         statusCode: StatusCodes.BAD_REQUEST,
         status: ReasonPhrases.BAD_REQUEST,
       });
+    } else {
+
+      const validItems = items.filter(item => item !== null); // Filter out invalid items
+
+      const total = validItems.reduce(
+        (acc, item) => acc + item.quantity * item.productPrice,
+        0
+      );
+      let paymentResponse;
+      let savedOrder;
+      switch (payment_method) {
+        case 'paypal':
+          paymentResponse = await createPayPalOrder(total, "USD",req.body);
+          break;
+
+        case 'RazorPay':
+          paymentResponse = await createRazorpayOrder(total, "INR", invoice);
+          break;
+
+        case 'cod':
+          paymentResponse = processCodOrder(total, "$", orderDetails);
+
+          var newOrder = new Order({
+            items: validItems,
+            total,
+            currency:"USD",
+            payment_status: 'processing', // COD is pending until delivery
+            receipt: invoice || null,
+            transaction_id: paymentResponse.id || null, ...req.body,...paymentResponse
+          });
+
+           savedOrder = await newOrder.save();
+
+          break;
+
+        default:
+          return res.status(400).json({ error: 'Invalid payment method' });
+      }
+
+    
+
+       savedOrder ={
+      ...paymentResponse
+      }
+
+
+
+      // const newOrder = new Order({
+      //   items: validItems,
+      //   total: total, ...req.body
+      //   // Add other order details as needed
+      // });
+
+      // Save the order to the database
+
+      return res.status(StatusCodes.OK).json({
+        message: "Order successfully!",
+        result: savedOrder,
+        statusCode: StatusCodes.OK,
+        status: ReasonPhrases.OK,
+      });
+
     }
 
-    const validItems = items.filter(item => item !== null); // Filter out invalid items
-
-    const total = validItems.reduce(
-      (acc, item) => acc + item.quantity * item.productPrice,
-      0
-    );
-
-    // Create a new order
-
-    if (req.body.payment_method === "COD") {
-      req.body.status = "confirmed"
-    }
-
-    const newOrder = new Order({
-      items: validItems,
-      total: total, ...req.body
-      // Add other order details as needed
-    });
-
-    // Save the order to the database
-    const savedOrder = await newOrder.save();
-
-    return res.status(StatusCodes.CREATED).json({
-      message: "Order created successfully",
-      result: savedOrder,
-      statusCode: StatusCodes.CREATED,
-      status: ReasonPhrases.CREATED,
-    });
 
   } catch (error) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -143,6 +117,41 @@ const createOrder = async (req, res) => {
       statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
       status: ReasonPhrases.INTERNAL_SERVER_ERROR,
     });
+  }
+};
+const verifyPayment = async (req, res) => {
+  const { payment_method, paymentId, PayerID, order_id, signature } = req.body;
+
+  try {
+    let paymentResponse;
+
+    switch (payment_method) {
+      case 'paypal':
+        paymentResponse = await verifyPayPalPayment(paymentId, PayerID);
+        break;
+
+      case 'razorpay':
+        paymentResponse = verifyRazorpayPayment(order_id, paymentId, signature);
+        break;
+
+      case 'cod':
+        return res.status(200).json({ success: true, message: 'COD order does not require verification' });
+
+      default:
+        return res.status(400).json({ error: 'Invalid payment method' });
+    }
+
+    // Update order payment status in the database
+    const order = await Order.findOne({ transaction_id: paymentId || order_id });
+    if (order) {
+      order.payment_status = 'completed';
+      await order.save();
+    }
+
+    res.status(200).json({ success: true, paymentResponse });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error verifying payment' });
   }
 };
 
@@ -211,7 +220,7 @@ const getCustomerOrders = async (req, res) => {
       .populate("items.product", '-_id -categories -category -variants -status') // Populating the 'product' reference within 'items'
       .populate("address")
 
-    const length = await Order.countDocuments({ ...filterquery.query, user: req.params.user});
+    const length = await Order.countDocuments({ ...filterquery.query, user: req.params.user });
 
     if (Orders) {
       Orders.map((element) => {
@@ -255,7 +264,7 @@ const getCustomerDashboard = async (req, res) => {
 
     const orderStats = await Order.aggregate([
       {
-        $match: {user: req.params.user}  // Apply the provided filters (if any)
+        $match: { user: req.params.user }  // Apply the provided filters (if any)
       },
       {
         $facet: {
@@ -304,12 +313,12 @@ const getCustomerDashboard = async (req, res) => {
 
 
     const Orders = await Order.find(
-      {...filterquery.query, user: req.params.user},
+      { ...filterquery.query, user: req.params.user },
       "-__v ",
       filterquery.options
     ).populate("user")
 
-    const length = await Order.countDocuments({...filterquery.query, user: req.params.user});
+    const length = await Order.countDocuments({ ...filterquery.query, user: req.params.user });
 
     if (Orders) {
       Orders.forEach((element) => {
@@ -476,5 +485,5 @@ module.exports = {
   getOrders,
   getSingleOrder,
   deleteOrder,
-  createOrder, getCustomerOrders, getCustomerDashboard
+  createOrder,verifyPayment, getCustomerOrders, getCustomerDashboard
 };
