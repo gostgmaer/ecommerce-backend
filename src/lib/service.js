@@ -1,7 +1,7 @@
 const {
     jwtSecret,
     refressSecret,
-  } = require("../../config/setting");
+  } = require("../config/setting");
   const jwt = require("jsonwebtoken");
 
 
