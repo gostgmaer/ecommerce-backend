@@ -72,7 +72,23 @@ const generateTokens = (user) => {
  }
 
 
+ const setCookiesOnHeader = (accessToken,refreshToken,id_token,res)=>{
+    // const {accessToken,refreshToken,id_token} = generateTokens(user)
+    
+
+    res.cookie("accessToken", accessToken, {
+        path: "/",
+        httpOnly: true,
+      });
+      res.cookie("refreshToken", refreshToken, {
+        path: "/",
+        httpOnly: true,
+      });
+      res.cookie("idToken", id_token, { path: "/", httpOnly: true });
+ }
+
+
  module.exports = {
-    generateTokens
+    generateTokens,setCookiesOnHeader
   };
   

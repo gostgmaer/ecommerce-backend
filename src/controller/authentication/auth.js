@@ -16,7 +16,7 @@ const bcrypt = require("bcrypt");
 const sessionStore = require("../../db/sessionConnact");
 const createMailOptions = require("../../email/mailOptions");
 const transporter = require("../../email/mailTransporter");
-const { generateTokens } = require("../../lib/service");
+const { generateTokens, setCookiesOnHeader } = require("../../lib/service");
 // const { socialSignupBody } = require("../../email/emailbody");
 // const Mailgenerator = require('../mail/mailgenerator');
 
@@ -147,55 +147,15 @@ const SocialsignUp = async (req, res) => {
       const {
         firstName,
         lastName,
-        username,
+   
         email,
-        address,
+      
         profilePicture,
-        phoneNumber,
+
         id,
       } = newUser;
 
-      const accessToken = jwt.sign(
-        {
-          id,
-          role: newUser.role,
-          email,
-          username,
-          name: firstName + " " + lastName,
-        },
-        jwtSecret,
-        {
-          expiresIn: "1d",
-        }
-      );
-
-      // Generate a refresh token (for extended sessions)
-
-      const refreshToken = jwt.sign(
-        { username, userId: id },
-        refressSecret,
-        {
-          expiresIn: "7d",
-        }
-      );
-
-      const id_token = jwt.sign(
-        {
-          firstName,
-          lastName,
-          username,
-          email,
-          id,
-          address,
-          profilePicture,
-          phoneNumber,
-        },
-        refressSecret,
-
-        {
-          expiresIn: "30d",
-        }
-      );
+      const { accessToken, refreshToken, id_token } = generateTokens(newUser)
       res.cookie("accessToken", accessToken, {
         path: "/",
         httpOnly: true,
@@ -219,8 +179,8 @@ const SocialsignUp = async (req, res) => {
         status: ReasonPhrases.OK,
       });
 
-    } 
-   
+    }
+
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: error.message,
@@ -330,55 +290,15 @@ const signIn = async (req, res) => {
             const {
               firstName,
               lastName,
-              username,
+             
               email,
-              address,
+          
               profilePicture,
-              phoneNumber,
+        
               id,
             } = user;
 
-            const accessToken = jwt.sign(
-              {
-                id: user.id,
-                role: user.role,
-                email: user.email,
-                username: user.username,
-                name: firstName + " " + lastName,
-              },
-              jwtSecret,
-              {
-                expiresIn: "1d",
-              }
-            );
-
-            // Generate a refresh token (for extended sessions)
-
-            const refreshToken = jwt.sign(
-              { username: user.username, userId: user.id },
-              refressSecret,
-              {
-                expiresIn: "7d",
-              }
-            );
-
-            const id_token = jwt.sign(
-              {
-                firstName,
-                lastName,
-                username,
-                email,
-                id,
-                address,
-                profilePicture,
-                phoneNumber,
-              },
-              refressSecret,
-
-              {
-                expiresIn: "30d",
-              }
-            );
+            const { accessToken, refreshToken, id_token } = generateTokens(user)
             res.cookie("accessToken", accessToken, {
               path: "/",
               httpOnly: true,
@@ -552,65 +472,16 @@ const chechUser = async (req, res) => {
       const {
         firstName,
         lastName,
-        username,
         email,
-        address,
         profilePicture,
-        phoneNumber,
         id,
       } = user;
 
-      const token = generateTokens(user)
-      const accessToken = jwt.sign(
-        {
-          id,
-          role: user.role,
-          email,
-          username,
-          name: firstName + " " + lastName,
-        },
-        jwtSecret,
-        {
-          expiresIn: "1d",
-        }
-      );
+      // const token = generateTokens(user)
 
-      // Generate a refresh token (for extended sessions)
 
-      const refreshToken = jwt.sign(
-        { username, userId: id },
-        refressSecret,
-        {
-          expiresIn: "7d",
-        }
-      );
-
-      const id_token = jwt.sign(
-        {
-          firstName,
-          lastName,
-          username,
-          email,
-          id,
-          address,
-          profilePicture,
-          phoneNumber,
-        },
-        refressSecret,
-
-        {
-          expiresIn: "30d",
-        }
-      );
-      res.cookie("accessToken", accessToken, {
-        path: "/",
-        httpOnly: true,
-      });
-      res.cookie("refreshToken", refreshToken, {
-        path: "/",
-        httpOnly: true,
-      });
-      res.cookie("idToken", id_token, { path: "/", httpOnly: true });
+      const { accessToken, refreshToken, id_token } = generateTokens(user)
+      setCookiesOnHeader(accessToken, refreshToken, id_token, res)
 
       res.status(StatusCodes.OK).json({
         accessToken,
@@ -628,55 +499,13 @@ const chechUser = async (req, res) => {
       const {
         firstName,
         lastName,
-        username,
         email,
-        address,
         profilePicture,
-        phoneNumber,
         id,
       } = userId;
 
-      const accessToken = jwt.sign(
-        {
-          id,
-          role: userId.role,
-          email,
-          username,
-          name: firstName + " " + lastName,
-        },
-        jwtSecret,
-        {
-          expiresIn: "1d",
-        }
-      );
+      const { accessToken, refreshToken, id_token } = generateTokens(userId)
 
-      // Generate a refresh token (for extended sessions)
-
-      const refreshToken = jwt.sign(
-        { username, userId: id },
-        refressSecret,
-        {
-          expiresIn: "7d",
-        }
-      );
-
-      const id_token = jwt.sign(
-        {
-          firstName,
-          lastName,
-          username,
-          email,
-          id,
-          address,
-          profilePicture,
-          phoneNumber,
-        },
-        refressSecret,
-
-        {
-          expiresIn: "30d",
-        }
-      );
       res.cookie("accessToken", accessToken, {
         path: "/",
         httpOnly: true,
@@ -1128,7 +957,7 @@ const getProfile = async (req, res) => {
   } else {
     try {
       const userId = await User.findOne({ _id: user }).select([
-        "_id",
+    
         "firstName",
         "lastName",
         "username",
