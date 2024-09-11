@@ -1,7 +1,4 @@
-const {
-  ReasonPhrases,
-  StatusCodes,
-} = require("http-status-codes");
+const { ReasonPhrases, StatusCodes } = require("http-status-codes");
 const {
   jwtSecret,
   refressSecret,
@@ -133,11 +130,11 @@ const SocialsignUp = async (req, res) => {
   }
 
   try {
-
-
     var newUser = new User({
-
-      ...req.body, isEmailconfirm: true, isVerified: true, role: "customer"
+      ...req.body,
+      isEmailconfirm: true,
+      isVerified: true,
+      role: "customer",
     });
 
     newUser = await newUser.save();
@@ -147,15 +144,15 @@ const SocialsignUp = async (req, res) => {
       const {
         firstName,
         lastName,
-   
+
         email,
-      
+
         profilePicture,
 
         id,
       } = newUser;
 
-      const { accessToken, refreshToken, id_token } = generateTokens(newUser)
+      const { accessToken, refreshToken, id_token } = generateTokens(newUser);
       res.cookie("accessToken", accessToken, {
         path: "/",
         httpOnly: true,
@@ -178,9 +175,7 @@ const SocialsignUp = async (req, res) => {
         statusCode: StatusCodes.OK,
         status: ReasonPhrases.OK,
       });
-
     }
-
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: error.message,
@@ -290,15 +285,16 @@ const signIn = async (req, res) => {
             const {
               firstName,
               lastName,
-             
+
               email,
-          
+
               profilePicture,
-        
+
               id,
             } = user;
 
-            const { accessToken, refreshToken, id_token } = generateTokens(user)
+            const { accessToken, refreshToken, id_token } =
+              generateTokens(user);
             res.cookie("accessToken", accessToken, {
               path: "/",
               httpOnly: true,
@@ -362,16 +358,10 @@ const customsignIn = async (req, res) => {
             status: ReasonPhrases.UNAUTHORIZED,
           });
         } else {
-          const {
-            firstName,
-            lastName,
-            username,
-            id,
-          } = user;
+          const { firstName, lastName, username, id } = user;
 
           const accessToken = jwt.sign(
             {
-
               role: user.role,
               email: user.email,
               username,
@@ -386,12 +376,10 @@ const customsignIn = async (req, res) => {
 
           // Generate a refresh token (for extended sessions)
 
-
           res.cookie("accessToken", accessToken, {
             path: "/",
             httpOnly: true,
-          })
-
+          });
 
           res.status(StatusCodes.OK).json({
             accessToken,
@@ -469,19 +457,12 @@ const chechUser = async (req, res) => {
     const userId = await User.findOne({ username });
 
     if (user) {
-      const {
-        firstName,
-        lastName,
-        email,
-        profilePicture,
-        id,
-      } = user;
+      const { firstName, lastName, email, profilePicture, id } = user;
 
       // const token = generateTokens(user)
 
-
-      const { accessToken, refreshToken, id_token } = generateTokens(user)
-      setCookiesOnHeader(accessToken, refreshToken, id_token, res)
+      const { accessToken, refreshToken, id_token } = generateTokens(user);
+      setCookiesOnHeader(accessToken, refreshToken, id_token, res);
 
       res.status(StatusCodes.OK).json({
         accessToken,
@@ -496,15 +477,9 @@ const chechUser = async (req, res) => {
         status: ReasonPhrases.OK,
       });
     } else if (userId) {
-      const {
-        firstName,
-        lastName,
-        email,
-        profilePicture,
-        id,
-      } = userId;
+      const { firstName, lastName, email, profilePicture, id } = userId;
 
-      const { accessToken, refreshToken, id_token } = generateTokens(userId)
+      const { accessToken, refreshToken, id_token } = generateTokens(userId);
 
       res.cookie("accessToken", accessToken, {
         path: "/",
@@ -910,10 +885,10 @@ const accountConfirm = async (req, res) => {
 
 const changedPassword = async (req, res) => {
   try {
-    const { password, updated_user_id } = req.body;
+    const { password, current_password } = req.body;
 
     const user = await User.findOne({
-      _id: updated_user_id,
+      _id: req.params.user,
     });
 
     if (!user) {
@@ -923,18 +898,38 @@ const changedPassword = async (req, res) => {
         status: ReasonPhrases.BAD_REQUEST,
       });
     } else {
-      const hashedPassword = await bcrypt.hash(password, 10); // 10 is the saltRounds
-      user.hash_password = hashedPassword;
-      await user.save();
-      res.status(StatusCodes.OK).json({
-        message: "Password Changed successfully",
-        statusCode: StatusCodes.OK,
-        status: ReasonPhrases.OK,
-      });
+      if (user.hash_password) {
+        const isPasswordValid = await bcrypt.compare(
+          current_password,
+          user.hash_password
+        );
+        if (!isPasswordValid) {
+          res.status(StatusCodes.BAD_REQUEST).json({
+            message: "Current Password is invalid!",
+            statusCode: StatusCodes.BAD_REQUEST,
+            status: ReasonPhrases.BAD_REQUEST,
+          });
+        } else {
+          const hashedPassword = await bcrypt.hash(password, 10); // 10 is the saltRounds
+          user.hash_password = hashedPassword;
+          await user.save();
+          res.status(StatusCodes.OK).json({
+            message: "Password Changed successfully",
+            statusCode: StatusCodes.OK,
+            status: ReasonPhrases.OK,
+          });
+        }
+      } else {
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the saltRounds
+          user.hash_password = hashedPassword;
+          await user.save();
+          res.status(StatusCodes.OK).json({
+            message: "Password Changed successfully",
+            statusCode: StatusCodes.OK,
+            status: ReasonPhrases.OK,
+          });
+      }
     }
-
-    // Password reset successful
-    // return res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
     // Handle error
 
@@ -957,7 +952,6 @@ const getProfile = async (req, res) => {
   } else {
     try {
       const userId = await User.findOne({ _id: user }).select([
-    
         "firstName",
         "lastName",
         "username",
@@ -1084,6 +1078,61 @@ const getRefreshToken = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  const { user } = req.params;
+  try {
+   
+
+  
+    var myquery = { _id: user };
+
+    if (user) {
+      try {
+       
+        User.updateOne(myquery, { $set: req.body }, { upsert: true }).then(
+          (data, err) => {
+            if (err)
+              res.status(StatusCodes.NOT_MODIFIED).json({
+                message: "Update Failed",
+                status: ReasonPhrases.NOT_MODIFIED,
+                statusCode: StatusCodes.NOT_MODIFIED,
+                cause: err,
+              });
+            else {
+              res.status(StatusCodes.OK).json({
+                message: "User Update Successfully",
+                status: ReasonPhrases.OK,
+                statusCode: StatusCodes.OK,
+                data: data,
+              });
+            }
+          }
+        );
+      } catch (error) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message: error.message,
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+          cause: error,
+        });
+      }
+    } else {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        message: "User does not exist..!",
+        statusCode: StatusCodes.BAD_REQUEST,
+        status: ReasonPhrases.BAD_REQUEST,
+      });
+    }
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      cause: error,
+    });
+  }
+};
+
 module.exports = {
   signUp,
   signIn,
@@ -1097,5 +1146,6 @@ module.exports = {
   getRefreshToken,
   checkAuth,
   SocialsignUp,
-  chechUser, customsignIn
+  chechUser,
+  customsignIn,updateProfile
 };
