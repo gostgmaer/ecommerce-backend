@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const {
   ReasonPhrases,
   StatusCodes,
@@ -10,6 +11,7 @@ const Product = require("../../models/products");
 const { createPayPalOrder, verifyPayPalPayment } = require("../payment/paypalHelper");
 const { createRazorpayOrder, verifyRazorpayPayment } = require("../payment/rozorpay");
 const { processCodOrder } = require("../payment/codhelper");
+
 // const { createPayPalOrder, verifyPayPalPayment } = require('../services/paypalService');
 // const { createRazorpayOrder, verifyRazorpayPayment } = require('../services/razorpayService');
 // const { processCodOrder } = require('../services/codService');
@@ -267,6 +269,9 @@ const getCustomerOrders = async (req, res) => {
 };
 
 const getCustomerDashboard = async (req, res) => {
+
+
+const user = new mongoose.Types.ObjectId(req.params.user);
   try {
     const { sort, page, limit, filter } = req.query;
 
@@ -274,7 +279,7 @@ const getCustomerDashboard = async (req, res) => {
 
     const orderStats = await Order.aggregate([
       {
-        $match: { user: req.params.user }  // Apply the provided filters (if any)
+        $match: { user: user }  // Apply the provided filters (if any)
       },
       {
         $facet: {
@@ -285,13 +290,17 @@ const getCustomerDashboard = async (req, res) => {
             { $match: { status: "pending" } },  // Orders with status 'pending'
             { $count: "pending" }
           ],
-          confirmed: [
-            { $match: { status: "confirmed" } },  // Orders with status 'pending'
-            { $count: "confirmed" }
+          delivered: [
+            { $match: { status: "delivered" } },  // Orders with status 'pending'
+            { $count: "delivered" }
           ],
-          success: [
-            { $match: { status: "success" } },  // Orders with status 'success'
-            { $count: "success" }
+          shipped: [
+            { $match: { status: "shipped" } },  // Orders with status 'pending'
+            { $count: "shipped" }
+          ],
+          completed: [
+            { $match: { status: "completed" } },  // Orders with status 'success'
+            { $count: "completed" }
           ],
           failed: [
             { $match: { status: "failed" } },  // Orders with status 'failed'
@@ -301,9 +310,13 @@ const getCustomerDashboard = async (req, res) => {
             { $match: { status: "cancelled" } },  // Orders with status 'cancelled'
             { $count: "cancelled" }
           ],
-          shipped: [
-            { $match: { status: "shipped" } },  // Orders with status 'shipped'
-            { $count: "shipped" }
+          processing: [
+            { $match: { status: "processing" } },  // Orders with status 'shipped'
+            { $count: "processing" }
+          ],
+          "on-hold": [
+            { $match: { status: "on-hold" } },  // Orders with status 'shipped'
+            { $count: "on-hold" }
           ]
         }
       },
@@ -311,11 +324,13 @@ const getCustomerDashboard = async (req, res) => {
         $project: {
           total: { $arrayElemAt: ["$total.total", 0] },
           pending: { $ifNull: [{ $arrayElemAt: ["$pending.pending", 0] }, 0] },
-          success: { $ifNull: [{ $arrayElemAt: ["$success.success", 0] }, 0] },
+          processing: { $ifNull: [{ $arrayElemAt: ["$processing.processing", 0] }, 0] },
           failed: { $ifNull: [{ $arrayElemAt: ["$failed.failed", 0] }, 0] },
           cancelled: { $ifNull: [{ $arrayElemAt: ["$cancelled.cancelled", 0] }, 0] },
-          confirmed: { $ifNull: [{ $arrayElemAt: ["$confirmed.confirmed", 0] }, 0] },
-          shipped: { $ifNull: [{ $arrayElemAt: ["$shipped.shipped", 0] }, 0] }
+          completed: { $ifNull: [{ $arrayElemAt: ["$completed.completed", 0] }, 0] },
+          shipped: { $ifNull: [{ $arrayElemAt: ["$shipped.shipped", 0] }, 0] },
+          delivered: { $ifNull: [{ $arrayElemAt: ["$delivered.delivered", 0] }, 0] },
+          "on-hold": { $ifNull: [{ $arrayElemAt: ["$on-hold.on-hold", 0] }, 0] }
         }
       }
     ]);

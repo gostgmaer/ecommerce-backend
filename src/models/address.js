@@ -6,9 +6,10 @@ const addressSchema = new mongoose.Schema({
     ref: 'User', // Assuming there's a User model to reference
     required: true
   },
-  addressname: {
+  type: {
     type: String,
-    required: true
+    enum: ['Billing', 'Shipping',],
+    default: 'Billing'
   },
   firstName: {
     type: String,
@@ -33,18 +34,11 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  apartment: {
-    type: String
-  },
   city: {
     type: String,
     required: true
   },
   postalCode: {
-    type: String,
-    required: true
-  },
-  street: {
     type: String,
     required: true
   }
