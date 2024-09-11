@@ -90,9 +90,10 @@ const createOrder = async (req, res) => {
         items: validItems,
         total,
         currency:"INR",
+        
         payment_status: 'pending', // COD is pending until delivery
         receipt: invoice || null,
-        transaction_id: paymentResponse.id || null, ...req.body,...paymentResponse
+        transaction_id: paymentResponse.id || null, ...req.body,...paymentResponse,status:"pending"
       });
 
        savedOrder = await newOrder.save();
