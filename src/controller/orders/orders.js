@@ -66,7 +66,7 @@ const createOrder = async (req, res) => {
           break;
 
         case 'COD':
-          paymentResponse = processCodOrder(total, "$", orderDetails);
+          paymentResponse = processCodOrder(total, "INR", orderDetails);
 
          
 
@@ -88,7 +88,7 @@ const createOrder = async (req, res) => {
         items: validItems,
         total,
         currency:"INR",
-        payment_status: 'processing', // COD is pending until delivery
+        payment_status: 'pending', // COD is pending until delivery
         receipt: invoice || null,
         transaction_id: paymentResponse.id || null, ...req.body,...paymentResponse
       });
@@ -105,7 +105,7 @@ const createOrder = async (req, res) => {
    } else {
     return res.status(StatusCodes.OK).json({
       message: "Order Created!",
-      result: paymentResponse,
+      result: {...paymentResponse,payment_method},
       statusCode: StatusCodes.OK,
       status: ReasonPhrases.OK,
     });
@@ -138,7 +138,7 @@ const verifyPayment = async (req, res) => {
         paymentResponse = verifyRazorpayPayment(order_id, paymentId, signature);
         break;
 
-      case 'cod':
+      case 'COD':
         return res.status(200).json({ success: true, message: 'COD order does not require verification' });
 
       default:
@@ -150,6 +150,7 @@ const verifyPayment = async (req, res) => {
     const order = await Order.findOne({ transaction_id: order_id });
     if (order) {
       order.payment_status = 'completed';
+      order.status = 'completed';
       savedOrder =  await order.save();
     }
     return res.status(StatusCodes.OK).json({
