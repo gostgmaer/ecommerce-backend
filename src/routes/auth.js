@@ -10,10 +10,9 @@ const {
   changedPassword,
   forgetPassword,SocialsignUp,
   accountConfirm, getProfile, getRefreshToken,checkAuth,chechUser,
-  customsignIn
+  customsignIn,updateProfile
 } = require("../controller/authentication/auth");
 const UpdatebyMiddleWare = require("../middleware/updatedBy");
-
 const userMiddleWare = require("../middleware/userAccess");
 
 const {
@@ -45,6 +44,7 @@ authRoute.route("/user/auth/reset-password/:token").post(validateResetpassword, 
 authRoute.route("/user/auth/forget-password").post(validateForgetPassword, isRequestValidated, forgetPassword);
 authRoute.route("/user/auth/change-password").post(userMiddleWare, UpdatebyMiddleWare, validateChangePassword, isRequestValidated, changedPassword);
 authRoute.route("/user/auth/profile").get(userMiddleWare, getProfile);
+authRoute.route("/user/auth/profile/update").patch(userMiddleWare,UpdatebyMiddleWare, updateProfile);
 authRoute.route("/user/auth/logout").post(userMiddleWare, singout);
 
 module.exports = authRoute;

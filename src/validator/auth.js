@@ -39,9 +39,8 @@ const validateResetpassword = [
 ];
 
 const validateChangePassword = [
-  // check("password")
-  //   .isLength({ min: 6 })
-  //   .withMessage("Password must be at least 6 character long"),
+  check("current_password").notEmpty()
+    .withMessage("Current Password is required"),
   check("password")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long")
