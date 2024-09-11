@@ -1,11 +1,8 @@
 const {
   ReasonPhrases,
   StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
 } = require("http-status-codes");
 const {
-  dbUrl,
   jwtSecret,
   refressSecret,
   applicaionName,
@@ -19,6 +16,8 @@ const bcrypt = require("bcrypt");
 const sessionStore = require("../../db/sessionConnact");
 const createMailOptions = require("../../email/mailOptions");
 const transporter = require("../../email/mailTransporter");
+const { generateTokens } = require("../../lib/service");
+// const { socialSignupBody } = require("../../email/emailbody");
 // const Mailgenerator = require('../mail/mailgenerator');
 
 const signUp = async (req, res) => {
@@ -122,6 +121,7 @@ const signUp = async (req, res) => {
     });
   }
 };
+
 const SocialsignUp = async (req, res) => {
   const { firstName, email, username } = req.body;
   if (!firstName || !email || !username) {
@@ -133,69 +133,94 @@ const SocialsignUp = async (req, res) => {
   }
 
   try {
-    const token = jwt.sign(
-      {
-        email: email,
-      },
-      jwtSecret,
-      {
-        expiresIn: "1h",
-      }
-    );
-    User.create({
-      ...req.body,
-      confirmToken: token,
-      isEmailconfirm: true,
-    }).then((data, err) => {
-      if (err)
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message: err.message,
-          statusCode: StatusCodes.BAD_REQUEST,
-          status: ReasonPhrases.BAD_REQUEST,
-        });
-      else {
-        let mailBody = {
-          body: {
-            name: data.fullName,
-            intro: `Welcome to ${applicaionName}! We are excited to have you on board.`,
-            additionalInfo: `Thank you for choosing ${applicaionName}. You now have access to our premium features, including unlimited storage and priority customer support.`,
-            action: {
-              instructions: `To get started with ${applicaionName}, please click here:`,
-              button: {
-                color: "#22BC66", // Optional action button color
-                text: "Confirm Your Account",
-                link: `${host}/${confirmPath}?token=${token}`,
-              },
-            },
-            outro:
-              "Need help, or have questions? Just reply to this email, we'd love to help.",
-          },
-        };
-        transporter
-          .sendMail(
-            createMailOptions(
-              "salted",
-              data.email,
-              `Welcome to ${applicaionName} - Confirm Your Email`,
-              mailBody
-            )
-          )
-          .then(() => {
-            res.status(StatusCodes.CREATED).json({
-              message: "User created Successfully",
-              status: ReasonPhrases.CREATED,
-              statusCode: StatusCodes.CREATED,
-            });
-          })
-          .catch((error) => {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-              message: error.message,
-              statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-              status: ReasonPhrases.INTERNAL_SERVER_ERROR,
-            });
-          });
-      }
+
+
+    var newUser = new User({
+
+      ...req.body, isEmailconfirm: true, isVerified: true, role: "customer"
     });
+
+    newUser = await newUser.save();
+
+    if (newUser) {
+      // socialSignupBody(newUser)
+      const {
+        firstName,
+        lastName,
+        username,
+        email,
+        address,
+        profilePicture,
+        phoneNumber,
+        id,
+      } = newUser;
+
+      const accessToken = jwt.sign(
+        {
+          id,
+          role: newUser.role,
+          email,
+          username,
+          name: firstName + " " + lastName,
+        },
+        jwtSecret,
+        {
+          expiresIn: "1d",
+        }
+      );
+
+      // Generate a refresh token (for extended sessions)
+
+      const refreshToken = jwt.sign(
+        { username, userId: id },
+        refressSecret,
+        {
+          expiresIn: "7d",
+        }
+      );
+
+      const id_token = jwt.sign(
+        {
+          firstName,
+          lastName,
+          username,
+          email,
+          id,
+          address,
+          profilePicture,
+          phoneNumber,
+        },
+        refressSecret,
+
+        {
+          expiresIn: "30d",
+        }
+      );
+      res.cookie("accessToken", accessToken, {
+        path: "/",
+        httpOnly: true,
+      });
+      res.cookie("refreshToken", refreshToken, {
+        path: "/",
+        httpOnly: true,
+      });
+      res.cookie("idToken", id_token, { path: "/", httpOnly: true });
+
+      res.status(StatusCodes.OK).json({
+        accessToken,
+        token_type: "Bearer",
+        id,
+        email,
+        image: profilePicture,
+        id_token,
+        refreshToken,
+        name: firstName + " " + lastName,
+        statusCode: StatusCodes.OK,
+        status: ReasonPhrases.OK,
+      });
+
+    } 
+   
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: error.message,
@@ -204,6 +229,7 @@ const SocialsignUp = async (req, res) => {
     });
   }
 };
+
 const signIn = async (req, res) => {
   try {
     if (!req.body.email || !req.body.password) {
@@ -388,7 +414,6 @@ const signIn = async (req, res) => {
   }
 };
 
-
 const customsignIn = async (req, res) => {
   try {
     if (!req.body.email || !req.body.password) {
@@ -468,7 +493,6 @@ const customsignIn = async (req, res) => {
   }
 };
 
-
 const checkAuth = async (req, res) => {
   const { email } = req.body;
 
@@ -536,6 +560,7 @@ const chechUser = async (req, res) => {
         id,
       } = user;
 
+      const token = generateTokens(user)
       const accessToken = jwt.sign(
         {
           id,
