@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema(
   {
@@ -48,7 +49,7 @@ const userSchema = new mongoose.Schema(
     // URL to a profile picture
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "admin","customer"],
       default: "user",
     },
     isVerified: {
@@ -58,8 +59,7 @@ const userSchema = new mongoose.Schema(
     tokens: [
       {
         token: {
-          type: String,
-          required: true,
+          type: String
         },
       },
     ],
