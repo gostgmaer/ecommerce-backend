@@ -85,7 +85,7 @@ const orderSchema = new mongoose.Schema(
       unique: true,
 
     },
-    address:{
+    address: {
       type: String
     },
 
@@ -103,7 +103,30 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "cancel", "pending_payment", "confirmed", "shipped", "delivered","created","completed"],
+      enum: [
+        "pending",
+        "completed",
+        "shipped",
+        "canceled",
+        "processing",
+        "delivered",
+        "returned",
+        "failed",
+        "refunded",
+        "on-hold",
+        "awaiting-payment",
+        "payment-received",
+        "payment-failed",
+        "dispatched",
+        "in-transit",
+        "out-for-delivery",
+        "partially-shipped",
+        "partially-delivered",
+        "order-accepted",
+        "order-declined",
+        "awaiting-fulfillment",
+        "ready-for-pickup"
+      ],
       default: "pending",
     },
     order_id: {
