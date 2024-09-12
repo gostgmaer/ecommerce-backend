@@ -349,6 +349,42 @@ const generateQuery = (filterkeys) => {
 }
 
 
+const showingProductFilter = (sort = "updatedAt:desc", page, limit, category, _id, query) => {
+  var myquery = {};
+
+  if (query) {
+    myquery = { 'slug': query }
+  } else if (category && _id) {
+    myquery = { 'category': _id }
+  }
+
+  let statusFilter = { status: { $ne: "INACTIVE" } };
+
+  if (myquery.status != "" && myquery.status) {
+    statusFilter = { ...statusFilter, status: myquery.status };
+  }
+
+  myquery = { ...myquery, ...statusFilter };
+
+  removeEmptyKeys(myquery);
+  var sortOptions = {};
+
+  if (sort) {
+    const [sortKey, sortOrder] = sort.split(":");
+    sortOptions[sortKey] = sortOrder === "desc" ? -1 : 1;
+  }
+  const options = {
+    skip: (Number(page) - 1) * Number(limit),
+    limit: parseInt(limit),
+    sort: sortOptions,
+  };
+  return {
+    options: options,
+    query: myquery,
+  };
+};
+
+
 module.exports = {
   decodeToken,
   FilterOptions,
@@ -357,5 +393,5 @@ module.exports = {
   FilterOptionsSearch,
   generateRandomString,
   getLocalIpAddress,
-  getPublicIpAddress, getAppIdAndEntity
+  getPublicIpAddress, getAppIdAndEntity,showingProductFilter
 };
