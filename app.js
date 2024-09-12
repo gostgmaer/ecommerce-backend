@@ -63,7 +63,7 @@ app.use("/api", wishlistRoute);
 app.use("/api", AttachmentRoute);
 app.use("/api", contactsRoute);
 
-const start = async () => {
+const start = async (res) => {
   try {
     connectDB(dbUrl);
     app.listen(serverPort, () => {
