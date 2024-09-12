@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    socialID:{
+    socialID: {
       type: String,
     },
     email: {
@@ -29,10 +29,10 @@ const userSchema = new mongoose.Schema(
       enum: ["Male", "Female", "Other"],
     },
     phoneNumber: String,
-    address: {
+    address: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Address",
-    },
+    }],
     orders: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order", // Reference to the Product model
@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema(
     // URL to a profile picture
     role: {
       type: String,
-      enum: ["user", "admin","customer"],
+      enum: ["user", "admin", "customer"],
       default: "user",
     },
     isVerified: {

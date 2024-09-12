@@ -21,10 +21,10 @@ const addressSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    required: true
   },
-  company: {
-    type: String
+  email: {
+    type: String,
+    required: true
   },
   state: {
     type: String,

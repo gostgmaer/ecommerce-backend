@@ -4,7 +4,6 @@ const {
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
 const User = require("../../models/user");
-const Address = require("../../models/user");
 
 
 
@@ -96,7 +95,7 @@ const getUserProfile = async (req, res) => {
       const user = await User.findOne(
         { _id: id },
         "-__v -hash_password -resetToken -resetTokenExpiration -confirmToken -update_by -role -tokens -session"
-      ).populate('address')
+      ).populate('address','-user')
 
    
 
@@ -141,7 +140,7 @@ const updateUser = async (req, res) => {
 
     if (user) {
       try {
-        const body = { ...req.body };
+     
         User.updateOne(myquery, { $set: req.body }, { upsert: true }).then(
           (data, err) => {
             if (err)
