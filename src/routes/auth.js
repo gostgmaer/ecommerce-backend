@@ -31,18 +31,18 @@ authRoute.route("/user/auth/register").post(logMiddleware,validateSignUpRequest,
 authRoute.route("/user/auth/social-register").post(SocialsignUp);
 authRoute.route("/user/auth/confirm-account/:token").post(accountConfirm);
 authRoute.
-  route("/user/auth/login").post(validateSignIpRequest, isRequestValidated, signIn);
+  route("/user/auth/login").post(logMiddleware,validateSignIpRequest, isRequestValidated, signIn);
   authRoute.
   route("/user/auth/custom/login").post(customsignIn);
   authRoute.
-  route("/user/auth/checkAuth").post(isRequestValidated, checkAuth);
+  route("/user/auth/checkAuth").post(logMiddleware,isRequestValidated, checkAuth);
 
   authRoute.
-  route("/user/auth/checkUser").post(isRequestValidated, chechUser);
+  route("/user/auth/checkUser").post(logMiddleware,isRequestValidated, chechUser);
   
 authRoute.route("/user/auth/verify/session").post(varifySession);
 authRoute.route("/user/auth/session/refresh/token").post(getRefreshToken);
-authRoute.route("/user/auth/reset-password/:token").post(validateResetpassword, isRequestValidated, resetPassword);
+authRoute.route("/user/auth/reset-password/:token").patch(validateResetpassword, isRequestValidated, resetPassword);
 authRoute.route("/user/auth/forget-password").patch(validateForgetPassword, isRequestValidated, forgetPassword);
 authRoute.route("/user/auth/change-password").post(userMiddleWare, UpdatebyMiddleWare, validateChangePassword, isRequestValidated, changedPassword);
 authRoute.route("/user/auth/profile").get(userMiddleWare, getProfile);
