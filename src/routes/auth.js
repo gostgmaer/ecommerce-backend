@@ -23,9 +23,11 @@ const {
   validateResetpassword,
   validateChangePassword
 } = require("../validator/auth");
+const logMiddleware = require("../middleware/logger");
 
 
-authRoute.route("/user/auth/register").post(validateSignUpRequest, isRequestValidated, signUp);
+
+authRoute.route("/user/auth/register").post(logMiddleware,validateSignUpRequest, isRequestValidated, signUp);
 authRoute.route("/user/auth/social-register").post(SocialsignUp);
 authRoute.route("/user/auth/confirm-account/:token").post(accountConfirm);
 authRoute.
@@ -41,7 +43,7 @@ authRoute.
 authRoute.route("/user/auth/verify/session").post(varifySession);
 authRoute.route("/user/auth/session/refresh/token").post(getRefreshToken);
 authRoute.route("/user/auth/reset-password/:token").post(validateResetpassword, isRequestValidated, resetPassword);
-authRoute.route("/user/auth/forget-password").post(validateForgetPassword, isRequestValidated, forgetPassword);
+authRoute.route("/user/auth/forget-password").patch(validateForgetPassword, isRequestValidated, forgetPassword);
 authRoute.route("/user/auth/change-password").post(userMiddleWare, UpdatebyMiddleWare, validateChangePassword, isRequestValidated, changedPassword);
 authRoute.route("/user/auth/profile").get(userMiddleWare, getProfile);
 authRoute.route("/user/auth/profile/update").patch(userMiddleWare,UpdatebyMiddleWare, updateProfile);

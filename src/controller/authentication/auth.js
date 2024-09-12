@@ -6,6 +6,7 @@ const {
   host,
   confirmPath,
   resetPath,
+  loginPath,
 } = require("../../config/setting");
 const User = require("../../models/user");
 const jwt = require("jsonwebtoken");
@@ -48,7 +49,7 @@ const signUp = async (req, res) => {
     });
   } else if (userId) {
     return res.status(StatusCodes.BAD_REQUEST).json({
-      message: `User Id ${userId.username} is already taken`,
+      message: `Username ${userId.username} is already taken`,
       statusCode: StatusCodes.BAD_REQUEST,
       status: ReasonPhrases.BAD_REQUEST,
     });
@@ -83,8 +84,8 @@ const signUp = async (req, res) => {
               instructions: `To get started with ${applicaionName}, please click here:`,
               button: {
                 color: "#22BC66", // Optional action button color
-                text: "Confirm Your Account",
-                link: `${host}/${confirmPath}?token=${token}`,
+                text: "Login Your Account",
+                link: `${host}/${loginPath}`,
               },
             },
             outro:
@@ -96,13 +97,13 @@ const signUp = async (req, res) => {
             createMailOptions(
               "salted",
               data.email,
-              `Welcome to ${applicaionName} - Confirm Your Email`,
+              `Welcome to ${applicaionName} - Check Your Account`,
               mailBody
             )
           )
           .then(() => {
             res.status(StatusCodes.CREATED).json({
-              message: "User created Successfully",
+              message: "User Register Completed Please Login !",
               status: ReasonPhrases.CREATED,
               statusCode: StatusCodes.CREATED,
             });
@@ -203,123 +204,52 @@ const signIn = async (req, res) => {
           status: ReasonPhrases.NOT_FOUND,
         });
       } else {
-        if (!user.isVerified) {
-          const token = jwt.sign(
-            {
-              email: user.email,
-              id: user.id,
-            },
-            jwtSecret,
-            {
-              expiresIn: "2h",
-            }
-          );
-
-          User.updateOne(
-            { _id: user.id },
-            { $set: { confirmToken: token } },
-            { upsert: true }
-          ).then((data, err) => {
-            if (err)
-              res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                message: err.message,
-                status: ReasonPhrases.INTERNAL_SERVER_ERROR,
-                statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-              });
-            else {
-              let mailBody = {
-                body: {
-                  name: user.fullName,
-                  intro: `Welcome to ${applicaionName}! We are excited to have you on board.`,
-                  additionalInfo: `Thank you for choosing ${applicaionName}. You now have access to our premium features, including unlimited storage and priority customer support.`,
-                  action: {
-                    instructions: `To get started with ${applicaionName}, please click here:`,
-                    button: {
-                      color: "#22BC66", // Optional action button color
-                      text: "Confirm Your Account",
-                      link: `${host}/${confirmPath}?token=${token}`,
-                    },
-                  },
-                  outro:
-                    "Need help, or have questions? Just reply to this email, we'd love to help.",
-                },
-              };
-              transporter
-                .sendMail(
-                  createMailOptions(
-                    "salted",
-                    user.email,
-                    `Welcome to ${applicaionName} - Confirm Your Email`,
-                    mailBody
-                  )
-                )
-                .then(() => {
-                  res.status(StatusCodes.FORBIDDEN).json({
-                    message:
-                      "User is Not Activate! Please check email to activate your account",
-                    statusCode: StatusCodes.FORBIDDEN,
-                    status: ReasonPhrases.FORBIDDEN,
-                  });
-                })
-                .catch((error) => {
-                  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                    message: error.message,
-                    statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-                    status: ReasonPhrases.INTERNAL_SERVER_ERROR,
-                  });
-                });
-            }
+        const isPasswordValid = await bcrypt.compare(
+          req.body.password,
+          user.hash_password
+        );
+        if (!isPasswordValid) {
+          res.status(StatusCodes.UNAUTHORIZED).json({
+            message: "Password is invalid!",
+            statusCode: StatusCodes.UNAUTHORIZED,
+            status: ReasonPhrases.UNAUTHORIZED,
           });
         } else {
-          const isPasswordValid = await bcrypt.compare(
-            req.body.password,
-            user.hash_password
-          );
-          if (!isPasswordValid) {
-            res.status(StatusCodes.UNAUTHORIZED).json({
-              message: "Password is invalid!",
-              statusCode: StatusCodes.UNAUTHORIZED,
-              status: ReasonPhrases.UNAUTHORIZED,
-            });
-          } else {
-            const {
-              firstName,
-              lastName,
+          const {
+            firstName,
+            lastName,
+            email,
+            profilePicture,
+            id,
+          } = user;
 
-              email,
+          const { accessToken, refreshToken, id_token } =
+            generateTokens(user);
+          res.cookie("accessToken", accessToken, {
+            path: "/",
+            httpOnly: true,
+          });
+          res.cookie("refreshToken", refreshToken, {
+            path: "/",
+            httpOnly: true,
+          });
+          res.cookie("idToken", id_token, { path: "/", httpOnly: true });
 
-              profilePicture,
-
-              id,
-            } = user;
-
-            const { accessToken, refreshToken, id_token } =
-              generateTokens(user);
-            res.cookie("accessToken", accessToken, {
-              path: "/",
-              httpOnly: true,
-            });
-            res.cookie("refreshToken", refreshToken, {
-              path: "/",
-              httpOnly: true,
-            });
-            res.cookie("idToken", id_token, { path: "/", httpOnly: true });
-
-            res.status(StatusCodes.OK).json({
-              accessToken,
-              token_type: "Bearer",
-              id,
-              email,
-              image: profilePicture,
-              id_token,
-              refreshToken,
-              name: firstName + " " + lastName,
-              statusCode: StatusCodes.OK,
-              status: ReasonPhrases.OK,
-            });
-          }
+          res.status(StatusCodes.OK).json({
+            accessToken,
+            token_type: "Bearer",
+            id,
+            email,
+            image: profilePicture,
+            id_token,
+            refreshToken,
+            name: firstName + " " + lastName,
+            statusCode: StatusCodes.OK,
+            status: ReasonPhrases.OK,
+          });
         }
       }
+      
     }
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
