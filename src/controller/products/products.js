@@ -1,5 +1,5 @@
 // const { ReasonPhrases, StatusCodes } = require("http-status-codes");
-const { FilterOptions } = require("../../utils/helper");
+const { FilterOptions,showingProductFilter } = require("../../utils/helper");
 const Product = require("../../models/products");
 
 const createProduct = async (req, res) => {
@@ -65,10 +65,10 @@ const getProducts = async (req, res) => {
 };
 
 const getCurrentProducts = async (req, res) => {
-  const { limit, page, filter, sort } = req.query;
+   const { limit, page, category,_id,sort,query } = req.query;
 
   try {
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = showingProductFilter(sort, page,limit, category,_id,query);
     const products = await Product.find(
       filterquery.query,
       "-__v",
@@ -76,7 +76,7 @@ const getCurrentProducts = async (req, res) => {
     )
       .populate("reviews")
       .populate("brand")
-      .populate("categories",'_id title slug').populate("category",'_id title slug');
+      .populate("categories",'title slug').populate("category",'title slug');
     const length = await Product.countDocuments(filterquery.query);
 
     if (products) {
