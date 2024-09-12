@@ -23,9 +23,11 @@ const {
   validateResetpassword,
   validateChangePassword
 } = require("../validator/auth");
+const logMiddleware = require("../middleware/logger");
 
 
-authRoute.route("/user/auth/register").post(validateSignUpRequest, isRequestValidated, signUp);
+
+authRoute.route("/user/auth/register").post(logMiddleware,validateSignUpRequest, isRequestValidated, signUp);
 authRoute.route("/user/auth/social-register").post(SocialsignUp);
 authRoute.route("/user/auth/confirm-account/:token").post(accountConfirm);
 authRoute.
