@@ -1011,11 +1011,7 @@ const getRefreshToken = async (req, res) => {
 const updateProfile = async (req, res) => {
   const { user } = req.params;
   try {
-   
-
-  
     var myquery = { _id: user };
-
     if (user) {
       try {
        

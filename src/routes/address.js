@@ -13,7 +13,7 @@ const {
 } = require("../controller/addresses/address");
 const userMiddleWare = require("../middleware/userAccess");
 
-AddressRoute.route("/address").post(createMiddleWare, create);
+AddressRoute.route("/address").post(userMiddleWare,createMiddleWare, create);
 AddressRoute.route("/address/:id").get(userMiddleWare, getSingle);
 AddressRoute.route("/address").get(userMiddleWare, get);
 AddressRoute.route("/address/:id").patch(createMiddleWare, update);

@@ -1,20 +1,26 @@
 const {
   ReasonPhrases,
-  StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
+  StatusCodes
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
 const Address = require("../../models/address");
-
+const User = require("../../models/user");
 const create = async (req, res) => {
   try {
-    const newAddress = await Address.create(req.body);
-    res.status(201).json({
-      statusCode: 201,
-      status: "Created",
-      results: newAddress,
+    const address = new Address(req.body);
+    const savedAddress = await address.save();
+    var myquery = { _id: savedAddress.user };
+    const user = await User.findById(myquery);
+    user.address.push(savedAddress._id);
+    await user.save();
+    
+    return res.status(200).json({
+      statusCode: 200,
+      status: ReasonPhrases.OK,
+      message: "User address is add successfully",
     });
+
+
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
