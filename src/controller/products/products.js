@@ -22,6 +22,26 @@ const createProduct = async (req, res) => {
   }
 };
 
+
+const createProductBulk = async (req, res) => {
+  try {
+    const savedProducts = await Product.insertMany(req.body);
+    res.status(201).json({
+      statusCode: 201,
+      status: "Created",
+      results: savedProducts,
+      message: "Product created successfully",
+    });
+  } catch (error) {
+    res.status(400).json({
+      statusCode: 400,
+      status: "Bad Request",
+      results: null,
+      message: error.message,
+    });
+  }
+};
+
 const getProducts = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
 
@@ -68,7 +88,7 @@ const getCurrentProducts = async (req, res) => {
    const { limit, page, category,_id,sort,query } = req.query;
 
   try {
-    const filterquery = showingProductFilter(sort, page,limit, category,_id,query);
+    const filterquery = await showingProductFilter(sort, page,limit, category,_id,query);
     const products = await Product.find(
       filterquery.query,
       "-__v",
@@ -454,5 +474,5 @@ module.exports = {
   deleteProducts,
   getproductReviews,
   getCurrentProducts,
-  getCurrentSingle, getRelatedProducts, getDiscountedProducts, getPopularProducts
+  getCurrentSingle, getRelatedProducts, getDiscountedProducts, getPopularProducts,createProductBulk
 };

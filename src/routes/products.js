@@ -9,12 +9,14 @@ const {
   getProducts,
   getSingleProducts,
   updateProduct, getRelatedProducts,
-  deleteProducts, getCurrentProducts, getCurrentSingle, getDiscountedProducts, getPopularProducts
+  deleteProducts, getCurrentProducts, getCurrentSingle, getDiscountedProducts, getPopularProducts,createProductBulk
 } = require("../controller/products/products");
 
 productRoute
   .route("/products")
   .post(adminMiddleware, createMiddleWare, createProduct);
+  productRoute.route("/products/bulk")
+  .post(adminMiddleware, createMiddleWare, createProductBulk);
 productRoute.route("/products").get(getProducts);
 productRoute.route("/products/show").get(getCurrentProducts);
 productRoute.route("/products/related").get(getRelatedProducts);

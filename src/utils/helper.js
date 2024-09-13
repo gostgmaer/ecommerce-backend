@@ -2,6 +2,10 @@ const jwt = require("jsonwebtoken");
 const axios = require("axios"); // You may need to install axios
 const os = require("os");
 const { jwtSecret, charactersString } = require("../config/setting");
+const Category = require("../models/categories");
+
+
+
 
 function decodeToken(token) {
   return new Promise((resolve, reject) => {
@@ -47,11 +51,6 @@ const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
     sortOptions[sortKey] = sortOrder === "desc" ? -1 : 1;
   }
 
-  var skip = 0;
-
-  if (limit) {
-    skip = (parseInt(page) - 1) * parseInt(limit);
-  }
 
   const options = {
     skip: (Number(page) - 1) * Number(limit),
@@ -102,11 +101,7 @@ const FilterOptionsSearch = (sort = "updatedAt:desc", page, limit, filter) => {
     sortOptions[sortKey] = sortOrder === "desc" ? -1 : 1;
   }
 
-  var skip = 0;
 
-  if (limit) {
-    skip = (parseInt(page) - 1) * parseInt(limit);
-  }
 
   const options = {
     skip: (page - 1) * limit,
@@ -349,13 +344,22 @@ const generateQuery = (filterkeys) => {
 }
 
 
-const showingProductFilter = (sort = "updatedAt:desc", page, limit, category, _id, query) => {
+const showingProductFilter = async (sort = "updatedAt:desc", page, limit=24 , category, _id, query) => {
   var myquery = {};
 
   if (query) {
-    myquery = { 'slug': query }
+    myquery = { title: { $regex: query, $options: 'i' } }
   } else if (category && _id) {
     myquery = { 'category': _id }
+  }
+   else if (category) {
+    const cate = await Category.findOne(
+      { 'slug': category },
+      "slug title"
+    )
+    myquery = { 'category': cate?.id }
+
+    
   }
 
   let statusFilter = { status: { $ne: "INACTIVE" } };
@@ -393,5 +397,5 @@ module.exports = {
   FilterOptionsSearch,
   generateRandomString,
   getLocalIpAddress,
-  getPublicIpAddress, getAppIdAndEntity,showingProductFilter
+  getPublicIpAddress, getAppIdAndEntity, showingProductFilter
 };
