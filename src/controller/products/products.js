@@ -91,10 +91,9 @@ const getCurrentProducts = async (req, res) => {
     const filterquery = await showingProductFilter(sort, page,limit, category,_id,query);
     const products = await Product.find(
       filterquery.query,
-      "-__v",
+      "-__v -categories -barcode -createdAt -tag -features -isFeatured -productId -productType -reviews -seo_info -status -total_view -updatedAt -gtin -description",
       filterquery.options
-    )
-      .populate("reviews")
+    ).populate("reviews")
       .populate("brand")
       .populate("categories",'title slug').populate("category",'title slug');
     const length = await Product.countDocuments(filterquery.query);
@@ -259,7 +258,7 @@ const getRelatedProducts = async (req, res) => {
     // const filterquery = FilterOptions(sort, page, limit, filter);
     const products = await Product.find(
       { category: category },
-      "-__v",
+      "-__v -categories -barcode -createdAt -tag -features -isFeatured -productId -productType -reviews -seo_info -status -total_view -updatedAt -gtin -description",
     ).populate("reviews")
       .populate("brand")
       .populate("categories",'_id title slug')
@@ -302,7 +301,7 @@ const getPopularProducts = async (req, res) => {
     // const filterquery = FilterOptions(sort, page, limit, filter);
     const products = await Product.find(
       filter,
-      "-__v",
+      "-__v -categories -barcode -createdAt -tag -features -isFeatured -productId -productType -reviews -seo_info -status -total_view -updatedAt -gtin -description",
     ).populate("reviews")
       .populate("brand")
       .populate("categories",'_id title slug')
@@ -344,7 +343,7 @@ const getDiscountedProducts = async (req, res) => {
     // const filterquery = FilterOptions(sort, page, limit, filter);
     const products = await Product.find(
       filter,
-      "-__v",
+      "-__v -categories -barcode -createdAt -tag -features -isFeatured -productId -productType -reviews -seo_info -status -total_view -updatedAt -gtin -description",
     ).populate("reviews")
       .populate("brand")
       .populate("categories",'_id title slug')
