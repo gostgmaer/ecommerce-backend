@@ -258,7 +258,7 @@ const getRelatedProducts = async (req, res) => {
     // const filterquery = FilterOptions(sort, page, limit, filter);
     const products = await Product.find(
       { category: category },
-      "-__v",
+      "-__v -categories -barcode -createdAt -tag -features -isFeatured -productId -productType -reviews -seo_info -status -total_view -updatedAt -gtin -description",
     ).populate("reviews")
       .populate("brand")
       .populate("categories",'_id title slug')
@@ -301,7 +301,7 @@ const getPopularProducts = async (req, res) => {
     // const filterquery = FilterOptions(sort, page, limit, filter);
     const products = await Product.find(
       filter,
-      "-__v",
+      "-__v -categories -barcode -createdAt -tag -features -isFeatured -productId -productType -reviews -seo_info -status -total_view -updatedAt -gtin -description",
     ).populate("reviews")
       .populate("brand")
       .populate("categories",'_id title slug')
@@ -343,7 +343,7 @@ const getDiscountedProducts = async (req, res) => {
     // const filterquery = FilterOptions(sort, page, limit, filter);
     const products = await Product.find(
       filter,
-      "-__v",
+      "-__v -categories -barcode -createdAt -tag -features -isFeatured -productId -productType -reviews -seo_info -status -total_view -updatedAt -gtin -description",
     ).populate("reviews")
       .populate("brand")
       .populate("categories",'_id title slug')
