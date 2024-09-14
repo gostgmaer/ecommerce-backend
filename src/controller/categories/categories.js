@@ -173,6 +173,38 @@ const itemsPerCategory = async (req, res) => {
   }
 };
 
+//Public
+
+const getShowingCategory = async (req, res) => {
+  const { limit, page, filter, sort } = req.query;
+
+  try {
+    const filterquery = FilterOptions(sort, page, limit, filter);
+
+    const responseData = await Category.find( {status:'publish'},
+      "-__v -cat_id",
+      filterquery.options).populate('child','title slug images descriptions').populate('parent','title slug images descriptions')
+
+
+
+    const length = await Category.countDocuments({status:'publish'});
+
+    res.status(200).json({
+      statusCode: 200,
+      status: "OK",
+      message: "Categorys retrieved successfully",
+      results: responseData,
+      total: length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      statusCode: 500,
+      status: "Internal Server Error",
+      results: null,
+      message: error.message,
+    });
+  }
+};
 
 
 module.exports = {
@@ -181,5 +213,5 @@ module.exports = {
   getSingleCategorys,
   updateCategory,
   deleteCategorys,
-  itemsPerCategory,
+  itemsPerCategory,getShowingCategory
 };

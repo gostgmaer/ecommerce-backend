@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const categorySchema = new mongoose.Schema(
   {
-    name: {
+    title: {
       type: String,
       required: true,
       unique: true,
@@ -11,18 +11,22 @@ const categorySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    child: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+    }],
     status: {
       type: String,
-      required: true,
       default: "pending",
     },
-    parent_category: {
-      type: String,
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
     },
     images: [],
- 
+
     descriptions: String,
-   
+
   },
   { timestamps: true }
 );

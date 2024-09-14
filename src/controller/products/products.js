@@ -91,10 +91,9 @@ const getCurrentProducts = async (req, res) => {
     const filterquery = await showingProductFilter(sort, page,limit, category,_id,query);
     const products = await Product.find(
       filterquery.query,
-      "-__v",
+      "-__v -categories -barcode -createdAt -tag -features -isFeatured -productId -productType -reviews -seo_info -status -total_view -updatedAt -gtin -description",
       filterquery.options
-    )
-      .populate("reviews")
+    ).populate("reviews")
       .populate("brand")
       .populate("categories",'title slug').populate("category",'title slug');
     const length = await Product.countDocuments(filterquery.query);
