@@ -14,15 +14,15 @@ const {
   getWishlist, removeProduct, addProduct, createWishlist
 } = require("../controller/wishlist/wishlist");
 
-wishlistRoute.route("/wishlists").post(userMiddleWare, createMiddleWare, createWishlist);
-wishlistRoute.route("/wishlists/:id/add").post(userMiddleWare, addProduct);
-wishlistRoute.route("/wishlists/:id/remove").post(userMiddleWare, removeProduct);
-wishlistRoute.route("/wishlists/fetch").get(userMiddleWare, getWishlist);
+wishlistRoute.route("/wishlist/add").post(userMiddleWare, createMiddleWare, createWishlist);
+wishlistRoute.route("/wishlist/:id/add").post(userMiddleWare, addProduct);
+wishlistRoute.route("/wishlist/:id/remove").delete(userMiddleWare, removeProduct);
+wishlistRoute.route("/wishlist/fetch").get(userMiddleWare, getWishlist);
 wishlistRoute.route("/wishlists").get(userMiddleWare, get);
-wishlistRoute.route("/wishlists/:id").get(userMiddleWare, getSingle);
-wishlistRoute.route("/wishlists/:id").put(userMiddleWare, UpdatebyMiddleWare, update);
-wishlistRoute.route("/wishlists/:id").patch(userMiddleWare, UpdatebyMiddleWare, update);
-wishlistRoute.route("/wishlists/:id").delete(userMiddleWare, remove);
+wishlistRoute.route("/wishlist/:id").get(userMiddleWare, getSingle);
+wishlistRoute.route("/wishlist/:id").put(userMiddleWare, UpdatebyMiddleWare, update);
+wishlistRoute.route("/wishlist/:id").patch(userMiddleWare, UpdatebyMiddleWare, update);
+wishlistRoute.route("/wishlist/:id").delete(userMiddleWare, remove);
 
 
 module.exports = wishlistRoute;

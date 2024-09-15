@@ -28,7 +28,7 @@ async function logMiddleware(req, res, next) {
 
   res.on('finish', () => {
     // Execute code after route handler
-    console.log(`Response Status Code: ${res}`);
+  
 });
   next();
 }

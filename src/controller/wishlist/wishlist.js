@@ -1,40 +1,31 @@
 const {
   ReasonPhrases,
   StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
 const Wishlist = require("../../models/wishlist");
 
 const createWishlist = async (req, res) => {
-  const { product } = req.body;
+  // const { product } = req.body;
+  const body = {...req.body,...req.params}
   try {
-    const wishlists = await Wishlist.findOne({ user: req.params.user });
-    if (wishlists) {
-      wishlists.products.push(product); // Assuming product field contains a product ID
-      await wishlists.save();
-      res.status(200).json({
-        statusCode: 200,
-        status: "OK",
-        message: "Add Successful",
-      });
-    } else {
-      const wishlist = new Wishlist({
-        user: req.params.user,
-        products: product // Assuming products field contains an array of product IDs
-      });
-      const savedWishlist = await wishlist.save();
-      res.status(201).json({
-        statusCode: 201,
-        status: "Created",
-        result: { id: savedWishlist.id },
-        message: "Wishlist created",
-      });
-    }
+    const data = await Wishlist.findOne({product:req.body.product});
+    if (!data) {
+      const wishlist = new Wishlist(body);
+      await wishlist.save();
+  
+    } 
+ 
+    const currWishlist = await Wishlist.find({user:req.params.user},'product').populate('product');
+    const length = await Wishlist.countDocuments({user:req.params.user});
 
-
-
+    res.status(200).json({
+      statusCode: 200,
+      status: "OK",
+      total: length,
+      result: currWishlist,
+      message: "Wishlist Added successfully!",
+    });
 
 
 
@@ -66,7 +57,7 @@ const addProduct = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      message: "Add Successful",
+      message: "Add Successful!",
     });
   } catch (error) {
     res.status(500).json({
@@ -78,22 +69,27 @@ const addProduct = async (req, res) => {
 }
 
 const removeProduct = async (req, res) => {
-
   try {
-    const wishlist = await Wishlist.findById(req.params.id);
-    if (!wishlist) {
+    const data = await Wishlist.findOne({product:req.params.id});
+    if (!data) {
       return res.status(404).json({
-        message: 'Wishlist not found', statusCode: StatusCodes.NOT_FOUND,
-        status: ReasonPhrases.NOT_FOUND
+        statusCode: 404,
+        status: "Not Found",
+        message: "Wishlist not found",
       });
     }
-    // Add product to the wishlist
-    wishlist.products.pull(req.body.product); // Assuming product field contains a product ID
-    await wishlist.save();
+   const removeData = await Wishlist.findByIdAndDelete(data.id);
+
+   const currWishlist = await Wishlist.find({user:req.params.user},'product').populate('product');
+   const length = await Wishlist.countDocuments({user:req.params.user});
+
+
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      message: "Remove Successful",
+      total: length,
+      result: currWishlist,
+      message: "Wishlist Remove successfully!",
     });
   } catch (error) {
     res.status(500).json({
@@ -106,20 +102,23 @@ const removeProduct = async (req, res) => {
 
 const getWishlist = async (req, res) => {
   try {
-    const wishlists = await Wishlist.findOne({ user: req.params.user }).populate('products');
+    const wishlists = await Wishlist.find({ user: req.params.user },'product').populate('product');
     const length = await Wishlist.countDocuments({ user: req.params.user });
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      message: "Wishlists retrieved successfully",
+      message: "Wishlists retrieved successfully!",
       result: wishlists,
-      total: wishlists.products.length,
+      total: length,
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
+    res.status(200).json({
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      message: error.message,
+    });
 }
-
+}
 const get = async (req, res) => {
   try {
     const { sort, page, limit, filter } = req.query;

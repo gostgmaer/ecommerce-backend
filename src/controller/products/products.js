@@ -236,6 +236,8 @@ const getCurrentSingle = async (req, res) => {
     // await Product.updateOne({ _id: product._id }, { $inc: { total_view: 1 } });
     const currentProd = { ...product["_doc"], ...product.ratingStatistics };
 
+ 
+
     return res.status(200).json({
       statusCode: 200,
       status: "OK",
