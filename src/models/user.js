@@ -33,10 +33,15 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Address",
     }],
-    orders: {
+    orders: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order", // Reference to the Product model
-    },
+    }],
+    favriteProduct: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product", // Reference to the Product model
+    }],
+
     profilePicture: String,
     resetToken: String,
     resetTokenExpiration: Date,

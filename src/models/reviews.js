@@ -20,16 +20,6 @@ const reviewSchema = new mongoose.Schema({
   images:[],
   title: String,
   review: String,
-  date: {
-    type: Date,
-    default: Date.now,
-  },
-  // User's information from the authentication token
-  username: String,
-  firstName: String,
-  lastName: String,
-  profilePicture:String,  
-  // You can add more fields as needed
 }, { timestamps: true });
 
 reviewSchema.methods.getSimplifiedImages = function() {
