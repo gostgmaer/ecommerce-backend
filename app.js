@@ -5,8 +5,7 @@ const { dbUrl, serverPort } = require("./src/config/setting");
 const app = express();
 var cors = require("cors");
 const logMiddleware = require("./src/middleware/logger");
-const session = require("express-session");
-const sessionStore = require("./src/db/sessionConnact");
+
 const userRouter = require("./src/routes/user");
 const authRoute = require("./src/routes/auth");
 const categoryRoute = require("./src/routes/categories");
@@ -24,16 +23,6 @@ const AttachmentRoute = require("./src/routes/attachments");
 const contactsRoute = require("./src/routes/contact");
 
 
-app.use(
-  session({
-    store: sessionStore,
-    secret: process.env.JWT_SECRET,
-    httpOnly: false,
-    resave: false,
-    cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 },
-    saveUninitialized: false,
-  })
-);
 
 app.use(cors());
 app.use(express.json());

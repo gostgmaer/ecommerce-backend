@@ -1,5 +1,4 @@
 const express = require("express");
-var session = require("express-session");
 const {
   getAllLogs,
   getSingleLogs,
@@ -10,11 +9,11 @@ const logRoute = express.Router();
 
 
 
-logRoute.route("/logs").get(getAllLogs);
-logRoute.route("/logs/:id").get(getSingleLogs);
-logRoute.route("/logs/:id").patch(updateLogs);
-logRoute.route("/logs/:id").put(updateLogs);
-logRoute.route("/logs/:id").delete(deleteLogs);
+  logRoute.route("/logs").get(getAllLogs);
+  logRoute.route("/logs/:id").get(getSingleLogs);
+  logRoute.route("/logs/:id").patch(updateLogs);
+  logRoute.route("/logs/:id").put(updateLogs);
+  logRoute.route("/logs/:id").delete(deleteLogs);
 
 
 

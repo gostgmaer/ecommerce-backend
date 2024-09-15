@@ -5,7 +5,7 @@ const validateCreateContact = [
   check("firstName").notEmpty().withMessage("First Name is required"),
   check("lastName").notEmpty().withMessage("Last Name is required"),
   check("email").isEmail().withMessage("Valid Email required"),
-  check("message").notEmpty().withMessage("Messsage is required"),
+  check("message").notEmpty().withMessage("message is required"),
 ];
 
 const isRequestValidated = (req, res, next) => {

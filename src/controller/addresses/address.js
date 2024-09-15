@@ -25,7 +25,7 @@ const create = async (req, res) => {
     res.status(500).json({
       statusCode: 500,
       status: "Internal Server Error",
-      error: error.message,
+      message: error.message,
     });
   }
 };
@@ -50,31 +50,32 @@ const get = async (req, res) => {
     res.status(500).json({
       statusCode: 500,
       status: "Internal Server Error",
-      error: error.message,
+      message: error.message,
     });
   }
 };
 
 const getSingle = async (req, res) => {
   try {
-    const Address = await Address.findById(req.params.id);
-    if (!Address) {
+    const response = await Address.findById(req.params.id);
+    if (!response) {
       return res.status(404).json({
         statusCode: 404,
         status: "Not Found",
-        error: "User address not found",
+        message: "User address not found",
       });
     }
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: Address,
+      results: response,
+      message: "User address found",
     });
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
       status: "Internal Server Error",
-      error: error.message,
+      message: error.message,
     });
   }
 };
@@ -89,19 +90,19 @@ const update = async (req, res) => {
       return res.status(404).json({
         statusCode: 404,
         status: "Not Found",
-        error: "User address not found",
+        message: "address not found",
       });
     }
     res.status(200).json({
       statusCode: 200,
       status: "OK",
-      results: updatedAddress,
+      message: "Address Update Successfully!",
     });
   } catch (error) {
     res.status(500).json({
       statusCode: 500,
       status: "Internal Server Error",
-      error: error.message,
+      message: error.message,
     });
   }
 };
@@ -114,7 +115,7 @@ const remove = async (req, res) => {
       return res.status(404).json({
         statusCode: 404,
         status: "Not Found",
-        error: "User address not found",
+        message: "address not found",
       });
     }
     res.status(200).json({
@@ -126,7 +127,7 @@ const remove = async (req, res) => {
     res.status(500).json({
       statusCode: 500,
       status: "Internal Server Error",
-      error: error.message,
+      message: error.message,
     });
   }
 };
@@ -140,7 +141,7 @@ const addAddress = async (req, res) => {
       return res.status(404).json({
         statusCode: 404,
         status: "Not Found",
-        error: "User address not found",
+        message: "User address not found",
       });
     }
     res.status(200).json({
@@ -152,7 +153,7 @@ const addAddress = async (req, res) => {
     res.status(500).json({
       statusCode: 500,
       status: "Internal Server Error",
-      error: error.message,
+      message: error.message,
     });
   }
 };

@@ -21,9 +21,15 @@ async function logMiddleware(req, res, next) {
       },
     });
     await logEntry.save();
+
   } catch (err) {
     console.error("Error saving log entry:", err);
   }
+
+  res.on('finish', () => {
+    // Execute code after route handler
+    console.log(`Response Status Code: ${res}`);
+});
   next();
 }
 
