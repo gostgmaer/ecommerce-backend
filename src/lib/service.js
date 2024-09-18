@@ -31,7 +31,7 @@ const generateTokens = (user) => {
         },
         jwtSecret,
         {
-          expiresIn: "1d",
+          expiresIn: "7d",
         }
       );
 
@@ -41,7 +41,7 @@ const generateTokens = (user) => {
         { username, userId: id },
         refressSecret,
         {
-          expiresIn: "7d",
+          expiresIn: "8d",
         }
       );
 
