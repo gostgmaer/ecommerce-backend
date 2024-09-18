@@ -8,7 +8,6 @@ const {
   removeMany,
   update,delData,delMany
 } = require("../controller/contacts/controller");
-const createMiddleWare = require("../middleware/createMiddleWare");
 const userMiddleWare = require("../middleware/userAccess");
 const updateMiddleWare = require("../middleware/updateMiddleWare");
 
