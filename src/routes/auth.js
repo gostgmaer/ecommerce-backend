@@ -23,22 +23,21 @@ const {
   validateResetpassword,
   validateChangePassword
 } = require("../validator/auth");
-const logMiddleware = require("../middleware/logger");
 
 
 
-authRoute.route("/user/auth/register").post(logMiddleware,validateSignUpRequest, isRequestValidated, signUp);
+authRoute.route("/user/auth/register").post(validateSignUpRequest, isRequestValidated, signUp);
 authRoute.route("/user/auth/social-register").post(SocialsignUp);
 authRoute.route("/user/auth/confirm-account/:token").post(accountConfirm);
 authRoute.
-  route("/user/auth/login").post(logMiddleware,validateSignIpRequest, isRequestValidated, signIn);
+  route("/user/auth/login").post(validateSignIpRequest, isRequestValidated, signIn);
   authRoute.
   route("/user/auth/custom/login").post(customsignIn);
   authRoute.
-  route("/user/auth/checkAuth").post(logMiddleware,isRequestValidated, checkAuth);
+  route("/user/auth/checkAuth").post(isRequestValidated, checkAuth);
 
   authRoute.
-  route("/user/auth/checkUser").post(logMiddleware,isRequestValidated, chechUser);
+  route("/user/auth/checkUser").post(isRequestValidated, chechUser);
   
 authRoute.route("/user/auth/verify/session").post(varifySession);
 authRoute.route("/user/auth/session/refresh/token").post(getRefreshToken);

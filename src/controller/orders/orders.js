@@ -11,6 +11,7 @@ const Product = require("../../models/products");
 const { createPayPalOrder, verifyPayPalPayment } = require("../payment/paypalHelper");
 const { createRazorpayOrder, verifyRazorpayPayment } = require("../payment/rozorpay");
 const { processCodOrder } = require("../payment/codhelper");
+const {  updateStockOnOrderCreate, updateStockOnOrderCancel } = require("../../lib/stock-controller/others");
 
 // const { createPayPalOrder, verifyPayPalPayment } = require('../services/paypalService');
 // const { createRazorpayOrder, verifyRazorpayPayment } = require('../services/razorpayService');
@@ -90,13 +91,13 @@ const createOrder = async (req, res) => {
         items: validItems,
         total,
         currency:"INR",
-        
         payment_status: 'pending', // COD is pending until delivery
         receipt: invoice || null,
         transaction_id: paymentResponse.id || null, ...req.body,...paymentResponse,status:"pending"
       });
 
        savedOrder = await newOrder.save();
+        await updateStockOnOrderCreate(req.body.products)
 
    if (payment_method==="COD") {
     return res.status(StatusCodes.OK).json({
@@ -506,10 +507,57 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+const cancelOrder = async (req, res) => {
+  const { orderId } = req.body;
+
+  try {
+    // Find the order by ID
+    const order = await Order.findById(orderId);
+
+    // Check if the order exists
+    if (!order) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "Order not found.",
+        statusCode: StatusCodes.NOT_FOUND,
+        status: ReasonPhrases.NOT_FOUND,
+      });
+    }
+
+    // Check if the order has already been canceled
+    if (order.status === "canceled") {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "Order is already canceled.",
+        statusCode: StatusCodes.BAD_REQUEST,
+        status: ReasonPhrases.BAD_REQUEST,
+      });
+    }
+
+    // Cancel the order
+    order.status = "canceled";
+    order.payment_status = "canceled"; // Optionally update payment status if required
+    await order.save();
+
+    // Update the stock based on the items in the order
+    await updateStockOnOrderCancel(order.items);
+
+    return res.status(StatusCodes.OK).json({
+      message: "Order successfully canceled!",
+      statusCode: StatusCodes.OK,
+      status: ReasonPhrases.OK,
+    });
+  } catch (error) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      status: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
 module.exports = {
   updateOrder,
   getOrders,
   getSingleOrder,
   deleteOrder,
-  createOrder,verifyPayment, getCustomerOrders, getCustomerDashboard
+  createOrder,verifyPayment, getCustomerOrders, getCustomerDashboard,cancelOrder
 };

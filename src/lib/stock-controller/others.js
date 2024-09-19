@@ -1,27 +1,27 @@
 require("dotenv").config();
-const mongoose = require("mongoose");
-const Product = require("../../models/Product");
+
+const Product = require("../../models/products");
 
 // const base = 'https://api-m.sandbox.paypal.com';
 
-let mongo_connection = mongoose.createConnection(process.env.MONGO_URI, {
-  useFindAndModify: false,
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useCreateIndex: true,
-  keepAlive: 1,
-  poolSize: 100,
-  bufferMaxEntries: 0,
-  connectTimeoutMS: 10000,
-  socketTimeoutMS: 30000,
-});
+// let mongo_connection = mongoose.createConnection(dbUrl, {
+//   useFindAndModify: false,
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+//   useCreateIndex: true,
+//   keepAlive: 1,
+//   poolSize: 100,
+//   bufferMaxEntries: 0,
+//   connectTimeoutMS: 10000,
+//   socketTimeoutMS: 30000,
+// });
 
 // decrease product quantity after a order created
 const handleProductQuantity = async (cart) => {
   try {
     await cart.forEach(async (p) => {
       if (p?.variants?.length <= 0) {
-        await Product.findOneAndUpdate(
+        const update =   await Product.findOneAndUpdate(
           {
             _id: p._id,
           },
@@ -35,9 +35,10 @@ const handleProductQuantity = async (cart) => {
             new: true,
           }
         );
+        return update
       }
       if (p?.variants?.length > 0) {
-        await Product.findOneAndUpdate(
+       await Product.findOneAndUpdate(
           {
             _id: p._id,
             "variants.productId": p?.variant?.productId || "",
@@ -96,7 +97,73 @@ const handleProductAttribute = async (key, value, multi) => {
   }
 };
 
+
+
+
+
+// Function to update stock on order creation
+const updateStockOnOrderCreate = async (orderItems) => {
+  try {
+    // Loop through all items in the order
+    for (const item of orderItems) {
+      const product = await Product.findById(item._id); // Find product by ID
+
+      if (product) {
+        // Decrease stock by the quantity ordered
+        product.stock -= item.cartQuantity ;
+
+        // Ensure stock doesn't go below zero
+        if (product.stock < 0) {
+          throw new Error(`Insufficient stock for product: ${product.title}`);
+        }
+
+       await Product.findOneAndUpdate(
+          { _id: product.id },
+          { stock:product.stock }, // Increment total_view by 1
+          { new: true } // Return the updated document
+       )
+      }
+    }
+  } catch (error) {
+    console.error('Error updating stock on order create:', error);
+    throw error; // Re-throw error to handle in your route/controller
+  }
+};
+
+// Function to update stock on order cancel
+const updateStockOnOrderCancel = async (orderItems) => {
+  try {
+    // Loop through all items in the canceled order
+    for (const item of orderItems) {
+      const product = await Product.findById(item.product); // Find product by ID
+
+      if (product) {
+        // Increase stock by the quantity that was ordered
+        product.stock += item.quantity;
+        await Product.findOneAndUpdate(
+          { _id: product.id },
+          { stock:product.stock }, // Increment total_view by 1
+          { new: true } // Return the updated document
+       )
+      }
+    }
+  } catch (error) {
+    console.error('Error updating stock on order cancel:', error);
+    throw error; // Re-throw error to handle in your route/controller
+  }
+};
+
+
+
+
+
+
+
+
+
+
 module.exports = {
   handleProductQuantity,
-  handleProductAttribute,
+  handleProductAttribute,  updateStockOnOrderCreate,
+  updateStockOnOrderCancel
 };
