@@ -11,7 +11,7 @@ const Product = require("../../models/products");
 const { createPayPalOrder, verifyPayPalPayment } = require("../payment/paypalHelper");
 const { createRazorpayOrder, verifyRazorpayPayment } = require("../payment/rozorpay");
 const { processCodOrder } = require("../payment/codhelper");
-const {  updateStockOnOrderCreate, updateStockOnOrderCancel } = require("../../lib/stock-controller/others");
+const { updateStockOnOrderCreate, updateStockOnOrderCancel } = require("../../lib/stock-controller/others");
 
 // const { createPayPalOrder, verifyPayPalPayment } = require('../services/paypalService');
 // const { createRazorpayOrder, verifyRazorpayPayment } = require('../services/razorpayService');
@@ -21,7 +21,7 @@ const {  updateStockOnOrderCreate, updateStockOnOrderCancel } = require("../../l
 
 const createOrder = async (req, res) => {
 
-  const {  payment_method, invoice, orderDetails } = req.body;
+  const { payment_method, invoice, orderDetails } = req.body;
   try {
     let invalidProducts = [];
     const items = await Promise.all(
@@ -61,7 +61,7 @@ const createOrder = async (req, res) => {
       let savedOrder;
       switch (payment_method) {
         case 'paypal':
-          paymentResponse = await createPayPalOrder(total, "USD",req.body);
+          paymentResponse = await createPayPalOrder(total, "USD", req.body);
           break;
 
         case 'RazorPay':
@@ -71,7 +71,7 @@ const createOrder = async (req, res) => {
         case 'COD':
           paymentResponse = processCodOrder(total, "INR", orderDetails);
 
-         
+
 
           break;
 
@@ -79,42 +79,42 @@ const createOrder = async (req, res) => {
           return res.status(400).json({ error: 'Invalid payment method' });
       }
 
-    
+
 
       //  savedOrder ={
       // ...paymentResponse
       // }
 
-   
+
 
       var newOrder = new Order({
         items: validItems,
         total,
-        currency:"INR",
+        currency: "INR",
         payment_status: 'pending', // COD is pending until delivery
         receipt: invoice || null,
-        transaction_id: paymentResponse.id || null, ...req.body,...paymentResponse,status:"pending"
+        transaction_id: paymentResponse.id || null, ...req.body, ...paymentResponse, status: "pending"
       });
 
-       savedOrder = await newOrder.save();
-        await updateStockOnOrderCreate(req.body.products)
+      savedOrder = await newOrder.save();
+      await updateStockOnOrderCreate(req.body.products)
 
-   if (payment_method==="COD") {
-    return res.status(StatusCodes.OK).json({
-      message: "Order successfully!",
-      result: savedOrder,
-      statusCode: StatusCodes.OK,
-      status: ReasonPhrases.OK,
-    });
-   } else {
-    return res.status(StatusCodes.OK).json({
-      message: "Order Created!",
-      result: {...paymentResponse,payment_method},
-      statusCode: StatusCodes.OK,
-      status: ReasonPhrases.OK,
-    });
-    
-   }
+      if (payment_method === "COD") {
+        return res.status(StatusCodes.OK).json({
+          message: "Order successfully!",
+          result: savedOrder,
+          statusCode: StatusCodes.OK,
+          status: ReasonPhrases.OK,
+        });
+      } else {
+        return res.status(StatusCodes.OK).json({
+          message: "Order Created!",
+          result: { ...paymentResponse, payment_method },
+          statusCode: StatusCodes.OK,
+          status: ReasonPhrases.OK,
+        });
+
+      }
 
     }
 
@@ -150,18 +150,18 @@ const verifyPayment = async (req, res) => {
     }
 
     // Update order payment status in the database
-    var savedOrder 
+    var savedOrder
     const order = await Order.findOne({ transaction_id: order_id });
     if (order) {
       order.payment_status = 'completed';
       order.status = 'completed';
-      savedOrder =  await order.save();
+      savedOrder = await order.save();
     }
     return res.status(StatusCodes.OK).json({
       message: "Order successfully!",
       result: savedOrder,
       statusCode: StatusCodes.OK,
-      status: ReasonPhrases.OK,...paymentResponse
+      status: ReasonPhrases.OK, ...paymentResponse
     });
   } catch (error) {
     console.error(error);
@@ -228,9 +228,9 @@ const getCustomerOrders = async (req, res) => {
     const filterquery = FilterOptions(sort, page, limit, filter);
     const Orders = await Order.find(
       { ...filterquery.query, user: req.params.user },
-      "-__v ",
+      "total createdAt invoice payment_method payment_status status totalPrice ",
       filterquery.options
-    ).populate("user") // Populating the 'user' reference
+    ).populate("user", 'firstName lastName email phoneNumber') // Populating the 'user' reference
       .populate("items.product", '-_id -categories -category -variants -status') // Populating the 'product' reference within 'items'
       .populate("address")
 
@@ -273,7 +273,7 @@ const getCustomerOrders = async (req, res) => {
 const getCustomerDashboard = async (req, res) => {
 
 
-const user = new mongoose.Types.ObjectId(req.params.user);
+  const user = new mongoose.Types.ObjectId(req.params.user);
   try {
     const { sort, page, limit, filter } = req.query;
 
@@ -341,7 +341,7 @@ const user = new mongoose.Types.ObjectId(req.params.user);
 
     const Orders = await Order.find(
       { ...filterquery.query, user: req.params.user },
-      "-__v ",
+      "total createdAt invoice payment_method payment_status status totalPrice ",
       filterquery.options
     ).populate("user")
 
@@ -394,10 +394,9 @@ const getSingleOrder = async (req, res) => {
     });
   } else {
     try {
-      const OrderId = await Order.findOne({ _id: id }, "-__v").populate({
-        path: 'items.product',
-        model: 'Product' // Ensure this matches the name of your Product model
-      }).exec();
+      const OrderId = await Order.findOne({ _id: id }, "-__v").populate("user", 'firstName lastName email phoneNumber') // Populating the 'user' reference
+        .populate("items.product", '-_id -categories -category -variants -status') // Populating the 'product' reference within 'items'
+        .populate("address").exec();
 
       if (OrderId.id) {
         return res.status(StatusCodes.OK).json({
@@ -559,5 +558,5 @@ module.exports = {
   getOrders,
   getSingleOrder,
   deleteOrder,
-  createOrder,verifyPayment, getCustomerOrders, getCustomerDashboard,cancelOrder
+  createOrder, verifyPayment, getCustomerOrders, getCustomerDashboard, cancelOrder
 };
