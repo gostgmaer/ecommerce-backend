@@ -16,7 +16,7 @@ const createWishlist = async (req, res) => {
   
     } 
  
-    const currWishlist = await Wishlist.find({user:req.params.user},'product').populate('product');
+    const currWishlist = await Wishlist.find({user:req.params.user},'product').populate('product','slug title price retailPrice images image');
     const length = await Wishlist.countDocuments({user:req.params.user});
 
     res.status(200).json({
@@ -78,9 +78,9 @@ const removeProduct = async (req, res) => {
         message: "Wishlist not found",
       });
     }
-   const removeData = await Wishlist.findByIdAndDelete(data.id);
+   await Wishlist.findByIdAndDelete(data.id);
 
-   const currWishlist = await Wishlist.find({user:req.params.user},'product').populate('product');
+   const currWishlist = await Wishlist.find({user:req.params.user},'product').populate('product','slug title price retailPrice images image');
    const length = await Wishlist.countDocuments({user:req.params.user});
 
 
@@ -102,7 +102,7 @@ const removeProduct = async (req, res) => {
 
 const getWishlist = async (req, res) => {
   try {
-    const wishlists = await Wishlist.find({ user: req.params.user },'product').populate('product');
+    const wishlists = await Wishlist.find({ user: req.params.user },'product').populate('product','slug title price retailPrice images image');
     const length = await Wishlist.countDocuments({ user: req.params.user });
     res.status(200).json({
       statusCode: 200,

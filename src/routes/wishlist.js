@@ -1,10 +1,9 @@
 const express = require("express");
-var session = require("express-session");
+
 const wishlistRoute = express.Router();
 const UpdatebyMiddleWare = require("../middleware/updatedBy");
 const createMiddleWare = require("../middleware/createMiddleWare");
 const userMiddleWare = require("../middleware/userAccess");
-const adminMiddleware = require("../middleware/adminAccess");
 
 const {
   get,
