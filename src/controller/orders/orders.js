@@ -11,7 +11,7 @@ const Product = require("../../models/products");
 const { createPayPalOrder, verifyPayPalPayment } = require("../payment/paypalHelper");
 const { createRazorpayOrder, verifyRazorpayPayment } = require("../payment/rozorpay");
 const { processCodOrder } = require("../payment/codhelper");
-const { updateStockOnOrderCreate, updateStockOnOrderCancel } = require("../../lib/stock-controller/others");
+const { updateStockOnOrderCreate, updateStockOnOrderCancel, removeOrderedItemsFromWishlist } = require("../../lib/stock-controller/others");
 
 // const { createPayPalOrder, verifyPayPalPayment } = require('../services/paypalService');
 // const { createRazorpayOrder, verifyRazorpayPayment } = require('../services/razorpayService');
@@ -98,6 +98,7 @@ const createOrder = async (req, res) => {
 
       savedOrder = await newOrder.save();
       await updateStockOnOrderCreate(req.body.products)
+      await removeOrderedItemsFromWishlist(req.body.user,savedOrder.items )
 
       if (payment_method === "COD") {
         return res.status(StatusCodes.OK).json({

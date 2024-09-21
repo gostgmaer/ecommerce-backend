@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const Product = require("../../models/products");
+const Wishlist = require('../../models/Wishlist'); // Assuming you have a Wishlist model
 
 // const base = 'https://api-m.sandbox.paypal.com';
 
@@ -21,7 +22,7 @@ const handleProductQuantity = async (cart) => {
   try {
     await cart.forEach(async (p) => {
       if (p?.variants?.length <= 0) {
-        const update =   await Product.findOneAndUpdate(
+        const update = await Product.findOneAndUpdate(
           {
             _id: p._id,
           },
@@ -38,7 +39,7 @@ const handleProductQuantity = async (cart) => {
         return update
       }
       if (p?.variants?.length > 0) {
-       await Product.findOneAndUpdate(
+        await Product.findOneAndUpdate(
           {
             _id: p._id,
             "variants.productId": p?.variant?.productId || "",
@@ -98,6 +99,36 @@ const handleProductAttribute = async (key, value, multi) => {
 };
 
 
+const removeOrderedItemsFromWishlist = async (userId, orderedItems) => {
+  try {
+    // Delete the wishlist entries where the product is in the orderedItems
+
+    // console.log(orderedItems);
+    const productIds = orderedItems.map(item => item.product);
+    
+    const wishlistItemsToDelete = await Wishlist.find({
+      user: userId,
+      product: { $in: productIds }
+    });
+
+    if (wishlistItemsToDelete.length === 0) {
+      return { message: 'No items to remove from wishlist' };
+    }
+
+    // Delete the found wishlist entries
+    await Wishlist.deleteMany({
+      user: userId,
+      product: { $in: productIds }
+    });
+
+    return {
+      message: 'Ordered items removed from wishlist',
+      removedItems: wishlistItemsToDelete // Return the removed items
+    };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 
 
@@ -110,18 +141,18 @@ const updateStockOnOrderCreate = async (orderItems) => {
 
       if (product) {
         // Decrease stock by the quantity ordered
-        product.stock -= item.cartQuantity ;
+        product.stock -= item.cartQuantity;
 
         // Ensure stock doesn't go below zero
         if (product.stock < 0) {
           throw new Error(`Insufficient stock for product: ${product.title}`);
         }
 
-       await Product.findOneAndUpdate(
+        await Product.findOneAndUpdate(
           { _id: product.id },
-          { stock:product.stock }, // Increment total_view by 1
+          { stock: product.stock }, // Increment total_view by 1
           { new: true } // Return the updated document
-       )
+        )
       }
     }
   } catch (error) {
@@ -142,9 +173,9 @@ const updateStockOnOrderCancel = async (orderItems) => {
         product.stock += item.quantity;
         await Product.findOneAndUpdate(
           { _id: product.id },
-          { stock:product.stock }, // Increment total_view by 1
+          { stock: product.stock }, // Increment total_view by 1
           { new: true } // Return the updated document
-       )
+        )
       }
     }
   } catch (error) {
@@ -164,6 +195,6 @@ const updateStockOnOrderCancel = async (orderItems) => {
 
 module.exports = {
   handleProductQuantity,
-  handleProductAttribute,  updateStockOnOrderCreate,
-  updateStockOnOrderCancel
+  handleProductAttribute, updateStockOnOrderCreate,
+  updateStockOnOrderCancel, removeOrderedItemsFromWishlist
 };
