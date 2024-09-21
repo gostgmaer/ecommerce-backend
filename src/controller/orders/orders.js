@@ -508,11 +508,11 @@ const deleteOrder = async (req, res) => {
 };
 
 const cancelOrder = async (req, res) => {
-  const { orderId } = req.body;
+  const { id } = req.params;
 
   try {
     // Find the order by ID
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(id);
 
     // Check if the order exists
     if (!order) {
