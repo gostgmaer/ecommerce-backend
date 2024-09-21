@@ -18,7 +18,7 @@ const {
 
 
 orderRoute.route("/orders/create").post(userMiddleWare,createMiddleWare,createOrder);
-orderRoute.route("/orders/cancel").post(userMiddleWare,createMiddleWare,cancelOrder);
+orderRoute.route("/orders/cancel/:id").patch(userMiddleWare,createMiddleWare,cancelOrder);
 orderRoute.route("/orders/verify-payment").post(userMiddleWare,UpdatebyMiddleWare,verifyPayment);
 orderRoute.route("/orders").get(adminMiddleware,getOrders);
 orderRoute.route("/orders/:id").get(userMiddleWare,getSingleOrder);
