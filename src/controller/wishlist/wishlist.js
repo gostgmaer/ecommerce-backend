@@ -3,7 +3,7 @@ const {
   StatusCodes,
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
-const Wishlist = require('../../models/Wishlist'); // Assuming you have a Wishlist model
+const Wishlist = require('../../models/wishlist'); // Assuming you have a Wishlist model
 
 const createWishlist = async (req, res) => {
   // const { product } = req.body;

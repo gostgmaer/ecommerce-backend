@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const Product = require("../../models/products");
-const Wishlist = require('../../models/Wishlist'); // Assuming you have a Wishlist model
+const Wishlist = require('../../models/wishlist'); // Assuming you have a Wishlist model
 
 // const base = 'https://api-m.sandbox.paypal.com';
 
