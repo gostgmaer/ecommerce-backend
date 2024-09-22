@@ -14,9 +14,9 @@ const {
 
 productRoute
   .route("/products")
-  .post(adminMiddleware, createMiddleWare, createProduct);
+  .post(createMiddleWare, createProduct);
   productRoute.route("/products/bulk")
-  .post(adminMiddleware, createMiddleWare, createProductBulk);
+  .post( createMiddleWare, createProductBulk);
 productRoute.route("/products").get(getProducts);
 productRoute.route("/products/show").get(getCurrentProducts);
 productRoute.route("/products/related").get(getRelatedProducts);
@@ -28,12 +28,12 @@ productRoute.route("/products/details").get(getCurrentSingle);
 // productRoute.route("/products/:id/reviews").get(getproductReviews);
 productRoute
   .route("/products/:id")
-  .patch(adminMiddleware, userMiddleWare, updateProduct);
+  .patch( userMiddleWare, updateProduct);
 productRoute
   .route("/products/:id")
-  .put(adminMiddleware, userMiddleWare, updateProduct);
+  .put( userMiddleWare, updateProduct);
 productRoute
   .route("/products/:id")
-  .delete(adminMiddleware, userMiddleWare, deleteProducts);
+  .delete( userMiddleWare, deleteProducts);
 
 module.exports = productRoute;

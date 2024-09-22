@@ -51,10 +51,10 @@ const getProducts = async (req, res) => {
       filterquery.query,
       "-__v",
       filterquery.options
-    )
-      .populate("reviews")
-      .populate("brand")
-      .populate("categories",'_id title slug').populate("category",'_id title slug');
+    ).populate("category",'_id title slug');
+      // .populate("reviews")
+      // .populate("brand")
+      // .populate("categories",'_id title slug').populate("category",'_id title slug');
     const length = await Product.countDocuments(filterquery.query);
 
     if (products) {

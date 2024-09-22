@@ -1,4 +1,5 @@
 const express = require("express");
+// const logger = require('./src/lib/logger');
 require("dotenv").config();
 const connectDB = require("./src/db/dbConnact");
 const { dbUrl, serverPort } = require("./src/config/setting");
