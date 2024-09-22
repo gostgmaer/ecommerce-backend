@@ -19,7 +19,7 @@ function decodeToken(token) {
   });
 }
 
-const FilterOptions = (sort = "updatedAt:desc", page, limit, filter) => {
+const FilterOptions = (sort = "createdAt:desc", page, limit, filter) => {
   var query = {};
 
   if (filter) {

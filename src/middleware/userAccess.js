@@ -18,6 +18,15 @@ async function userMiddleWare(req, res, next) {
 
   const tokenValue = token.split(" ")[1];
 
+  if (tokenValue.includes('undefined')) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      message: `No authorization token was found`,
+      statusCode: StatusCodes.UNAUTHORIZED,
+      status: ReasonPhrases.UNAUTHORIZED,
+    });
+  }
+
+
   try {
     // Decode the token to get the user's ID
     const decoded = jwt.verify(tokenValue, jwtSecret); // Replace with your secret key

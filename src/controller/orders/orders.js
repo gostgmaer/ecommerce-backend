@@ -180,24 +180,21 @@ const getOrders = async (req, res) => {
       filterquery.query,
       "-__v ",
       filterquery.options
-    )
-      .populate("user") // Populating the 'user' reference
+    ).populate("user",'firstName lastName email  phoneNumber') // Populating the 'user' reference
       .populate("items.product") // Populating the 'product' reference within 'items'
-      .populate("address.billing") // Populating the 'billing' reference within 'address'
-      .populate("address.shipping"); // Populating the 'shipping' reference within 'address'
 
-    const length = await Order.countDocuments(filterquery.query);
+    const length = await Order.countDocuments(filterquery.query); 
 
     if (Orders) {
-      Orders.forEach((element) => {
-        const { firstName, lastName, email, phoneNumber } = element.user;
-        element.user = {
-          firstName,
-          lastName,
-          email,
-          phoneNumber,
-        };
-      });
+      // Orders.forEach((element) => {
+      //   const { firstName, lastName, email, phoneNumber } = element.user;
+      //   // element.user = {
+      //   //   firstName,
+      //   //   lastName,
+      //   //   email,
+      //   //   phoneNumber,
+      //   // };
+      // });
 
       return res.status(StatusCodes.OK).json({
         message: `Orders data has been Loaded Successfully!`,
