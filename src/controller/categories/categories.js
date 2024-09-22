@@ -33,7 +33,7 @@ const getCategories = async (req, res) => {
   try {
     const filterquery = FilterOptions(sort, page, limit, filter);
     const responseData = await Category.find( filterquery.query,
-      "-__v",
+      "-__v -cat_id -child -parent_category",
       filterquery.options);
 
       const categoryCounts = await Promise.all(
