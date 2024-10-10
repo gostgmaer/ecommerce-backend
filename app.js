@@ -5,9 +5,8 @@ const connectDB = require("./src/db/dbConnact");
 const { dbUrl, serverPort } = require("./src/config/setting");
 const app = express();
 var cors = require("cors");
-// const logMiddleware = require("./src/middleware/logger");
-
 const userRouter = require("./src/routes/user");
+const settingRoute = require("./src/routes/settingRoutes");
 const authRoute = require("./src/routes/auth");
 const categoryRoute = require("./src/routes/categories");
 const productRoute = require("./src/routes/products");
@@ -38,6 +37,7 @@ app.get("/api", (req, res) => {
 
 // app.use(logMiddleware);
 app.use("/api", userRouter);
+app.use('/api',settingRoute)
 app.use("/api", authRoute);
 app.use("/api", categoryRoute);
 app.use("/api", productRoute);

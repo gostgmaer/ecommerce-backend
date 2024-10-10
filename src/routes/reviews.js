@@ -16,8 +16,8 @@ const {
 reviewRoute.route("/products/:product_id/reviews").post(userMiddleWare,createMiddleWare,create);
 reviewRoute.route("/products/:product_id/reviews").get(adminMiddleware,getAll);
 reviewRoute.route("/products/:product_id/reviews/:review_id").get(getSingle);
-reviewRoute.route("/products/:product_id/reviews/:review_id").patch(updateData);
-reviewRoute.route("/products/:product_id/reviews/:review_id").put(updateData);
-reviewRoute.route("/products/:product_id/reviews/:review_id").delete(deleteData);
+reviewRoute.route("/products/:product_id/reviews/:review_id").patch(userMiddleWare,updateData);
+reviewRoute.route("/products/:product_id/reviews/:review_id").put(userMiddleWare,updateData);
+reviewRoute.route("/products/:product_id/reviews/:review_id").delete(userMiddleWare,deleteData);
 
 module.exports = reviewRoute;
