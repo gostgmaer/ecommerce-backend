@@ -21,6 +21,7 @@ const orderRoute = require("./src/routes/orders");
 const wishlistRoute = require("./src/routes/wishlist");
 const AttachmentRoute = require("./src/routes/attachments");
 const contactsRoute = require("./src/routes/contact");
+const couponRouter = require("./src/routes/couponRoutes");
 
 
 
@@ -52,6 +53,7 @@ app.use("/api", orderRoute);
 app.use("/api", wishlistRoute);
 app.use("/api", AttachmentRoute);
 app.use("/api", contactsRoute);
+app.use("/api", couponRouter);
 
 const start = async (res) => {
   try {

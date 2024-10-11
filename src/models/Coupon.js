@@ -10,6 +10,11 @@ const couponSchema = new mongoose.Schema({
 
   // Discount Details
   discountType: { type: String, enum: ['percentage', 'fixed'], required: true },
+  couponType: { 
+    type: String, 
+    enum: ['cart', 'product'], 
+    required: true 
+  },
   discountValue: { type: Number, required: true },
   maxDiscount: { type: Number, default: null },
   maxSavingsCap: { type: Number, default: null },  // Overall cap on savings
@@ -64,8 +69,6 @@ const couponSchema = new mongoose.Schema({
 
   // Analytics and Tracking
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Admin or user who created the coupon
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
   tags: [{ type: String, default: [] }],  // Tags for categorization and search (e.g., "holiday", "VIP")
   
   // Seasonal/Conditional
@@ -74,5 +77,10 @@ const couponSchema = new mongoose.Schema({
   oneTimeUse: { type: Boolean, default: false },  // Can be used only once by each user
   
 }, { timestamps: true });
+
+
+
+
+
 
 module.exports = mongoose.model('Coupon', couponSchema);

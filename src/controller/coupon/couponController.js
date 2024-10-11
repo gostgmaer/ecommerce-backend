@@ -1,14 +1,85 @@
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
+const Product = require("../../models/products");
+
 dayjs.extend(utc);
 
 // const { mongo_connection } = require('../config/db'); // CCDev
-const Coupon = require("../models/Coupon");
+const Coupon = require("../../models/Coupon");
+const { calculateDiscount } = require("../../utils/helper");
 
 const addCoupon = async (req, res) => {
   try {
     const newCoupon = new Coupon(req.body);
     await newCoupon.save();
+    // console.log(newCoupon);
+
+    // var invalidProducts ;
+    // const items = await Promise.all(
+    //   req.body.products.map(async (productData) => {
+    //     const productId = productData.id;
+    //     const product = await Product.findById(productId);
+
+    //     if (!product) {
+    //       invalidProducts.push(productId);
+    //       return null; // Return null for invalid products
+    //     } else {
+    //       return {
+    //         product: productId,
+    //         quantity: productData.cartQuantity,
+    //         productPrice: product.price,
+    //       };
+    //     }
+    //   })
+    // );
+
+    if (newCoupon && newCoupon.couponType === "product") {
+      if (
+        newCoupon.applicableCategories &&
+        newCoupon.applicableCategories.length > 0
+      ) {
+        // Fetch products in applicable categories
+        const categoryProducts = await Product.find(
+          {
+            category: { $in: newCoupon.applicableCategories },
+          },
+          ""
+        ).exec();
+
+        const updatePromises = categoryProducts.map(async (product) => {
+          const { finalAmount, discountedAmount } = calculateDiscount(
+            product.price,
+            newCoupon
+          );
+
+          await Product.updateOne(
+            { _id: product._id },
+            { $set: { price: finalAmount.toFixed(2), discount: discountedAmount.toFixed(2) } }
+          );
+        });
+
+        // Wait for all updates to complete
+        await Promise.all(updatePromises);
+      }
+      // return allProducts.map((product) => {
+      //   const isProductEligible = coupon.applicableProducts.some((productId) => productId.equals(product._id));
+      //   const isCategoryEligible = coupon.applicableCategories.some(
+      //     (categoryId) => product.category && categoryId.equals(categoryId)
+      //   );
+
+      //   if (isProductEligible || isCategoryEligible) {
+      //     const discountAmount = calculateDiscount(product.price, coupon);
+      //     return {
+      //       ...product,
+      //       originalPrice: product.price,
+      //       discountedPrice: product.price - discountAmount,
+      //     };
+      //   } else {
+      //     return product; // Return without discount if not eligible
+      //   }
+      // });
+    }
+
     res.send({ message: "Coupon Added Successfully!" });
   } catch (err) {
     res.status(500).send({ message: err.message });
@@ -72,6 +143,69 @@ const getCouponById = async (req, res) => {
   }
 };
 
+const applyCouponToProduct = async (req, res) => {
+  try {
+    const { productIds, couponCode } = req.body;
+
+    // Fetch the coupon details
+    const coupon = await Coupon.findOne({ couponCode });
+    if (!coupon)
+      return res
+        .status(404)
+        .json({ success: false, message: "Coupon not found" });
+
+    const now = new Date();
+    if (coupon.startTime > now || coupon.endTime < now) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Coupon is not valid at this time" });
+    }
+
+    const discountedProducts = await Promise.all(
+      productIds.map(async (productId) => {
+        const product = await Product.findById(productId);
+        if (!product) return null;
+
+        // Calculate the discount
+        let discountedPrice = product.price;
+        if (coupon.discountType === "percentage") {
+          discountedPrice = product.price * (1 - coupon.discountValue / 100);
+        } else if (coupon.discountType === "fixed") {
+          discountedPrice = product.price - coupon.discountValue;
+        }
+
+        // Ensure discounted price respects caps
+        discountedPrice = Math.max(discountedPrice, coupon.minOrderAmount || 0);
+        if (coupon.maxDiscount) {
+          discountedPrice = Math.min(
+            discountedPrice,
+            product.price - coupon.maxDiscount
+          );
+        }
+
+        return {
+          productId: product._id,
+          originalPrice: product.price,
+          discountedPrice,
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      discountedProducts: discountedProducts.filter((item) => item !== null),
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Failed to apply coupon",
+        error: error.message,
+      });
+  }
+};
+
 const updateCoupon = async (req, res) => {
   try {
     const coupon = await Coupon.findById(req.params.id);
@@ -91,7 +225,7 @@ const updateCoupon = async (req, res) => {
       await coupon.save();
       res.send({ message: "Coupon Updated Successfully!" });
     }
-  } catch (err) {
+  } catch (error) {
     res.status(404).send({ message: "Coupon not found!" });
   }
 };
@@ -181,4 +315,5 @@ module.exports = {
   deleteCoupon,
   updateManyCoupons,
   deleteManyCoupons,
+  applyCouponToProduct,
 };
