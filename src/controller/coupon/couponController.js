@@ -48,7 +48,7 @@ const addCoupon = async (req, res) => {
 
         const updatePromises = categoryProducts.map(async (product) => {
           const { finalAmount, discountedAmount } = calculateDiscount(
-            product.price,
+            product.retailPrice,
             newCoupon
           );
 
