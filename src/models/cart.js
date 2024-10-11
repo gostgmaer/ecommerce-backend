@@ -12,8 +12,8 @@ const cartItemSchema = new mongoose.Schema({
     min: 1,
   },
   // Embedded product details
-  productName: String,
-  productImage: String,
+  // productName: String,
+  // productImage: String,
 });
 
 const cartSchema = new mongoose.Schema({

@@ -5,9 +5,8 @@ const connectDB = require("./src/db/dbConnact");
 const { dbUrl, serverPort } = require("./src/config/setting");
 const app = express();
 var cors = require("cors");
-// const logMiddleware = require("./src/middleware/logger");
-
 const userRouter = require("./src/routes/user");
+const settingRoute = require("./src/routes/settingRoutes");
 const authRoute = require("./src/routes/auth");
 const categoryRoute = require("./src/routes/categories");
 const productRoute = require("./src/routes/products");
@@ -22,6 +21,7 @@ const orderRoute = require("./src/routes/orders");
 const wishlistRoute = require("./src/routes/wishlist");
 const AttachmentRoute = require("./src/routes/attachments");
 const contactsRoute = require("./src/routes/contact");
+const couponRouter = require("./src/routes/couponRoutes");
 
 
 
@@ -38,6 +38,7 @@ app.get("/api", (req, res) => {
 
 // app.use(logMiddleware);
 app.use("/api", userRouter);
+app.use('/api',settingRoute)
 app.use("/api", authRoute);
 app.use("/api", categoryRoute);
 app.use("/api", productRoute);
@@ -52,6 +53,7 @@ app.use("/api", orderRoute);
 app.use("/api", wishlistRoute);
 app.use("/api", AttachmentRoute);
 app.use("/api", contactsRoute);
+app.use("/api", couponRouter);
 
 const start = async (res) => {
   try {

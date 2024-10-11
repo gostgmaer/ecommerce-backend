@@ -18,8 +18,14 @@ const addGlobalSetting = async (req, res) => {
 
 const getGlobalSetting = async (req, res) => {
   try {
-    const globalSetting = await Setting.findOne({ name: "globalSetting" });
-    res.send(globalSetting.setting);
+    const globalSetting = await Setting.findOne({ name: req.params.website });
+    res.status(200).json({
+      message: "User Update Successfully",
+      status: "OK",
+      statusCode: 200,
+      result: globalSetting,
+    });
+    // res.send(globalSetting.setting);
   } catch (err) {
     res.status(500).send({
       message: err.message,

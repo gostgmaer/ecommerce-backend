@@ -1,4 +1,7 @@
-const router = require("express").Router();
+// const router = require("express").Router();
+const express = require("express");
+const settingRoute = express.Router();
+
 
 const {
   addGlobalSetting,
@@ -7,12 +10,12 @@ const {
 } = require("../controller/setting/settingController");
 
 //add a global setting
-router.post("/global/add", addGlobalSetting);
+settingRoute.route("/global/add").post(addGlobalSetting);
 
 //get global setting
-router.get("/global/all", getGlobalSetting);
+settingRoute.route("/global/:website/fetch").get(getGlobalSetting);
 
 //update global setting
-router.put("/global/update", updateGlobalSetting);
+settingRoute.route("/global/update").put(updateGlobalSetting);
 
-module.exports = router;
+module.exports = settingRoute;

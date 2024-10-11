@@ -389,6 +389,30 @@ const showingProductFilter = async (sort = "updatedAt:desc", page, limit=24 , ca
 };
 
 
+function calculateDiscount(price, coupon) {
+  let discount;
+
+  if (coupon.discountType === 'percentage') {
+    // Calculate the discount amount based on the percentage
+    discount = (price * coupon.discountValue) / 100;
+  } else if (coupon.discountType === 'fixed') {
+    // For fixed discounts, ensure the discount does not exceed the price
+    discount = Math.min(coupon.discountValue, price);
+  } else {
+    // If the discount type is not recognized, return default values
+    return { discountedAmount: 0, finalAmount: price }; 
+  }
+
+  // Calculate the final amount after applying the discount
+  const finalAmount = price - discount;
+
+  // Return both the discounted amount and the final amount
+  return {
+    discountedAmount: discount,
+    finalAmount: finalAmount,
+  };
+}
+
 module.exports = {
   decodeToken,
   FilterOptions,
@@ -397,5 +421,6 @@ module.exports = {
   FilterOptionsSearch,
   generateRandomString,
   getLocalIpAddress,
-  getPublicIpAddress, getAppIdAndEntity, showingProductFilter
+  getPublicIpAddress, getAppIdAndEntity, showingProductFilter,calculateDiscount
 };
+
