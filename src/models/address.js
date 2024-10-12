@@ -45,6 +45,9 @@ const addressSchema = new mongoose.Schema({
 
   // Additional Attributes
   isDefault: { type: Boolean, default: false },
+  
+  created_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  updated_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   additionalNotes: { type: String, default: '' },
   isResidential: { type: Boolean, default: true },  // Indicates residential or commercial
   isPrimaryAddress: { type: Boolean, default: false },  // User's main address
@@ -72,8 +75,7 @@ const addressSchema = new mongoose.Schema({
   },
 
   // Meta Fields
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+
 });
 
 const Address = mongoose.model('Address', addressSchema);

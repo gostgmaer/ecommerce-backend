@@ -15,8 +15,6 @@ const sessionStore = require("../../db/sessionConnact");
 const createMailOptions = require("../../email/mailOptions");
 const transporter = require("../../email/mailTransporter");
 const { generateTokens, setCookiesOnHeader } = require("../../lib/service");
-// const { socialSignupBody } = require("../../email/emailbody");
-// const Mailgenerator = require('../mail/mailgenerator');
 
 const signUp = async (req, res) => {
   const { firstName, lastName, email, password, username } = req.body;

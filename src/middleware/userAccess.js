@@ -10,7 +10,7 @@ async function userMiddleWare(req, res, next) {
   const token = req.headers.authorization;
   if (!token || !token.startsWith("Bearer ")) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
-      message: `No authorization token was found`,
+      message: `UNAUTHORIZED`,
       statusCode: StatusCodes.UNAUTHORIZED,
       status: ReasonPhrases.UNAUTHORIZED,
     });
@@ -20,7 +20,7 @@ async function userMiddleWare(req, res, next) {
 
   if (tokenValue.includes('undefined')) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
-      message: `No authorization token was found`,
+      message: `UNAUTHORIZED`,
       statusCode: StatusCodes.UNAUTHORIZED,
       status: ReasonPhrases.UNAUTHORIZED,
     });

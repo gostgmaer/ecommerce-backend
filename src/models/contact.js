@@ -27,6 +27,8 @@ const contactUsSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  created_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  updated_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   isAgreed: {
     type: String,
     required: false

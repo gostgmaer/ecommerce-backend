@@ -17,7 +17,7 @@ async function updateMiddleWare(req, res, next) {
       
       const newBody = {
         updated_user_id: userData.id,
-        updated_by: userData.email
+        updated_by: userData.id
       };
 
       req.body = { ...newBody, ...req.body };

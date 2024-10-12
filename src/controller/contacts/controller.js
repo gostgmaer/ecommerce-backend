@@ -2,12 +2,9 @@
 const {
   ReasonPhrases,
   StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
 } = require("http-status-codes");
 const mongoose = require("mongoose");
 const {
-  getAppIdAndEntity,
   FilterOptions,
 } = require("../../utils/helper");
 
@@ -20,7 +17,7 @@ const getData = async (req, res) => {
     const { sort, page, limit, filter, select_keys } = req.query;
     const filterData = FilterOptions(sort, page, limit, filter, select_keys);
     let query = { ...filterData.query };
-    let projection = { projection: filterData.arrayOfValues };
+    // let projection = { projection: filterData.arrayOfValues };
 
     const objects = await Contact.find(query).sort(filterData.options.sort)
       .skip(filterData.options.skip)
@@ -83,7 +80,7 @@ const getSingleRecord = async (req, res) => {
 };
 const create = async (req, res) => {
   try {
-    const result = await Contact.create(req.body);
+    await Contact.create(req.body);
     res.status(StatusCodes.CREATED).json({
       message: "Record Created Successfully!",
       status: ReasonPhrases.CREATED,
@@ -100,7 +97,7 @@ const create = async (req, res) => {
 
 const remove = async (req, res) => {
   try {
-    const { appId } = req.params;
+    // const { appId } = req.params;
     const objectId = req.params.id;
 
     if (!objectId) {
@@ -141,7 +138,7 @@ const remove = async (req, res) => {
 
 const removeMany = async (req, res) => {
   try {
-    const { appId } = req.params;
+    // const { appId } = req.params;
     const objectId = req.params.id;
 
     if (!objectId) {
@@ -228,7 +225,7 @@ const update = async (req, res) => {
 
 const delData = async (req, res) => {
   try {
-    const { appId } = req.params;
+    // const { appId } = req.params;
     const objectId = req.params.id;
 
     if (!objectId) {
@@ -238,7 +235,7 @@ const delData = async (req, res) => {
         status: ReasonPhrases.BAD_REQUEST,
       });
     }
-    const ID = new mongoose.Types.ObjectId(objectId);
+    // const ID = new mongoose.Types.ObjectId(objectId);
     const object = await Contact.findByIdAndDelete(objectId);
     if (object?.lastErrorObject?.n == 0) {
       res.status(StatusCodes.BAD_REQUEST).json({
@@ -265,7 +262,7 @@ const delData = async (req, res) => {
 
 const delMany = async (req, res) => {
   try {
-    const { appId } = req.params;
+    // const { appId } = req.params;
     const ids = req.body.ids;
 
     if (!ids) {

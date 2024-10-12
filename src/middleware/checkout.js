@@ -2,33 +2,17 @@
 const {
   ReasonPhrases,
   StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
+
 } = require("http-status-codes");
 const {
-  dbUrl,
+
   jwtSecret,
-  serverPort,
-  collectionName,
-  mailService,
-  mailPassword,
-  mailUserName,
-  emailName,
-  mailchimpKey,
-  mailchimpList,
+
   applicaionName,
   host,
-  loginPath,
-  resetPath,
+
   confirmPath,
-  refressSecret,
-  paypalClient,
-  paypalSecret,
-  stripePublic,
-  stripeSecret,
-  razorPayPublic,
-  razorPaySecret,
-  charactersString,
+
 } = require("../config/setting");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
@@ -37,15 +21,15 @@ const createMailOptions = require("../email/mailOptions");
 const transporter = require("../email/mailTransporter");
 const { generateRandomString } = require("../utils/helper");
 const Product = require("../models/products");
-const Order = require("../models/orders");
+// const Order = require("../models/orders");
 const Address = require("../models/address");
 async function checkoutMiddleware(req, res, next) {
   // Check if the user has a Bearer token in the Authorization header
   const { authorization } = req.headers;
   try {
-    var newProd = [];
+    // var newProd = [];
     req.body.items = [];
-    const newproducts = await Promise.all(
+   await Promise.all(
       req.body.products.map(async (prod) => {
         const product = await Product.findById(prod["product"]);
         prod.product = product._doc;
@@ -222,9 +206,11 @@ async function checkoutMiddleware(req, res, next) {
       // Query the user document in MongoDB
       const user = await User.findById(decoded["user_id"]);
 
-     
+
 
       if (!user) {
+        console.log("ERROR");
+        
       } else {
         const newBody = {
           user: user.id,
@@ -246,7 +232,7 @@ async function checkoutMiddleware(req, res, next) {
         });
 
 
-        req.body = { ...newBody, ...req.body,  address: { billing: billing.id, shipping: shipping.id } };
+        req.body = { ...newBody, ...req.body, address: { billing: billing.id, shipping: shipping.id } };
         next();
       }
     }

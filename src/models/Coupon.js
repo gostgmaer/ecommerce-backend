@@ -68,7 +68,9 @@ const couponSchema = new mongoose.Schema({
   applicableOrderTypes: [{ type: String, enum: ['online', 'in-store', 'pickup'], default: ['online'] }],
 
   // Analytics and Tracking
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Admin or user who created the coupon
+ 
+  created_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  updated_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },  // Admin or user who created the coupon
   tags: [{ type: String, default: [] }],  // Tags for categorization and search (e.g., "holiday", "VIP")
   
   // Seasonal/Conditional

@@ -2,8 +2,6 @@
 const {
   ReasonPhrases,
   StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
 } = require("http-status-codes");
 const jwt = require('jsonwebtoken');
 const User = require('../models/user'); // Import your Mongoose user model

@@ -12,7 +12,9 @@ const wishlistSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product', // Reference to the Product model
     required: true
-  }
+  },
+  created_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  updated_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
 }, { timestamps: true });
 
