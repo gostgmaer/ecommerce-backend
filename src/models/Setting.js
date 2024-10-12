@@ -1,11 +1,10 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const settingSchema = new mongoose.Schema(
   {
     siteName: { type: String, required: true },
     name: {
       type: String,
-
     },
     contactInfo: {
       email: { type: String, required: true },
@@ -21,7 +20,7 @@ const settingSchema = new mongoose.Schema(
     branding: {
       logo: { type: String },
       favicon: { type: String },
-      themeColor: { type: String, default: "#000000" }, // Default to black
+      themeColor: { type: String, default: '#000000' }, // Default to black
     },
 
     shippingOptions: [{ type: String }], // e.g., ["Standard Shipping", "Express Shipping"]
@@ -40,7 +39,7 @@ const settingSchema = new mongoose.Schema(
       facebookPixelID: { type: String },
     },
 
-    currency: { type: String, required: true, default: "USD" },
+    currency: { type: String, required: true, default: 'USD' },
     taxRate: { type: Number, default: 0 },
     logo: { type: String }, // URL or path to the logo
     favicon: { type: String }, // URL or path to the favicon
@@ -63,10 +62,8 @@ const settingSchema = new mongoose.Schema(
     },
     isLive: { type: Boolean, default: true }, // Whether the store is live
     maintenanceMode: { type: Boolean, default: false }, // Maintenance mode toggle
-    featuredCategories: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-    ], // Featured categories
-    currencySymbol: { type: String, default: "$" }, // Currency symbol
+    featuredCategories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }], // Featured categories
+    currencySymbol: { type: String, default: '$' }, // Currency symbol
     minOrderAmount: { type: Number, default: 0 }, // Minimum order amount for checkout
     maxOrderAmount: { type: Number }, // Maximum order amount for checkout
     loyaltyProgram: {
@@ -83,11 +80,10 @@ const settingSchema = new mongoose.Schema(
 );
 
 // Update timestamps
-settingSchema.pre("save", function (next) {
-
+settingSchema.pre('save', function (next) {
   next();
 });
 
-const Setting = mongoose.model("Setting", settingSchema);
+const Setting = mongoose.model('Setting', settingSchema);
 
 module.exports = Setting;

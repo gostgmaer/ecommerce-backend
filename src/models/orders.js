@@ -58,14 +58,7 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
-    created_by: {
-      type: String,
-      required: true
-    },
-    created_user_id: {
-      type: mongoose.Types.ObjectId,
-      required: true
-    },
+
     email: {
       type: String,
       required: true,
@@ -157,10 +150,7 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-    created_at: {
-      type: Number,
-      default: () => Math.floor(Date.now() / 1000)
-    },
+
     entity: {
       type: String,
       default: 'order'
@@ -174,6 +164,8 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: null
     },
+    created_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    updated_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     // Other order-related fields if needed, e.g., shipping address, payment information, etc.
   },
   { timestamps: true }

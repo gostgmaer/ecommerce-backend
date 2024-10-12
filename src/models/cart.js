@@ -23,6 +23,9 @@ const cartSchema = new mongoose.Schema({
     required: true,
   },
   items: [cartItemSchema], // Array of cart items
+  
+  created_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  updated_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   // Other cart-related fields if needed, e.g., total price, discounts, etc.
 }, { timestamps: true });
 

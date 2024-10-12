@@ -226,7 +226,7 @@ const updateCoupon = async (req, res) => {
       res.send({ message: "Coupon Updated Successfully!" });
     }
   } catch (error) {
-    res.status(404).send({ message: "Coupon not found!" });
+    res.status(404).send({ message: error.message });
   }
 };
 

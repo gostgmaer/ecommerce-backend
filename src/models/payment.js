@@ -32,6 +32,9 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: { type: String, required: true },
   billingAddress: addressSchema,
   shippingAddress: addressSchema,
+  
+  created_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  updated_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   orderDate: { type: Date, default: Date.now }
 });
 

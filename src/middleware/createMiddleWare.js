@@ -17,9 +17,9 @@ async function createMiddleWare(req, res, next) {
       const newBody = {
         user: userData.id,
         created_user_id: userData.id,
-        created_by: userData.email,
+        created_by: userData.id,
         updated_user_id: userData.id,
-        updated_by: userData.email
+        updated_by: userData.id
       };
       
 
