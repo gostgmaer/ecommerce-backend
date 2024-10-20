@@ -408,8 +408,8 @@ function calculateDiscount(price, coupon) {
 
   // Return both the discounted amount and the final amount
   return {
-    discountedAmount: discount,
-    finalAmount: finalAmount,
+    discountedAmount: discount.toFixed(2),
+    finalAmount: finalAmount.toFixed(2),
   };
 }
 

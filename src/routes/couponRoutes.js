@@ -9,38 +9,39 @@ const {
   updateCoupon,
   updateStatus,
   deleteCoupon,
-  updateManyCoupons,
+  updateManyCoupons, applyCouponToProduct,
   deleteManyCoupons,
 } = require('../controller/coupon/couponController');
 
-//add a coupon
 couponRouter.route('/coupon/add').post(addCoupon);
 
-//add multiple coupon
-// router.post('/add/all', addAllCoupon);
+// Apply coupon to product
+couponRouter.route('/coupon/apply').post(applyCouponToProduct);
 
-// //get all coupon
-// router.get('/', getAllCoupons);
+// Add multiple coupons
+couponRouter.route('/coupon/add/all').post(addAllCoupon);
 
-// //get only enable coupon
-// router.get('/show', getShowingCoupons);
+// Get all coupons
+couponRouter.route('/coupon').get(getAllCoupons);
 
-// //get a coupon
-// router.get('/:id', getCouponById);
+// Get only enabled coupons (showing)
+couponRouter.route('/coupon/show').get(getShowingCoupons);
 
-// //update a coupon
-// router.put('/:id', updateCoupon);
+// Get a single coupon by ID
+couponRouter.route('/coupon/:id').get(getCouponById);
 
-// //update many coupon
-// router.patch('/update/many', updateManyCoupons);
+// Update a single coupon by ID
+couponRouter.route('/coupon/:id').put(updateCoupon);
 
-// //show/hide a coupon
-// router.put('/status/:id', updateStatus);
+// Update many coupons
+couponRouter.route('/coupon/update/many').patch(updateManyCoupons);
 
-// //delete a coupon
-// router.delete('/:id', deleteCoupon);
+// Show/hide a coupon (update status)
+couponRouter.route('/coupon/status/:id').put(updateStatus);
 
-// //delete many coupon
-// router.patch('/delete/many', deleteManyCoupons);
+// Delete a single coupon by ID
+couponRouter.route('/coupon/:id').delete(deleteCoupon);
 
+// Delete multiple coupons
+couponRouter.route('/coupon/delete/many').patch(deleteManyCoupons);
 module.exports = couponRouter;

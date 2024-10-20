@@ -1,12 +1,12 @@
-const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc");
-const Product = require("../../models/products");
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const Product = require('../../models/products');
 
 dayjs.extend(utc);
 
 // const { mongo_connection } = require('../config/db'); // CCDev
-const Coupon = require("../../models/Coupon");
-const { calculateDiscount } = require("../../utils/helper");
+const Coupon = require('../../models/Coupon');
+const { calculateDiscount } = require('../../utils/helper');
 
 const addCoupon = async (req, res) => {
   try {
@@ -33,29 +33,20 @@ const addCoupon = async (req, res) => {
     //   })
     // );
 
-    if (newCoupon && newCoupon.couponType === "product") {
-      if (
-        newCoupon.applicableCategories &&
-        newCoupon.applicableCategories.length > 0
-      ) {
+    if (newCoupon && newCoupon.couponType === 'product') {
+      if (newCoupon.applicableCategories && newCoupon.applicableCategories.length > 0) {
         // Fetch products in applicable categories
         const categoryProducts = await Product.find(
           {
-            category: { $in: newCoupon.applicableCategories },
+            category: { $in: newCoupon.applicableCategories }
           },
-          ""
+          ''
         ).exec();
 
         const updatePromises = categoryProducts.map(async (product) => {
-          const { finalAmount, discountedAmount } = calculateDiscount(
-            product.retailPrice,
-            newCoupon
-          );
+          const { finalAmount, discountedAmount } = calculateDiscount(product.retailPrice, newCoupon);
 
-          await Product.updateOne(
-            { _id: product._id },
-            { $set: { price: finalAmount.toFixed(2), discount: discountedAmount.toFixed(2) } }
-          );
+          await Product.updateOne({ _id: product._id }, { $set: { price: finalAmount.toFixed(2), discount: discountedAmount.toFixed(2) } });
         });
 
         // Wait for all updates to complete
@@ -80,7 +71,7 @@ const addCoupon = async (req, res) => {
       // });
     }
 
-    res.send({ message: "Coupon Added Successfully!" });
+    res.send({ message: 'Coupon Added Successfully!' });
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
@@ -91,11 +82,11 @@ const addAllCoupon = async (req, res) => {
     await Coupon.deleteMany();
     await Coupon.insertMany(req.body);
     res.status(200).send({
-      message: "Coupon Added successfully!",
+      message: 'Coupon Added successfully!'
     });
   } catch (err) {
     res.status(500).send({
-      message: err.message,
+      message: err.message
     });
   }
 };
@@ -107,14 +98,14 @@ const getAllCoupons = async (req, res) => {
     const { status } = req.query;
 
     if (status) {
-      queryObject.status = { $regex: `${status}`, $options: "i" };
+      queryObject.status = { $regex: `${status}`, $options: 'i' };
     }
     const coupons = await Coupon.find(queryObject).sort({ _id: -1 });
     // console.log('coups',coupons)
     res.send(coupons);
   } catch (err) {
     res.status(500).send({
-      message: err.message,
+      message: err.message
     });
   }
 };
@@ -122,12 +113,12 @@ const getAllCoupons = async (req, res) => {
 const getShowingCoupons = async (req, res) => {
   try {
     const coupons = await Coupon.find({
-      status: "show",
+      status: 'show'
     }).sort({ _id: -1 });
     res.send(coupons);
   } catch (err) {
     res.status(500).send({
-      message: err.message,
+      message: err.message
     });
   }
 };
@@ -138,71 +129,86 @@ const getCouponById = async (req, res) => {
     res.send(coupon);
   } catch (err) {
     res.status(500).send({
-      message: err.message,
+      message: err.message
     });
   }
 };
 
 const applyCouponToProduct = async (req, res) => {
   try {
-    const { productIds, couponCode } = req.body;
+    const { products, code, cart } = req.body;
 
     // Fetch the coupon details
-    const coupon = await Coupon.findOne({ couponCode });
-    if (!coupon)
-      return res
-        .status(404)
-        .json({ success: false, message: "Coupon not found" });
+    const coupon = await Coupon.findOne({ couponCode: code }, 'couponCode discountType discountValue isActive minOrderAmount title');
+    if (!coupon) return res.status(404).json({ success: false, message: 'Coupon not found' });
 
     const now = new Date();
     if (coupon.startTime > now || coupon.endTime < now) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Coupon is not valid at this time" });
+      return res.status(400).json({ success: false, message: 'Coupon is not valid at this time' });
     }
 
     const discountedProducts = await Promise.all(
-      productIds.map(async (productId) => {
+      products.map(async (productId) => {
         const product = await Product.findById(productId);
         if (!product) return null;
 
         // Calculate the discount
-        let discountedPrice = product.price;
-        if (coupon.discountType === "percentage") {
-          discountedPrice = product.price * (1 - coupon.discountValue / 100);
-        } else if (coupon.discountType === "fixed") {
-          discountedPrice = product.price - coupon.discountValue;
-        }
+        // let discountedPrice = product.price;
+        const { finalAmount } = calculateDiscount(product.price, coupon);
+        // if(coupon.discountType === "percentage") {
+        //   discountedPrice = product.price * (1 - coupon.discountValue / 100);
+        // } else if (coupon.discountType === "fixed") {
+        //   discountedPrice = product.price - coupon.discountValue;
+        // }
 
         // Ensure discounted price respects caps
-        discountedPrice = Math.max(discountedPrice, coupon.minOrderAmount || 0);
-        if (coupon.maxDiscount) {
-          discountedPrice = Math.min(
-            discountedPrice,
-            product.price - coupon.maxDiscount
-          );
-        }
+        // discountedPrice = Math.max(discountedPrice, coupon.minOrderAmount || 0);
+        // if (coupon.maxDiscount) {
+        //   discountedPrice = Math.min(
+        //     finalAmount,
+        //     product.price - coupon.maxDiscount
+        //   );
+        // }
 
         return {
           productId: product._id,
-          originalPrice: product.price,
-          discountedPrice,
+          price: product.price,
+          discountedPrice: finalAmount
         };
       })
     );
 
+
+    const combined = cart.cartItems.map(quantityItem => {
+      // Find the matching price item based on productId
+      const priceItem = discountedProducts.find(priceItem => priceItem.productId == quantityItem.productId);
+
+      // Return a new object that combines quantity and price information
+      return {
+        ...quantityItem,
+        ...priceItem  // Use an empty object if no match is found
+      };
+    });
+
+    const totals = combined.reduce(
+      (acc, item) => {
+        acc.totalPrice += parseFloat(item.price) * parseFloat(item.quantity);
+        acc.totalDiscountedPrice += parseFloat(item.discountedPrice) * parseFloat(item.quantity);
+        return acc;
+      },
+      { totalPrice: 0, totalDiscountedPrice: 0 }
+    );
     res.json({
       success: true,
-      discountedProducts: discountedProducts.filter((item) => item !== null),
+      coupon,
+      totals, discountedProducts
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to apply coupon",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: 'Failed to apply coupon',
+      error: error.message
+    });
   }
 };
 
@@ -223,7 +229,7 @@ const updateCoupon = async (req, res) => {
       coupon.logo = req.body.logo;
 
       await coupon.save();
-      res.send({ message: "Coupon Updated Successfully!" });
+      res.send({ message: 'Coupon Updated Successfully!' });
     }
   } catch (error) {
     res.status(404).send({ message: error.message });
@@ -238,20 +244,20 @@ const updateManyCoupons = async (req, res) => {
         $set: {
           status: req.body.status,
           startTime: req.body.startTime,
-          endTime: req.body.endTime,
-        },
+          endTime: req.body.endTime
+        }
       },
       {
-        multi: true,
+        multi: true
       }
     );
 
     res.send({
-      message: "Coupons update successfully!",
+      message: 'Coupons update successfully!'
     });
   } catch (err) {
     res.status(500).send({
-      message: err.message,
+      message: err.message
     });
   }
 };
@@ -264,18 +270,16 @@ const updateStatus = async (req, res) => {
       { _id: req.params.id },
       {
         $set: {
-          status: newStatus,
-        },
+          status: newStatus
+        }
       }
     );
     res.status(200).send({
-      message: `Coupon ${
-        newStatus === "show" ? "Published" : "Un-Published"
-      } Successfully!`,
+      message: `Coupon ${newStatus === 'show' ? 'Published' : 'Un-Published'} Successfully!`
     });
   } catch (err) {
     res.status(500).send({
-      message: err.message,
+      message: err.message
     });
   }
 };
@@ -284,7 +288,7 @@ const deleteCoupon = async (req, res) => {
   try {
     await Coupon.deleteOne({ _id: req.params.id });
     res.status(200).send({
-      message: "Coupon Deleted Successfully!",
+      message: 'Coupon Deleted Successfully!'
     });
   } catch (err) {
     res.status(500).send({ message: err.message });
@@ -295,11 +299,11 @@ const deleteManyCoupons = async (req, res) => {
   try {
     await Coupon.deleteMany({ _id: req.body.ids });
     res.send({
-      message: `Coupons Delete Successfully!`,
+      message: `Coupons Delete Successfully!`
     });
   } catch (err) {
     res.status(500).send({
-      message: err.message,
+      message: err.message
     });
   }
 };
@@ -315,5 +319,5 @@ module.exports = {
   deleteCoupon,
   updateManyCoupons,
   deleteManyCoupons,
-  applyCouponToProduct,
+  applyCouponToProduct
 };
