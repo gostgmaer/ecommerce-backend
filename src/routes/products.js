@@ -2,7 +2,7 @@ const express = require("express");
 const productRoute = express.Router();
 const createMiddleWare = require("../middleware/createMiddleWare");
 const userMiddleWare = require("../middleware/userAccess");
-const adminMiddleware = require("../middleware/adminAccess");
+// const adminMiddleware = require("../middleware/adminAccess");
 
 const {
   createProduct,
@@ -30,7 +30,7 @@ productRoute
   .route("/products/:id")
   .patch( userMiddleWare, updateProduct);
 productRoute
-  .route("/products/:id")
+  .route("/products/:id") 
   .put( userMiddleWare, updateProduct);
 productRoute
   .route("/products/:id")
