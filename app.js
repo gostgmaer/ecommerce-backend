@@ -3,6 +3,8 @@ const express = require("express");
 require("dotenv").config();
 const connectDB = require("./src/db/dbConnact");
 const { dbUrl, serverPort } = require("./src/config/setting");
+const loggerMiddleware = require("./src/middleware/logger");
+
 const app = express();
 var cors = require("cors");
 // const helmet = require("helmet");
@@ -40,6 +42,7 @@ app.use(cors({
 // app.get('/', (req, res) => {
 //   res.send('CORS and Referrer policy fully open.');
 // });
+app.use(loggerMiddleware); 
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -68,6 +71,8 @@ app.use("/api", wishlistRoute);
 app.use("/api", AttachmentRoute);
 app.use("/api", contactsRoute);
 app.use("/api", couponRouter);
+
+
 
 const start = async (res) => {
   try {

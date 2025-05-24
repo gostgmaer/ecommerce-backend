@@ -1,20 +1,40 @@
-// logEntry.js
 const mongoose = require("mongoose");
 
 const logEntrySchema = new mongoose.Schema(
   {
-    method: String,
-    path: String,
-    body: Object,
-    query: Object,
-    params: Object,
-    useragent:String,
-    response: Object,
+    method: {
+      type: String,
+      required: true,
+    },
+    path: {
+      type: String,
+      required: true,
+    },
+    body: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    query: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    params: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    useragent: {
+      type: String,
+    },
+    response: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
     ip: {
-      type:Object
-    }, // Add IP field
+      type: String,
+    },
     location: {
-     type:Object
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
   },
   { timestamps: true }

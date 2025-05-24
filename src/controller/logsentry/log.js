@@ -1,8 +1,7 @@
 const {
   ReasonPhrases,
   StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
+
 } = require("http-status-codes");
 const { FilterOptions } = require("../../utils/helper");
 const LogEntry = require("../../models/logEntry");
