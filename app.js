@@ -28,7 +28,7 @@ const couponRouter = require("./src/routes/couponRoutes");
 
 app.use(cors({
   origin: '*',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  methods: 'GET,POST,PUT,DELETE,PATCH,OPTIONS,HEAD',
   allowedHeaders: '*',
 }));
 app.use(helmet({
