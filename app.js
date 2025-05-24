@@ -5,6 +5,7 @@ const connectDB = require("./src/db/dbConnact");
 const { dbUrl, serverPort } = require("./src/config/setting");
 const app = express();
 var cors = require("cors");
+const helmet = require("helmet");
 const userRouter = require("./src/routes/user");
 const settingRoute = require("./src/routes/settingRoutes");
 const authRoute = require("./src/routes/auth");
@@ -30,6 +31,15 @@ app.use(cors({
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: '*',
 }));
+app.use(helmet({
+  referrerPolicy: {
+    policy: 'unsafe-url', // Full URL even cross-origin
+  },
+}));
+
+app.get('/', (req, res) => {
+  res.send('CORS and Referrer policy fully open.');
+});
 app.use(express.json());
 
 app.get("/", (req, res) => {
