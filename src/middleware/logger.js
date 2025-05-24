@@ -83,6 +83,14 @@ const LogEntry = require('../models/logEntry');
 
 const loggerMiddleware = (req, res, next) => {
   
+
+
+ const path = req.originalUrl.toLowerCase();
+
+ if (path === '/log' || path.includes('/api/logs')) {
+   return next();
+ }
+
   // const start = Date.now();
   const originalSend = res.send;
   let responseBody;
@@ -120,9 +128,9 @@ const loggerMiddleware = (req, res, next) => {
 // Helper to safely parse JSON
 function tryParseJSON(data) {
   try {
-    return typeof data === 'string' ? JSON.parse(data) : data;
+    return typeof data === 'string' ? data : JSON.stringify(data);
   } catch {
-    return data;
+    return String(data); // Fallback to string if parsing fails
   }
 }
 

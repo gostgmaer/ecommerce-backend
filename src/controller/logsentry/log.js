@@ -91,7 +91,7 @@ const updateLogs = async (req, res) => {
 };
 const deleteLogs = async (req, res) => {
   try {
-    const currData = await Cart.findByIdAndDelete(req.params.id);
+    const currData = await LogEntry.findByIdAndDelete(req.params.id);
     if (!currData) {
       return res.status(StatusCodes.NOT_FOUND).json({
         statusCode: StatusCodes.NOT_FOUND,
