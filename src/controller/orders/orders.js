@@ -12,6 +12,7 @@ const { createPayPalOrder, verifyPayPalPayment } = require("../payment/paypalHel
 const { createRazorpayOrder, verifyRazorpayPayment } = require("../payment/rozorpay");
 const { processCodOrder } = require("../payment/codhelper");
 const { updateStockOnOrderCreate, updateStockOnOrderCancel, removeOrderedItemsFromWishlist } = require("../../lib/stock-controller/others");
+// const { log } = require("winston");
 
 // const { createPayPalOrder, verifyPayPalPayment } = require('../services/paypalService');
 // const { createRazorpayOrder, verifyRazorpayPayment } = require('../services/razorpayService');
@@ -172,6 +173,9 @@ const verifyPayment = async (req, res) => {
 
 
 const getOrders = async (req, res) => {
+// log("getOrders called");
+console.log("getOrders called");
+
   try {
     const { sort, page, limit, filter } = req.query;
 

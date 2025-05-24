@@ -3,8 +3,6 @@ const orderRoute = express.Router();
 const UpdatebyMiddleWare = require("../middleware/updatedBy");
 const createMiddleWare = require("../middleware/createMiddleWare");
 const userMiddleWare = require("../middleware/userAccess");
-const adminMiddleware = require("../middleware/adminAccess");
-
 
 const {
   updateOrder,
