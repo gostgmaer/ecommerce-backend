@@ -25,7 +25,11 @@ const couponRouter = require("./src/routes/couponRoutes");
 
 
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: '*',
+}));
 app.use(express.json());
 
 app.get("/", (req, res) => {
