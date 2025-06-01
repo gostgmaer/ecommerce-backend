@@ -817,7 +817,7 @@ const getProfile = async (req, res) => {
     });
   } else {
     try {
-      const userId = await User.findOne({ _id: user }).select(['firstName', 'lastName', 'username', 'email', 'role', 'updatedAt', 'contactNumber', 'profilePicture', 'phoneNumber', 'dateOfBirth']);
+      const userId = await User.findOne({ _id: user }).select(['dateOfBirth', 'gender', 'phoneNumber', 'profilePicture', 'username', 'email','role', 'firstName', 'lastName', 'address', 'isVerified', 'isEmailconfirm','subscriptionStatus','subscriptionType']);
 
       if (userId.id) {
         return res.status(StatusCodes.OK).json({
