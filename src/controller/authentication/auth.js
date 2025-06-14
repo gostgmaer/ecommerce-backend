@@ -212,7 +212,7 @@ const signIn = async (req, res) => {
             token_type: 'Bearer',
             id,
             email,
-            image: profilePicture,
+            image: profilePicture||"https://avatar.iran.liara.run/public/8",
             id_token,
             refreshToken,
             name: firstName + ' ' + lastName,
