@@ -23,56 +23,56 @@ const {
 } = require('../controller/attributeController');
 
 //add attribute
-router.post('/add', addAttribute);
+router.post('/attributes/add', addAttribute);
 
 //add all attributes
-router.post('/add/all', addAllAttributes);
+router.post('/attributes/add/all', addAllAttributes);
 
 // add child attribute
-router.put('/add/child/:id', addChildAttributes);
+router.put('/attributes/add/child/:id', addChildAttributes);
 
 //get all attribute
-router.get('/', getAllAttributes);
+router.get('/attributes', getAllAttributes);
 
 // router.get('/show', getShowingProducts);
-router.get('/show', getShowingAttributes);
+router.get('/attributes/show', getShowingAttributes);
 
-router.put('/show/test', getShowingAttributesTest);
+router.put('/attributes/show/test', getShowingAttributesTest);
 
 // update many attributes
-router.patch('/update/many', updateManyAttribute);
+router.patch('/attributes/update/many', updateManyAttribute);
 
 //get attribute by id
-router.get('/:id', getAttributeById);
+router.get('/attributes/:id', getAttributeById);
 
 // child get attributes by id
-router.get('/child/:id/:ids', getChildAttributeById);
+router.get('/attributes/child/:id/:ids', getChildAttributeById);
 
 //update attribute
-router.put('/:id', updateAttributes);
+router.put('/attributes/:id', updateAttributes);
 
 // update child attribute
-router.patch('/update/child/many', updateManyChildAttribute);
+router.patch('/attributes/update/child/many', updateManyChildAttribute);
 
 // update child attribute
-router.put('/update/child/:attributeId/:childId', updateChildAttributes);
+router.put('/attributes/update/child/:attributeId/:childId', updateChildAttributes);
 
 //show/hide a attribute
-router.put('/status/:id', updateStatus);
+router.put('/attributes/status/:id', updateStatus);
 
 // show and hide a child status
-router.put('/status/child/:id', updateChildStatus);
+router.put('/attributes/status/child/:id', updateChildStatus);
 
 //delete attribute
-router.delete('/:id', deleteAttribute);
+router.delete('/attributes/:id', deleteAttribute);
 
 // delete child attribute
-router.put('/delete/child/:attributeId/:childId', deleteChildAttribute);
+router.put('/attributes/delete/child/:attributeId/:childId', deleteChildAttribute);
 
 // delete many attribute
-router.patch('/delete/many', deleteManyAttribute);
+router.patch('/attributes/delete/many', deleteManyAttribute);
 
 // delete many child attribute
-router.patch('/delete/child/many', deleteManyChildAttribute);
+router.patch('/attributes/delete/child/many', deleteManyChildAttribute);
 
 module.exports = router;
