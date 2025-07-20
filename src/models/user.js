@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
     interests: { type: [String], default: [] },
     lastLogin: { type: Date, default: null },
     loyaltyPoints: { type: Number, default: 0 },
-    referralCode: { type: String, unique: true },
+    referralCode: { type: String },
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     shoppingCart: { items: [{ product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true }, quantity: { type: Number, required: true, min: 1, default: 1 } }], total: { type: Number, default: 0 } },
     wishList: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
