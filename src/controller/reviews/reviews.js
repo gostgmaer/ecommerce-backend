@@ -38,7 +38,7 @@ const getAll = async (req, res) => {
   const {product_id}= req.params
 
   try {
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const data = await Review.find(
       {...filterquery.query,product:product_id},
       "-__v",

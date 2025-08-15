@@ -42,7 +42,7 @@ app.use(cors({
 // app.get('/', (req, res) => {
 //   res.send('CORS and Referrer policy fully open.');
 // });
-app.use(loggerMiddleware); 
+// app.use(loggerMiddleware); 
 app.use(express.json());
 
 app.get("/", (req, res) => {

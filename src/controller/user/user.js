@@ -11,7 +11,7 @@ const getusers = async (req, res) => {
   try {
     const { sort, page, limit, filter } = req.query;
 
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const users = await User.find(
       filterquery.query,
       "-__v -hash_password -resetToken -resetTokenExpiration -confirmToken -update_by -session -tokens",

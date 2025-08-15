@@ -123,7 +123,7 @@ const get = async (req, res) => {
   try {
     const { sort, page, limit, filter } = req.query;
 
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
 
     const response = await Wishlist.find(filterquery.query,
       "-__v",

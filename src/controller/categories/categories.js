@@ -26,7 +26,7 @@ const getCategories = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
 
   try {
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const responseData = await Category.find( filterquery.query,
       "-__v -cat_id -child -parent_category",
       filterquery.options);
@@ -174,7 +174,7 @@ const getShowingCategory = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
 
   try {
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
 
     const responseData = await Category.find( {status:'publish'},
       "-__v -cat_id",
