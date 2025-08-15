@@ -413,6 +413,22 @@ function calculateDiscount(price, coupon) {
   };
 }
 
+function fillNullIfEmpty(obj, fields) {
+  const filled = {};
+  fields.forEach(field => {
+    if (
+      obj[field] === undefined ||
+      obj[field] === "" ||
+      (Array.isArray(obj[field]) && obj[field].length === 0)
+    ) {
+      filled[field] = null;
+    } else {
+      filled[field] = obj[field];
+    }
+  });
+  return filled;
+}
+
 module.exports = {
   decodeToken,
   FilterOptions,
@@ -421,6 +437,6 @@ module.exports = {
   FilterOptionsSearch,
   generateRandomString,
   getLocalIpAddress,
-  getPublicIpAddress, getAppIdAndEntity, showingProductFilter,calculateDiscount
+  getPublicIpAddress, getAppIdAndEntity, showingProductFilter,calculateDiscount,fillNullIfEmpty
 };
 

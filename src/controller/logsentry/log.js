@@ -10,7 +10,7 @@ const getAllLogs = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
 
   try {
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const responseData = await LogEntry.find(
       filterquery.query,
       "-__v",

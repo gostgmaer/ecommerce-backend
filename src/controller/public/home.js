@@ -17,7 +17,7 @@ const gethomeDetails = async (req, res) => {
   sevenDaysAgo.setDate(today.getDate() - 30);
 
   try {
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const featured = await Product.find(
       { isFeatured: true, status: "publish" },
       "-status -productUPCEAN -manufacturerPartNumber -gtin -createdAt -updatedAt -__v -seo_info",
@@ -207,7 +207,7 @@ const getPublicBrands = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
 
   try {
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const responseData = await Brand.find(filterquery.query,
       "slug name images",
       filterquery.options);
@@ -242,7 +242,7 @@ const publicCategoriesDetails = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
 
   try {
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const responseData = await Category.find(filterquery.query,
       "slug name images",
       filterquery.options);

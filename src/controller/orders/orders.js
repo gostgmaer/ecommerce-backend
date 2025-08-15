@@ -179,7 +179,7 @@ console.log("getOrders called");
   try {
     const { sort, page, limit, filter } = req.query;
 
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const Orders = await Order.find(
       filterquery.query,
       "-__v ",
@@ -227,7 +227,7 @@ const getCustomerOrders = async (req, res) => {
   try {
     const { sort, page, limit, filter } = req.query;
 
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const Orders = await Order.find(
       { ...filterquery.query, user: req.params.user },
       "total createdAt invoice payment_method payment_status status totalPrice ",
@@ -279,7 +279,7 @@ const getCustomerDashboard = async (req, res) => {
   try {
     const { sort, page, limit, filter } = req.query;
 
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
 
     const orderStats = await Order.aggregate([
       {

@@ -75,7 +75,7 @@ const signUp = async (req, res) => {
               button: {
                 color: '#22BC66', // Optional action button color
                 text: 'Login Your Account',
-                link: `${host}/${loginPath}`,
+                link: `${host}/${loginPath}`, 
               },
             },
             outro: "Need help, or have questions? Just reply to this email, we'd love to help.",

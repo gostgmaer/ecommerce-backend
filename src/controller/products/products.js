@@ -45,7 +45,7 @@ const getProducts = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
 
   try {
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const products = await Product.find(
       filterquery.query,
       "-__v",
@@ -271,7 +271,7 @@ const getRelatedProducts = async (req, res) => {
   const { category } = req.query;
 
   try {
-    // const filterquery = FilterOptions(sort, page, limit, filter);
+    // const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const products = await Product.find(
       { category: category },
       "-__v -categories -barcode -createdAt -tag -features -isFeatured -productId -productType -reviews -seo_info -status -total_view -updatedAt -gtin -description"
@@ -318,7 +318,7 @@ const getPopularProducts = async (req, res) => {
   const filter = { total_view: { $gt: 0 } };
 
   try {
-    // const filterquery = FilterOptions(sort, page, limit, filter);
+    // const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const products = await Product.find(
       filter,
       "-__v -categories -barcode -createdAt -tag -features -isFeatured -productId -productType -reviews -seo_info -status -total_view -updatedAt -gtin -description"
@@ -366,7 +366,7 @@ const getDiscountedProducts = async (req, res) => {
   const filter = { discount: { $gt: 0 } };
 
   try {
-    // const filterquery = FilterOptions(sort, page, limit, filter);
+    // const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const products = await Product.find(
       filter,
       "-__v -categories -barcode -createdAt -tag -features -isFeatured -productId -productType -reviews -seo_info -status -total_view -updatedAt -gtin -description"

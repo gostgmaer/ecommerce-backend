@@ -33,7 +33,7 @@ const create = async (req, res) => {
 const get = async (req, res) => {
   const { limit, page, filter, sort } = req.query;
   try {
-    const filterquery = FilterOptions(sort, page, limit, filter);
+    const filterquery = FilterOptions(sort, page||1, limit||10, filter);
     const Addresses = await Address.find(
       filterquery.query,
       "-__v",
